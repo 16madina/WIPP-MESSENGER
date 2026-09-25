@@ -20,6 +20,7 @@ export function SurpriseCard({ message, preview = false }: { message?: SurpriseM
   const strokes = useRef(0);
   const [revealed, setRevealed] = useState(false);
   const [started, setStarted] = useState(false);
+  const [replaying, setReplaying] = useState(false);
   const [sparks, setSparks] = useState<{ id: number; x: number; y: number; dx: number; dy: number }[]>([]);
 
   useEffect(() => {
@@ -92,7 +93,7 @@ export function SurpriseCard({ message, preview = false }: { message?: SurpriseM
   };
 
   return (
-    <div className="relative isolate mx-auto aspect-[260/216] w-full max-w-[260px] overflow-hidden rounded-[17px] border border-wipp-surprise-line bg-wipp-surprise-ink shadow-glow" aria-label={revealed ? "Surprise découverte" : "Carte à gratter"}>
+    <div className="relative isolate mx-auto aspect-[260/216] w-[260px] max-w-full overflow-hidden rounded-[17px] border border-wipp-surprise-line bg-wipp-surprise-ink shadow-glow" aria-label={revealed ? "Surprise découverte" : "Carte à gratter"}>
       <div className="absolute inset-0 flex flex-col items-center justify-center overflow-hidden bg-wipp-surprise-paper px-5 text-center text-wipp-surprise-ink">
         <span className="pointer-events-none absolute -left-5 -top-4 rotate-[-15deg] text-[100px] text-wipp-surprise-gold/50">✦</span>
         <span className="pointer-events-none absolute -bottom-8 -right-3 text-[112px] text-wipp-surprise-gold/50">✦</span>
@@ -101,6 +102,7 @@ export function SurpriseCard({ message, preview = false }: { message?: SurpriseM
         <span className="relative mt-3 text-[18px] font-black text-wipp-surprise-ink">ẅ</span>
       </div>
       <AnimatePresence>
+        {replaying && <motion.img key="replay" src={artwork} alt="" className="pointer-events-none absolute inset-0 h-full w-full object-cover" initial={{ opacity: 1 }} animate={{ opacity: 0, scale: 1.08 }} transition={{ duration: 0.7 }} onAnimationComplete={() => setReplaying(false)} />}
         {!revealed && <motion.div className="absolute inset-0" exit={{ opacity: 0, scale: 1.08 }} transition={{ duration: 0.55 }}>
           {preview ? <img src={artwork} width={1024} height={1024} alt="" className="h-full w-full object-cover" /> : <canvas ref={canvas} className="absolute inset-0 h-full w-full touch-none" onPointerDown={(e) => { drawing.current = true; e.currentTarget.setPointerCapture(e.pointerId); scratch(e); }} onPointerMove={scratch} onPointerUp={() => { drawing.current = false; last.current = null; }} onPointerCancel={() => { drawing.current = false; last.current = null; }} />}
           <div className={`pointer-events-none absolute inset-x-0 bottom-3 flex flex-col items-center text-center text-wipp-surprise-paper transition-opacity ${started ? "opacity-0" : "opacity-100"}`}>
@@ -111,6 +113,7 @@ export function SurpriseCard({ message, preview = false }: { message?: SurpriseM
           {!preview && !started && <span aria-hidden className="surprise-sweep pointer-events-none absolute left-1/2 top-[44%] text-[25px] text-wipp-surprise-paper">☝</span>}
         </motion.div>}
       </AnimatePresence>
+      {revealed && !preview && <div className="absolute inset-x-0 bottom-2 flex items-center justify-center gap-2 text-[10px] text-wipp-surprise-ink/70"><span>✨ Surprise découverte</span><button type="button" onClick={() => { setReplaying(true); haptic("light"); }} className="min-h-11 px-2 font-semibold underline">Rejouer</button></div>}
       {sparks.map((spark) => <span key={spark.id} className="surprise-spark pointer-events-none absolute z-10 text-wipp-surprise-gold" style={{ left: `${spark.x / layout.surpriseCardWidth * 100}%`, top: `${spark.y / layout.surpriseCardHeight * 100}%`, ["--dx" as string]: `${spark.dx}px`, ["--dy" as string]: `${spark.dy}px` }}><Sparkle size={9} fill="currentColor" /></span>)}
     </div>
   );

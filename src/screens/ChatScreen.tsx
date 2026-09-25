@@ -131,7 +131,8 @@ export function ChatScreen({ chat }: { chat: Chat }) {
     if (el) el.scrollTop = el.scrollHeight;
   }, []);
   useEffect(() => {
-    scroller.current?.scrollTo({ top: scroller.current.scrollHeight, behavior: "smooth" });
+    const id = requestAnimationFrame(() => requestAnimationFrame(() => scroller.current?.scrollTo({ top: scroller.current.scrollHeight, behavior: "smooth" })));
+    return () => cancelAnimationFrame(id);
   }, [list.length, surprises.length, kb]);
 
   const patch = (id: string, p: Partial<Message>) => setList((l) => l.map((x) => (x.id === id ? { ...x, ...p } : x)));
