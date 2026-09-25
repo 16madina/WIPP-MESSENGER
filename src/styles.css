@@ -178,6 +178,9 @@
   --color-wipp-surprise-gold: var(--wipp-surprise-gold);
   --color-wipp-surprise-gold-deep: var(--wipp-surprise-gold-deep);
   --color-wipp-surprise-line: var(--wipp-surprise-line);
+  --color-wipp-surprise-choice: var(--wipp-surprise-choice);
+  --color-wipp-surprise-choice-raised: var(--wipp-surprise-choice-raised);
+  --color-wipp-surprise-choice-border: var(--wipp-surprise-choice-border);
   --font-display: var(--wipp-font-display);
   --font-body: var(--wipp-font-body);
 }

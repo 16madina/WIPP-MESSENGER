@@ -56,6 +56,9 @@ export const colors = {
     surpriseGold: "#F5C94F",
     surpriseGoldDeep: "#A87520",
     surpriseLine: "rgba(245,201,79,0.5)",
+    surpriseChoice: "#303746",
+    surpriseChoiceRaised: "#485160",
+    surpriseChoiceBorder: "rgba(235,239,248,0.26)",
   },
   light: {
     background: "#F4F4F7",
@@ -95,6 +98,9 @@ export const colors = {
     surpriseGold: "#D59B25",
     surpriseGoldDeep: "#87570E",
     surpriseLine: "rgba(213,155,37,0.5)",
+    surpriseChoice: "#E3E5EA",
+    surpriseChoiceRaised: "#C9CDD6",
+    surpriseChoiceBorder: "rgba(48,55,70,0.38)",
   },
 } as const;
 
@@ -151,6 +157,8 @@ export const layout = {
   surpriseScratchRadius: 28,
   surpriseRevealRatio: 0.68,
   surpriseMessageLimit: 300,
+  surpriseChoiceHeight: 116,
+  surpriseAnimationDrawerWidth: 340,
 };
 
 export const motion = {
