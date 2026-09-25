@@ -253,7 +253,7 @@ export function ChatScreen({ chat }: { chat: Chat }) {
           )}
         </AnimatePresence>
         <div className="flex items-center gap-1 px-1.5 pt-1.5">
-          <SurpriseFlow onSend={(message) => setSurprises((items) => [...items, message])} onUnavailable={(label) => notify(`${label} bientôt disponible`)} />
+           <SurpriseFlow onSend={(message) => setSurprises((items) => [...items, message])} onShareContent={(body) => setList((items) => [...items, { id: `shared-${Date.now()}`, mine: true, text: body, time: now(), state: "sent" }])} onUnavailable={(label) => notify(label)} />
           <input
             ref={inputRef}
             value={text}

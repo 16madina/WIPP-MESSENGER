@@ -1,19 +1,21 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { createPortal } from "react-dom";
-import { Camera, ChevronRight, Clock3, Contact, FileText, Gift, Heart, Image, MapPin, Moon, PartyPopper, Plane, Sparkles, Sticker, Sun, WandSparkles, X } from "lucide-react";
+import { Camera, ChevronRight, Clock3, FileText, Gift, Heart, Images, MapPin, Moon, PartyPopper, Plane, Smile, Sparkles, Sun, UserRound, WandSparkles, X } from "lucide-react";
+import shareGift from "@/assets/share-gift.png";
 import { Pressable } from "./Pressable";
 import { Sheet } from "./Sheet";
 import { type SurpriseMessage } from "./SurpriseCard";
 import { SurpriseAssistant } from "./SurpriseAssistant";
 import { layout, motion as m } from "@/theme/theme";
 import { haptic } from "@/lib/haptics";
+import { chats } from "@/data/mock";
 
-type Stage = "closed" | "share" | "compose";
+type Stage = "closed" | "share" | "compose" | "stickers" | "contacts";
 type SurpriseKind = "scratch" | "gift" | "confetti" | "countdown";
 const content = [
-  { label: "Galerie", icon: Image }, { label: "Caméra", icon: Camera }, { label: "Stickers", icon: Sticker },
-  { label: "Document", icon: FileText }, { label: "Localisation", icon: MapPin }, { label: "Contact", icon: Contact },
+  { label: "Galerie", icon: Images }, { label: "Caméra", icon: Camera }, { label: "Stickers", icon: Smile },
+  { label: "Document", icon: FileText }, { label: "Localisation", icon: MapPin }, { label: "Contact", icon: UserRound },
 ];
 const options = [
   { id: "scratch", title: "Message à gratter", icon: Sparkles, mark: "✦" },
@@ -31,14 +33,37 @@ const animations = [
 ] as const;
 
 /** Parcours local de composition ; seuls les messages à gratter sont simulés dans la conversation. */
-export function SurpriseFlow({ onSend, onUnavailable }: { onSend: (message: SurpriseMessage) => void; onUnavailable: (label: string) => void }) {
+export function SurpriseFlow({ onSend, onShareContent, onUnavailable }: { onSend: (message: SurpriseMessage) => void; onShareContent: (text: string) => void; onUnavailable: (label: string) => void }) {
   const reducedMotion = useReducedMotion();
+  const galleryRef = useRef<HTMLInputElement>(null);
+  const cameraRef = useRef<HTMLInputElement>(null);
+  const documentRef = useRef<HTMLInputElement>(null);
   const [stage, setStage] = useState<Stage>("closed");
   const [secret, setSecret] = useState("");
   const [kind, setKind] = useState<SurpriseKind>("scratch");
   const [animation, setAnimation] = useState<string | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const close = () => { setDrawerOpen(false); setStage("closed"); };
+  const chooseContent = (label: string) => {
+    if (label === "Galerie") galleryRef.current?.click();
+    else if (label === "Caméra") cameraRef.current?.click();
+    else if (label === "Document") documentRef.current?.click();
+    else if (label === "Stickers") setStage("stickers");
+    else if (label === "Contact") setStage("contacts");
+    else if (label === "Localisation") {
+      if (!navigator.geolocation) { onUnavailable("Localisation"); return; }
+      navigator.geolocation.getCurrentPosition(
+        ({ coords }) => { onShareContent(`📍 Ma position : https://maps.google.com/?q=${coords.latitude.toFixed(5)},${coords.longitude.toFixed(5)}`); close(); },
+        () => onUnavailable("Localisation non autorisée"),
+        { timeout: 10000, enableHighAccuracy: false },
+      );
+    }
+  };
+  const fileChosen = (label: string) => (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) { onShareContent(`${label === "Document" ? "📎" : "🖼️"} ${file.name}`); close(); }
+    event.target.value = "";
+  };
   const send = () => {
     if (!secret.trim()) return;
     if (kind !== "scratch") { onUnavailable(options.find(option => option.id === kind)?.title ?? "Surprise"); return; }
@@ -49,15 +74,29 @@ export function SurpriseFlow({ onSend, onUnavailable }: { onSend: (message: Surp
   };
   return <>
     <Pressable aria-label="Ouvrir le menu Partager" onClick={() => { haptic("light"); setStage("share"); }} className="text-wipp-muted"><span className="flex h-8 w-8 items-center justify-center rounded-full border border-wipp-muted/60 text-[25px] font-light leading-none">+</span></Pressable>
-    <Sheet open={stage !== "closed"} onClose={close} detent={stage === "share" ? "half" : "full"}>
+    <input ref={galleryRef} type="file" accept="image/*,video/*" className="hidden" aria-label="Choisir dans la galerie" onChange={fileChosen("Galerie")} />
+    <input ref={cameraRef} type="file" accept="image/*" capture="environment" className="hidden" aria-label="Prendre une photo" onChange={fileChosen("Caméra")} />
+    <input ref={documentRef} type="file" className="hidden" aria-label="Choisir un document" onChange={fileChosen("Document")} />
+    <Sheet open={stage !== "closed"} onClose={close} detent={stage === "share" ? "share" : "full"}>
       {stage === "share" && (
-      <div className="px-4 pb-4 text-wipp-fg">
-        <h2 className="mb-4 text-center type-nav">Partager</h2>
-        <div className="grid grid-cols-3 gap-2">
-          {content.map(({ label, icon: Icon }) => <Pressable key={label} onClick={() => onUnavailable(label)} className="flex h-[72px] flex-col items-center justify-center gap-1 rounded-[14px] border border-wipp-glass-border bg-wipp-surface text-wipp-fg"><Icon size={22} strokeWidth={1.6} /><span className="type-caption">{label}</span></Pressable>)}
+       <div className="flex h-full flex-col overflow-y-auto px-4 pb-3 text-wipp-fg">
+         <div className="mb-3 flex items-start justify-between">
+           <div className="min-w-0"><h2 className="text-[27px] font-bold leading-tight">Partager</h2><p className="mt-1 text-[13px] leading-5 text-wipp-share-subtitle">Envoyez du contenu ou créez une surprise.</p></div>
+           <Pressable aria-label="Fermer le menu Partager" onClick={close} className="ml-2 flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-wipp-fg/10 text-wipp-fg"><X size={23} /></Pressable>
         </div>
-        <Pressable aria-label="Surprise ✨" onClick={() => { haptic("light"); setStage("compose"); }} className="mt-3 flex w-full items-center justify-center gap-2 rounded-[14px] border border-wipp-surprise-line bg-wipp-surprise-ink py-3 text-wipp-surprise-gold shadow-glow"><Gift size={23} /><span className="type-headline">Surprise</span><Sparkles size={17} /></Pressable>
+         <div className="grid grid-cols-3 gap-2">
+           {content.map(({ label, icon: Icon }) => <Pressable key={label} onClick={() => chooseContent(label)} className="share-tile flex min-h-0 flex-col items-center justify-center gap-1 rounded-[14px] text-wipp-fg" style={{ height: layout.shareTileHeight }}><Icon className="share-gold-icon text-wipp-surprise-gold" size={34} strokeWidth={1.8} fill={label === "Localisation" || label === "Contact" ? "currentColor" : "none"} /><span className="text-[12px] font-semibold">{label}</span></Pressable>)}
+         </div>
+         <Pressable aria-label="Surprise ✨" onClick={() => { haptic("light"); setStage("compose"); }} className="share-surprise mt-4 flex min-h-[105px] w-full items-center rounded-[20px] px-2 text-left text-wipp-surprise-gold">
+           <img src={shareGift} width={768} height={768} alt="" className="-ml-1 h-[100px] w-[100px] shrink-0 object-contain" />
+           <span className="min-w-0 flex-1"><span className="flex items-center gap-1 text-[21px] font-bold leading-6">Surprise <Sparkles size={18} /></span><span className="mt-1 block text-[11px] leading-4 text-wipp-share-subtitle">Transforme tes messages en expériences.</span></span>
+           <ChevronRight size={25} className="shrink-0" />
+         </Pressable>
       </div>)}
+       {(stage === "stickers" || stage === "contacts") && <div className="px-4 text-wipp-fg">
+         <div className="mb-4 flex items-center justify-between"><h2 className="type-title2">{stage === "stickers" ? "Stickers" : "Contact"}</h2><Pressable aria-label="Retour au partage" onClick={() => setStage("share")}><X size={22} /></Pressable></div>
+         {stage === "stickers" ? <div className="grid grid-cols-4 gap-2">{["❤️", "✨", "😂", "🥰", "👏", "🎉", "🌸", "💛"].map(sticker => <Pressable key={sticker} aria-label={`Envoyer ${sticker}`} onClick={() => { onShareContent(sticker); close(); }} className="share-tile flex h-16 items-center justify-center rounded-[12px] text-[32px]">{sticker}</Pressable>)}</div> : <div className="max-h-[310px] overflow-y-auto">{chats.map(chat => <Pressable key={chat.id} onClick={() => { onShareContent(`👤 ${chat.name}`); close(); }} className="flex w-full items-center border-b border-wipp-glass-border py-2 text-left type-body">{chat.name}</Pressable>)}</div>}
+       </div>}
       {stage === "compose" && (
       <div className="no-scrollbar h-[calc(100%-24px)] overflow-y-auto px-4 pb-8 text-wipp-fg">
         <div className="flex items-center justify-between"><span className="w-11" /><span className="type-nav">Surprise</span><Pressable aria-label="Fermer" onClick={close}><X size={20} /></Pressable></div>
