@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, type PointerEvent } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Sparkle } from "lucide-react";
 import artwork from "@/assets/surprise-card.jpg";
-import { layout, motion as m } from "@/theme/theme";
+import { layout } from "@/theme/theme";
 import { haptic } from "@/lib/haptics";
 
 export type SurpriseDesign = "heart" | "stars" | "crown" | "neon";
@@ -87,7 +87,7 @@ export function SurpriseCard({ message, preview = false }: { message?: SurpriseM
         samples++;
         if ((data[(py * c.width + px) * 4 + 3] ?? 255) < 64) erased++;
       }
-      if (erased / samples >= m.surpriseRevealRatio) finish();
+      if (erased / samples >= layout.surpriseRevealRatio) finish();
     }
   };
 
