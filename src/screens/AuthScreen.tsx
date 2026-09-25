@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { useServerFn } from "@tanstack/react-start";
 import type { ConfirmationResult } from "firebase/auth";
@@ -26,7 +26,7 @@ export function AuthScreen() {
   const [code, setCode] = useState("");
   const [busy, setBusy] = useState(false);
   const [demo, setDemo] = useState(false);
-  useState(() => { devLoginAvailable().then(setDemo).catch(() => {}); });
+  useEffect(() => { devLoginAvailable().then(setDemo).catch(() => {}); }, []);
   const [error, setError] = useState<string | null>(null);
   const confirmation = useRef<ConfirmationResult | null>(null);
 
@@ -103,7 +103,7 @@ export function AuthScreen() {
           {mode === "signin" ? "Nouveau sur WIPP ? Créer un compte" : "Déjà un compte ? Se connecter"}
         </Pressable>
         <div id="wipp-recaptcha" />
-        {import.meta.env.DEV && (
+        {demo && (
           <Pressable
             type="button"
             disabled={busy}
