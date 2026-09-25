@@ -45,7 +45,7 @@ export function SurpriseFlow({ onSend, onUnavailable }: { onSend: (message: Surp
         <div className="grid grid-cols-3 gap-2">
           {content.map(({ label, icon: Icon }) => <Pressable key={label} onClick={() => onUnavailable(label)} className="flex h-[72px] flex-col items-center justify-center gap-1 rounded-[14px] border border-wipp-glass-border bg-wipp-surface text-wipp-fg"><Icon size={22} strokeWidth={1.6} /><span className="type-caption">{label}</span></Pressable>)}
         </div>
-        <Pressable onClick={() => { haptic("light"); setStage("choices"); }} className="mt-3 flex w-full items-center justify-center gap-2 rounded-[14px] border border-wipp-surprise-line bg-wipp-surprise-ink py-3 text-wipp-surprise-gold shadow-glow"><Gift size={23} /><span className="type-headline">Surprise ✨</span></Pressable>
+        <Pressable aria-label="Surprise ✨" onClick={() => { haptic("light"); setStage("choices"); }} className="mt-3 flex w-full items-center justify-center gap-2 rounded-[14px] border border-wipp-surprise-line bg-wipp-surprise-ink py-3 text-wipp-surprise-gold shadow-glow"><Gift size={23} /><span className="type-headline">Surprise</span><Sparkles size={17} /></Pressable>
       </div>)}
       {stage === "choices" && (
       <div className="no-scrollbar h-[calc(100%-24px)] overflow-y-auto px-4 pb-6 text-wipp-fg">
@@ -61,7 +61,7 @@ export function SurpriseFlow({ onSend, onUnavailable }: { onSend: (message: Surp
       {stage === "compose" && (
       <div className="no-scrollbar h-[calc(100%-24px)] overflow-y-auto px-4 pb-8 text-wipp-fg">
         <div className="flex items-center justify-between"><Pressable aria-label="Retour aux surprises" onClick={() => setStage("choices")}><ChevronLeft size={23} /></Pressable><span className="type-nav">Message à gratter</span><Pressable aria-label="Fermer" onClick={close}><X size={20} /></Pressable></div>
-        <h2 className="mt-4 type-title2">Crée ta surprise ✨</h2><p className="mb-4 type-footnote text-wipp-muted">Écris ton message secret...</p>
+        <h2 className="mt-4 flex items-center gap-2 type-title2">Crée ta surprise <Sparkles size={21} className="text-wipp-surprise-gold" aria-label="✨" /></h2><p className="mb-4 type-footnote text-wipp-muted">Écris ton message secret...</p>
         <div className="rounded-[12px] border border-wipp-glass-border bg-wipp-surface p-3">
           <textarea aria-label="Écris ton message secret" value={secret} maxLength={layout.surpriseMessageLimit} onChange={e => setSecret(e.target.value)} placeholder="Écris ton message secret…" className="h-[72px] w-full resize-none bg-transparent type-subhead text-wipp-fg outline-none placeholder:text-wipp-muted" />
           <div className="text-right type-caption2 text-wipp-muted">{secret.length}/{layout.surpriseMessageLimit}</div>

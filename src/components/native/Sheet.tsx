@@ -13,6 +13,7 @@ export function Sheet({ open, onClose, children, detent = "half" }: { open: bool
   useEffect(() => {
     setSheetOpen(open);
   }, [open, setSheetOpen]);
+  if (typeof document === "undefined") return null;
   return createPortal(
     <AnimatePresence>
       {open && (

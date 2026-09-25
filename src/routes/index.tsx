@@ -4,10 +4,10 @@ import { AppShell } from "@/components/native/AppShell";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "WIPP — Messagerie sans numéro" },
-      { name: "description", content: "Discutez et appelez sans numéro de téléphone, par username, QR code ou WIPP Touch." },
-      { property: "og:title", content: "WIPP — Messagerie sans numéro" },
-      { property: "og:description", content: "Messages chiffrés et appels sans numéro de téléphone." },
+      { title: "WIPP — Discussions et appels" },
+      { name: "description", content: "Discutez, appelez et partagez des surprises avec WIPP. Votre numéro reste privé." },
+      { property: "og:title", content: "WIPP — Discussions et appels" },
+      { property: "og:description", content: "Discutez, appelez et partagez des surprises avec WIPP. Votre numéro reste privé." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],

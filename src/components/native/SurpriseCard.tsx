@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type PointerEvent } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Sparkle } from "lucide-react";
+import { HandPointer, Sparkle, Sparkles } from "lucide-react";
 import artwork from "@/assets/surprise-card.jpg";
 import { layout } from "@/theme/theme";
 import { haptic } from "@/lib/haptics";
@@ -110,10 +110,10 @@ export function SurpriseCard({ message, preview = false }: { message?: SurpriseM
             <span className="mt-0.5 text-[10px]">Gratte pour le découvrir</span>
             <span className="mt-1 text-[19px] font-black">ẅ</span>
           </div>
-          {!preview && !started && <span aria-hidden className="surprise-sweep pointer-events-none absolute left-1/2 top-[44%] text-[25px] text-wipp-surprise-paper">☝</span>}
+          {!preview && !started && <HandPointer aria-hidden className="surprise-sweep pointer-events-none absolute left-1/2 top-[44%] text-wipp-surprise-paper" size={25} />}
         </motion.div>}
       </AnimatePresence>
-      {revealed && !preview && <div className="absolute inset-x-0 bottom-2 flex items-center justify-center gap-2 text-[10px] text-wipp-surprise-ink/70"><span>✨ Surprise découverte</span><button type="button" onClick={() => { setReplaying(true); haptic("light"); }} className="min-h-11 px-2 font-semibold underline">Rejouer</button></div>}
+      {revealed && !preview && <div className="absolute inset-x-0 bottom-2 flex items-center justify-center gap-2 text-[10px] text-wipp-surprise-ink/70"><span className="inline-flex items-center gap-1"><Sparkles size={11} /> Surprise découverte</span><button type="button" onClick={() => { setReplaying(true); haptic("light"); }} className="min-h-11 px-2 font-semibold underline">Rejouer</button></div>}
       {sparks.map((spark) => <span key={spark.id} className="surprise-spark pointer-events-none absolute z-10 text-wipp-surprise-gold" style={{ left: `${spark.x / layout.surpriseCardWidth * 100}%`, top: `${spark.y / layout.surpriseCardHeight * 100}%`, ["--dx" as string]: `${spark.dx}px`, ["--dy" as string]: `${spark.dy}px` }}><Sparkle size={9} fill="currentColor" /></span>)}
     </div>
   );
