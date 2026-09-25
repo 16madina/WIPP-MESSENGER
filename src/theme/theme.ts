@@ -1,8 +1,7 @@
 /**
  * WIPP — design system unique (source de vérité).
- * Couleurs, polices, rayons, ombres, flou, animations. Clair et sombre.
+ * Couleurs, polices, typographie, rayons, ombres, flou, mise en page, animations, vibrations.
  * Portable tel quel vers React Native / Expo (valeurs brutes, pas de CSS).
- * Palette provisoire : à ajuster avec les captures.
  */
 
 export type ThemeMode = "light" | "dark";
@@ -12,6 +11,9 @@ const palette = {
   yellowDeep: "#E6B800",
   red: "#FF453A",
   green: "#30D158",
+  blue: "#0A84FF",
+  indigo: "#5E5CE6",
+  orange: "#FF9F0A",
   grey: "#8E8E93",
 };
 
@@ -23,8 +25,11 @@ export const colors = {
     foreground: "#F5F6F8",
     muted: "#8B8F9C",
     separator: "rgba(255,255,255,0.08)",
-    glass: "rgba(18,20,27,0.62)",
+    glass: "rgba(22,24,32,0.55)",
+    glassStrong: "rgba(30,32,42,0.72)",
     glassBorder: "rgba(255,255,255,0.10)",
+    glassHighlight: "rgba(255,255,255,0.22)",
+    backdrop: "rgba(0,0,0,0.35)",
     accent: palette.yellow,
     accentForeground: "#0A0A0A",
     bubbleMine: palette.yellow,
@@ -35,6 +40,17 @@ export const colors = {
     success: palette.green,
     statusGrey: palette.grey,
     statusRead: palette.yellow,
+    actionPin: palette.yellowDeep,
+    actionUnread: palette.blue,
+    actionMute: palette.indigo,
+    actionArchive: palette.orange,
+    actionDelete: palette.red,
+    switchOff: "rgba(120,120,128,0.36)",
+    switchKnob: "#FFFFFF",
+    segmentTrack: "rgba(118,118,128,0.24)",
+    segmentThumb: "#636366",
+    skeleton: "rgba(255,255,255,0.06)",
+    skeletonHighlight: "rgba(255,255,255,0.10)",
   },
   light: {
     background: "#F4F4F7",
@@ -43,8 +59,11 @@ export const colors = {
     foreground: "#0B0C10",
     muted: "#6B6F7B",
     separator: "rgba(0,0,0,0.08)",
-    glass: "rgba(255,255,255,0.68)",
+    glass: "rgba(255,255,255,0.62)",
+    glassStrong: "rgba(255,255,255,0.78)",
     glassBorder: "rgba(0,0,0,0.06)",
+    glassHighlight: "rgba(255,255,255,0.9)",
+    backdrop: "rgba(0,0,0,0.18)",
     accent: palette.yellowDeep,
     accentForeground: "#0A0A0A",
     bubbleMine: palette.yellow,
@@ -55,50 +74,135 @@ export const colors = {
     success: palette.green,
     statusGrey: palette.grey,
     statusRead: palette.yellowDeep,
+    actionPin: palette.yellowDeep,
+    actionUnread: palette.blue,
+    actionMute: palette.indigo,
+    actionArchive: palette.orange,
+    actionDelete: palette.red,
+    switchOff: "rgba(120,120,128,0.16)",
+    switchKnob: "#FFFFFF",
+    segmentTrack: "rgba(118,118,128,0.12)",
+    segmentThumb: "#FFFFFF",
+    skeleton: "rgba(0,0,0,0.06)",
+    skeletonHighlight: "rgba(255,255,255,0.7)",
   },
 } as const;
 
+/** Police native du téléphone (SF Pro sur iOS, Roboto sur Android). */
+const systemStack = `-apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", Roboto, "Helvetica Neue", system-ui, sans-serif`;
 export const fonts = {
-  display: "'Sora', system-ui, sans-serif",
-  body: "'Manrope', system-ui, sans-serif",
-  googleHref:
-    "https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Sora:wght@600;700;800&display=swap",
-  size: { caption: 12, footnote: 13, body: 16, headline: 17, title: 22, largeTitle: 34 },
+  display: `-apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", Roboto, system-ui, sans-serif`,
+  body: systemStack,
 };
 
-export const radii = { sm: 10, md: 14, lg: 20, xl: 28, bubble: 20, full: 9999 };
+/** Échelle typographique iOS (taille, graisse, interligne, approche en px). */
+export const typography = {
+  largeTitle: { size: 34, weight: 700, lineHeight: 41, tracking: 0.37 },
+  title2: { size: 22, weight: 700, lineHeight: 28, tracking: -0.26 },
+  nav: { size: 17, weight: 600, lineHeight: 22, tracking: -0.43 },
+  headline: { size: 17, weight: 600, lineHeight: 22, tracking: -0.43 },
+  body: { size: 17, weight: 400, lineHeight: 22, tracking: -0.43 },
+  subhead: { size: 15, weight: 400, lineHeight: 20, tracking: -0.23 },
+  footnote: { size: 13, weight: 400, lineHeight: 18, tracking: -0.08 },
+  caption: { size: 13, weight: 400, lineHeight: 18, tracking: -0.08 },
+  caption2: { size: 11, weight: 400, lineHeight: 13, tracking: 0.06 },
+  tab: { size: 10, weight: 500, lineHeight: 12, tracking: 0.1 },
+} as const;
+
+export const radii = { sm: 10, md: 14, lg: 20, xl: 28, bubble: 18, bubbleTight: 5, menu: 14, tabBar: 32, sheet: 12, full: 9999 };
 
 export const shadows = {
   card: "0 8px 30px -12px rgba(0,0,0,0.45)",
   sheet: "0 -12px 40px -8px rgba(0,0,0,0.5)",
-  glow: "0 0 24px -4px rgba(255,214,10,0.55)",
+  glow: "0 0 22px -6px rgba(255,225,74,0.55)",
+  bar: "0 10px 30px -8px rgba(0,0,0,0.45)",
+  lift: "0 18px 40px -10px rgba(0,0,0,0.55)",
 };
 
-export const blur = { glass: 24, sheetBackdrop: 8 };
+export const blur = { glass: 24, bar: 30, menu: 40, backdrop: 14, banner: 30, saturate: 1.8 };
 
 export const layout = {
-  tabBarHeight: 80,
+  tabBarHeight: 64,
+  tabBarMargin: 12,
+  centerButton: 58,
+  centerLift: 16,
   navBarHeight: 44,
   largeTitleHeight: 52,
+  searchBarHeight: 52,
   edgeSwipeWidth: 24,
+  minTouch: 44,
+  swipeActionWidth: 74,
+  menuWidth: 250,
+  menuItemHeight: 44,
+  reactionBarHeight: 48,
+  inputBarHeight: 56,
 };
 
 export const motion = {
   spring: { type: "spring" as const, stiffness: 420, damping: 38, mass: 0.9 },
   push: { type: "spring" as const, stiffness: 360, damping: 36, mass: 1 },
-  sheet: { type: "spring" as const, stiffness: 380, damping: 34 },
+  sheet: { type: "spring" as const, stiffness: 380, damping: 36 },
+  tabBounce: { type: "spring" as const, stiffness: 700, damping: 14 },
+  swipe: { type: "spring" as const, stiffness: 520, damping: 42 },
+  rubber: { type: "spring" as const, stiffness: 400, damping: 40 },
+  lift: { type: "spring" as const, stiffness: 480, damping: 30 },
+  message: { type: "spring" as const, stiffness: 460, damping: 32 },
+  toggle: { type: "spring" as const, stiffness: 600, damping: 36 },
+  tabFade: 0.12,
   pressScale: 0.97,
+  liftScale: 1.03,
   swipeBackThreshold: 110,
   swipeBackVelocity: 500,
+  swipeOpenThreshold: 50,
+  swipeFullRatio: 0.62,
+  replyThreshold: 64,
+  longPressMs: 420,
+  reactionStagger: 0.035,
+  sheetHalfRatio: 0.52,
+  recedeScale: 0.94,
+  recedeRadius: 12,
+  bannerMs: 4000,
+  rubberMax: 140,
+  rubberCoef: 0.55,
+  pullRefreshThreshold: 80,
+  pullRevealThreshold: 30,
+  refreshHold: 56,
+  refreshMs: 1200,
+  skeletonMs: 900,
+  shimmerSeconds: 1.4,
 };
 
-export const theme = { colors, fonts, radii, shadows, blur, layout, motion };
+/** Vibrations courtes (ms) — navigator.vibrate sur le web, Haptics sur Expo. */
+export const haptics: Record<"light" | "medium" | "success" | "warning", number | number[]> = {
+  light: 8,
+  medium: 14,
+  success: [10, 40, 10],
+  warning: [20, 60, 20],
+};
+
+export const theme = { colors, fonts, typography, radii, shadows, blur, layout, motion, haptics };
 
 /** Convertit le thème en variables CSS pour le web. */
 export function themeToCssVars(mode: ThemeMode): string {
   const c = colors[mode];
   const kebab = (s: string) => s.replace(/[A-Z]/g, (m) => "-" + m.toLowerCase());
   const vars = Object.entries(c).map(([k, v]) => `--wipp-${kebab(k)}:${v};`);
-  vars.push(`--wipp-blur:${blur.glass}px;`, `--wipp-font-display:${fonts.display};`, `--wipp-font-body:${fonts.body};`);
+  for (const [k, t] of Object.entries(typography)) {
+    const n = kebab(k);
+    vars.push(`--wipp-t-${n}-size:${t.size}px;--wipp-t-${n}-weight:${t.weight};--wipp-t-${n}-lh:${t.lineHeight}px;--wipp-t-${n}-ls:${t.tracking}px;`);
+  }
+  vars.push(
+    `--wipp-blur:${blur.glass}px;`,
+    `--wipp-blur-bar:${blur.bar}px;`,
+    `--wipp-blur-menu:${blur.menu}px;`,
+    `--wipp-blur-backdrop:${blur.backdrop}px;`,
+    `--wipp-saturate:${blur.saturate};`,
+    `--wipp-shadow-bar:${shadows.bar};`,
+    `--wipp-shadow-lift:${shadows.lift};`,
+    `--wipp-shadow-glow:${shadows.glow};`,
+    `--wipp-shimmer-duration:${motion.shimmerSeconds}s;`,
+    `--wipp-font-display:${fonts.display};`,
+    `--wipp-font-body:${fonts.body};`,
+  );
   return vars.join("");
 }

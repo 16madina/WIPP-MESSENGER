@@ -1,8 +1,8 @@
 import type { MessageState } from "@/components/native/MessageStatus";
 
 /** Données factices — remplacées plus tard par le backend WiPP. */
-export type Chat = { id: string; name: string; username: string; last: string; time: string; unread: number; online?: boolean | undefined; state?: MessageState | undefined };
-export type Message = { id: string; mine: boolean; text: string; time: string; state?: MessageState | undefined };
+export type Chat = { id: string; name: string; username: string; last: string; time: string; unread: number; online?: boolean | undefined; state?: MessageState | undefined; pinned?: boolean | undefined; muted?: boolean | undefined };
+export type Message = { id: string; mine: boolean; text: string; time: string; state?: MessageState | undefined; reactions?: string[] | undefined; replyTo?: string | undefined; edited?: boolean | undefined; deleted?: boolean | undefined; pinned?: boolean | undefined };
 
 export const chats: Chat[] = [
   { id: "1", name: "Aïcha", username: "aicha.d", last: "On se voit demain ?", time: "21:04", unread: 2, online: true },
@@ -17,10 +17,14 @@ export const chats: Chat[] = [
 
 export const messages: Message[] = [
   { id: "m1", mine: false, text: "Salut ! Tu es dispo demain ?", time: "20:58" },
-  { id: "m2", mine: true, text: "Oui, l'après-midi 🙂", time: "21:00", state: "read" },
-  { id: "m3", mine: false, text: "Super, vers 15h ?", time: "21:02" },
-  { id: "m4", mine: true, text: "Parfait pour moi", time: "21:03", state: "delivered" },
-  { id: "m5", mine: false, text: "On se voit demain ?", time: "21:04" },
+  { id: "m2", mine: false, text: "J'aimerais te montrer le projet", time: "20:58" },
+  { id: "m3", mine: true, text: "Oui, l'après-midi 🙂", time: "21:00", state: "read" },
+  { id: "m4", mine: true, text: "Tu veux passer à quelle heure ?", time: "21:00", state: "read", reactions: ["👍"] },
+  { id: "m5", mine: false, text: "Super, vers 15h ?", time: "21:02" },
+  { id: "m6", mine: false, text: "Je ramène les croissants 🥐", time: "21:02", reactions: ["❤️"] },
+  { id: "m7", mine: false, text: "Et on appelle Karim après", time: "21:02" },
+  { id: "m8", mine: true, text: "Parfait pour moi", time: "21:03", state: "delivered" },
+  { id: "m9", mine: false, text: "On se voit demain ?", time: "21:04" },
 ];
 
 export const calls = [

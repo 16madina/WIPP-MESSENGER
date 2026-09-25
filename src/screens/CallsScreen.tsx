@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
+import { useElastic, useTabReselect } from "@/components/native/useElastic";
 import { motion } from "framer-motion";
 import { ArrowDownLeft, ArrowUpRight, Lock, MoreHorizontal, Phone, PhoneMissed, Plus, Search, Users, Video } from "lucide-react";
 import { Avatar } from "@/components/native/Avatar";
@@ -33,10 +34,14 @@ function CallMeta({ c }: { c: CallEntry }) {
 
 export function CallsScreen() {
   const [filter, setFilter] = useState<(typeof filters)[number]["key"]>("all");
+  const ref = useRef<HTMLDivElement>(null);
+  useTabReselect("calls", ref);
+  const { y } = useElastic(ref);
   const list = callLog.filter((c) => filter === "all" || (filter === "video" ? c.video : !c.video));
 
   return (
-    <div className="no-scrollbar h-full overflow-y-auto bg-wipp-bg" style={{ paddingTop: "env(safe-area-inset-top)" }}>
+    <div ref={ref} className="no-scrollbar h-full overflow-y-auto bg-wipp-bg" style={{ paddingTop: "env(safe-area-inset-top)" }}>
+      <motion.div style={{ y }}>
       <header className="flex items-center justify-between px-4 pb-3 pt-4">
         <WippLogo />
         <div className="flex items-center gap-5 text-wipp-fg">
@@ -75,7 +80,7 @@ export function CallsScreen() {
         })}
       </div>
 
-      <ul style={{ paddingBottom: "calc(var(--tabbar-h) + env(safe-area-inset-bottom) + 40px)" }}>
+      <ul style={{ paddingBottom: "calc(var(--tabbar-space) + env(safe-area-inset-bottom))" }}>
         {list.map((c) => (
           <li key={c.id} className="flex items-center gap-3 pl-4 pr-2">
             <Avatar name={c.name} size={56} presence={c.presence} />
@@ -95,6 +100,7 @@ export function CallsScreen() {
           </li>
         ))}
       </ul>
+      </motion.div>
     </div>
   );
 }
