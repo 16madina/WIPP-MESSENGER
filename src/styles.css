@@ -142,3 +142,36 @@
     color: var(--color-foreground);
   }
 }
+
+/* WIPP — variables injectées depuis src/theme/theme.ts */
+@theme inline {
+  --color-wipp-bg: var(--wipp-background);
+  --color-wipp-surface: var(--wipp-surface);
+  --color-wipp-elevated: var(--wipp-surface-elevated);
+  --color-wipp-fg: var(--wipp-foreground);
+  --color-wipp-muted: var(--wipp-muted);
+  --color-wipp-sep: var(--wipp-separator);
+  --color-wipp-glass: var(--wipp-glass);
+  --color-wipp-glass-border: var(--wipp-glass-border);
+  --color-wipp-accent: var(--wipp-accent);
+  --color-wipp-accent-fg: var(--wipp-accent-foreground);
+  --color-wipp-mine: var(--wipp-bubble-mine);
+  --color-wipp-mine-fg: var(--wipp-bubble-mine-text);
+  --color-wipp-other: var(--wipp-bubble-other);
+  --color-wipp-other-fg: var(--wipp-bubble-other-text);
+  --color-wipp-danger: var(--wipp-danger);
+  --color-wipp-grey: var(--wipp-status-grey);
+  --color-wipp-read: var(--wipp-status-read);
+  --font-display: var(--wipp-font-display);
+  --font-body: var(--wipp-font-body);
+}
+@utility glass {
+  background: var(--wipp-glass);
+  backdrop-filter: blur(var(--wipp-blur)) saturate(180%);
+  -webkit-backdrop-filter: blur(var(--wipp-blur)) saturate(180%);
+}
+@utility no-scrollbar {
+  scrollbar-width: none;
+  &::-webkit-scrollbar { display: none; }
+}
+html, body { overscroll-behavior: none; -webkit-tap-highlight-color: transparent; }
