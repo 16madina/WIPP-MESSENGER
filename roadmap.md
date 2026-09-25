@@ -1,0 +1,4 @@
+- [x] Reproduire le menu Partager et l'entrée Surprise de l'image.
+- [x] Reproduire le choix de surprise et la création d'un message secret avec aperçu.
+- [x] Afficher une carte premium grattable, sa révélation et l'état déjà découvert dans la conversation.
+- [ ] Envoi réel chiffré, réception et notification sans aperçu — en attente d'un accord explicite pour les changements de données.

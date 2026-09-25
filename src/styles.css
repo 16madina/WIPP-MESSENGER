@@ -173,6 +173,11 @@
   --color-wipp-seg-track: var(--wipp-segment-track);
   --color-wipp-seg-thumb: var(--wipp-segment-thumb);
   --color-wipp-backdrop: var(--wipp-backdrop);
+  --color-wipp-surprise-ink: var(--wipp-surprise-ink);
+  --color-wipp-surprise-paper: var(--wipp-surprise-paper);
+  --color-wipp-surprise-gold: var(--wipp-surprise-gold);
+  --color-wipp-surprise-gold-deep: var(--wipp-surprise-gold-deep);
+  --color-wipp-surprise-line: var(--wipp-surprise-line);
   --font-display: var(--wipp-font-display);
   --font-body: var(--wipp-font-body);
 }
@@ -217,6 +222,10 @@
 }
 @keyframes wipp-shimmer { to { transform: translateX(100%); } }
 @keyframes wipp-spin { to { transform: rotate(360deg); } }
+@keyframes wipp-sweep { from { transform: translateX(-34px) rotate(-18deg); opacity: 0; } 40% { opacity: 1; } to { transform: translateX(35px) rotate(-18deg); opacity: 0; } }
+@keyframes wipp-spark { from { opacity: 1; transform: scale(.25); } to { opacity: 0; transform: translate(var(--dx), var(--dy)) scale(1.3); } }
+@utility surprise-sweep { animation: wipp-sweep 1.6s ease-in-out 1; }
+@utility surprise-spark { animation: wipp-spark .55s ease-out forwards; }
 @utility no-scrollbar {
   scrollbar-width: none;
   &::-webkit-scrollbar { display: none; }

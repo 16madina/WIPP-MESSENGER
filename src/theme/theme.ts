@@ -51,6 +51,11 @@ export const colors = {
     segmentThumb: "#636366",
     skeleton: "rgba(255,255,255,0.06)",
     skeletonHighlight: "rgba(255,255,255,0.10)",
+    surpriseInk: "#0A0B10",
+    surprisePaper: "#F8F4E8",
+    surpriseGold: "#F5C94F",
+    surpriseGoldDeep: "#A87520",
+    surpriseLine: "rgba(245,201,79,0.5)",
   },
   light: {
     background: "#F4F4F7",
@@ -85,6 +90,11 @@ export const colors = {
     segmentThumb: "#FFFFFF",
     skeleton: "rgba(0,0,0,0.06)",
     skeletonHighlight: "rgba(255,255,255,0.7)",
+    surpriseInk: "#0A0B10",
+    surprisePaper: "#F8F4E8",
+    surpriseGold: "#D59B25",
+    surpriseGoldDeep: "#87570E",
+    surpriseLine: "rgba(213,155,37,0.5)",
   },
 } as const;
 
@@ -136,6 +146,11 @@ export const layout = {
   menuItemHeight: 44,
   reactionBarHeight: 48,
   inputBarHeight: 56,
+  surpriseCardWidth: 260,
+  surpriseCardHeight: 216,
+  surpriseScratchRadius: 28,
+  surpriseRevealRatio: 0.68,
+  surpriseMessageLimit: 300,
 };
 
 export const motion = {

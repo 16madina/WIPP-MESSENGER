@@ -1,5 +1,6 @@
 import { AnimatePresence, animate, motion, useMotionValue, type PanInfo } from "framer-motion";
 import { useEffect, useLayoutEffect, useRef, type ReactNode } from "react";
+import { createPortal } from "react-dom";
 import { motion as m } from "@/theme/theme";
 import { haptic } from "@/lib/haptics";
 import { useOverlay } from "./Overlay";
@@ -12,17 +13,18 @@ export function Sheet({ open, onClose, children, detent = "half" }: { open: bool
   useEffect(() => {
     setSheetOpen(open);
   }, [open, setSheetOpen]);
-  return (
+  if (typeof document === "undefined") return null;
+  return createPortal(
     <AnimatePresence>
       {open && (
-        <>
-          <motion.div key="bd" className="absolute inset-0 z-50" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose} />
+        <div className="fixed inset-0 z-[80]">
+          <motion.div key="bd" className="absolute inset-0 bg-wipp-backdrop" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose} />
           <SheetPanel key="sheet" onClose={onClose} initial={detent}>
             {children}
           </SheetPanel>
-        </>
+        </div>
       )}
-    </AnimatePresence>
+    </AnimatePresence>, document.body
   );
 }
 
@@ -39,6 +41,12 @@ function SheetPanel({ onClose, initial, children }: { onClose: () => void; initi
     animate(y, offsetFor(initial), m.sheet);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+  useEffect(() => {
+    if (current.current !== initial) {
+      current.current = initial;
+      animate(y, offsetFor(initial), m.sheet);
+    }
+  }, [initial, y]);
 
   const onDragEnd = (_: unknown, i: PanInfo) => {
     const H = ref.current?.offsetHeight ?? 0;
