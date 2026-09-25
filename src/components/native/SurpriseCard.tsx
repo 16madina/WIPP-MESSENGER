@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type PointerEvent } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { HandPointer, Sparkle, Sparkles } from "lucide-react";
+import { Pointer, Sparkle, Sparkles } from "lucide-react";
 import artwork from "@/assets/surprise-card.jpg";
 import { layout } from "@/theme/theme";
 import { haptic } from "@/lib/haptics";
@@ -110,7 +110,7 @@ export function SurpriseCard({ message, preview = false }: { message?: SurpriseM
             <span className="mt-0.5 text-[10px]">Gratte pour le découvrir</span>
             <span className="mt-1 text-[19px] font-black">ẅ</span>
           </div>
-          {!preview && !started && <HandPointer aria-hidden className="surprise-sweep pointer-events-none absolute left-1/2 top-[44%] text-wipp-surprise-paper" size={25} />}
+          {!preview && !started && <Pointer aria-hidden className="surprise-sweep pointer-events-none absolute left-1/2 top-[44%] text-wipp-surprise-paper" size={25} />}
         </motion.div>}
       </AnimatePresence>
       {revealed && !preview && <div className="absolute inset-x-0 bottom-2 flex items-center justify-center gap-2 text-[10px] text-wipp-surprise-ink/70"><span className="inline-flex items-center gap-1"><Sparkles size={11} /> Surprise découverte</span><button type="button" onClick={() => { setReplaying(true); haptic("light"); }} className="min-h-11 px-2 font-semibold underline">Rejouer</button></div>}
