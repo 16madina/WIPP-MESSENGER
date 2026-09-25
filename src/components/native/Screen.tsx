@@ -38,6 +38,7 @@ export function Screen({ title, large = true, onBack, right, bottomInset = true,
         return m.refreshHold;
       }
       if (pull >= m.pullRevealThreshold) onPullReveal?.();
+      return undefined;
     },
   });
   useTabReselect(tabKey, ref);
