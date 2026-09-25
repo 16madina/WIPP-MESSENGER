@@ -105,7 +105,7 @@ export function AuthScreen() {
           <Pressable
             type="button"
             disabled={busy}
-            onClick={async () => { setBusy(true); setError(null); try { await finish(await devSignin({ data: {} })); } finally { setBusy(false); } }}
+            onClick={async () => { setBusy(true); setError(null); try { await finish(await devSignin()); } finally { setBusy(false); } }}
             className="w-full rounded-[14px] border border-wipp-glass-border py-3 text-[14px] font-semibold text-wipp-muted disabled:opacity-60"
           >
             Entrer sans numéro (mode démo)
