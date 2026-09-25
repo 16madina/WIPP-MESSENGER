@@ -3,10 +3,10 @@
 import type { ConfirmationResult } from "firebase/auth";
 
 const config = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY as string | undefined,
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN as string | undefined,
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID as string | undefined,
-  appId: import.meta.env.VITE_FIREBASE_APP_ID as string | undefined,
+  apiKey: import.meta.env["VITE_FIREBASE_API_KEY"] as string | undefined,
+  authDomain: import.meta.env["VITE_FIREBASE_AUTH_DOMAIN"] as string | undefined,
+  projectId: import.meta.env["VITE_FIREBASE_PROJECT_ID"] as string | undefined,
+  appId: import.meta.env["VITE_FIREBASE_APP_ID"] as string | undefined,
 };
 
 export const firebaseConfigured = Boolean(config.apiKey && config.authDomain && config.projectId && config.appId);
@@ -21,7 +21,7 @@ export function toE164(raw: string): string | null {
 async function auth() {
   const { initializeApp, getApps } = await import("firebase/app");
   const { getAuth } = await import("firebase/auth");
-  const app = getApps()[0] ?? initializeApp(config);
+  const app = getApps()[0] ?? initializeApp(config as Record<string, string>);
   const a = getAuth(app);
   a.languageCode = "fr";
   return a;

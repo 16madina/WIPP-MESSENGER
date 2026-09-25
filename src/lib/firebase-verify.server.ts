@@ -6,7 +6,7 @@ const JWKS = createRemoteJWKSet(
 );
 
 export async function verifyFirebasePhone(idToken: string): Promise<{ uid: string; phone: string }> {
-  const projectId = process.env["FIREBASE_PROJECT_ID"] ?? process.env["VITE_FIREBASE_PROJECT_ID"] ?? import.meta.env.VITE_FIREBASE_PROJECT_ID;
+  const projectId = process.env["FIREBASE_PROJECT_ID"] ?? process.env["VITE_FIREBASE_PROJECT_ID"] ?? import.meta.env["VITE_FIREBASE_PROJECT_ID"];
   if (!projectId) throw new Error("Firebase non configuré");
   const { payload } = await jwtVerify(idToken, JWKS, {
     issuer: `https://securetoken.google.com/${projectId}`,
