@@ -890,15 +890,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      wipp_chat_has_block: { Args: { _chat_id: string }; Returns: boolean }
-      wipp_is_admin: { Args: never; Returns: boolean }
-      wipp_is_blocked_between: {
-        Args: { _a: string; _b: string }
-        Returns: boolean
-      }
-      wipp_is_member: { Args: { _chat_id: string }; Returns: boolean }
-      wipp_me: { Args: never; Returns: string }
-      wipp_message_chat: { Args: { _message_id: string }; Returns: string }
+      [_ in never]: never
     }
     Enums: {
       [_ in never]: never
