@@ -10,6 +10,8 @@ import { CallsScreen } from "@/screens/CallsScreen";
 import { ExploreScreen } from "@/screens/ExploreScreen";
 import { ProfileScreen } from "@/screens/ProfileScreen";
 import { AddContactSheet } from "@/screens/OtherScreens";
+import { AuthScreen } from "@/screens/AuthScreen";
+import { useSession } from "@/hooks/useSession";
 
 const tabs: Tab[] = [
   { key: "chats", label: "Discussions", icon: MessageCircle, badge: "9+" },
@@ -21,6 +23,7 @@ const tabs: Tab[] = [
 
 /** Coquille native : cadre mobile 390x844 sur grand écran, plein écran sur téléphone. */
 export function AppShell() {
+  const session = useSession();
   const [tab, setTab] = useState("calls");
   const [sheet, setSheet] = useState(false);
   const selectTab = (k: string) => (k === "wipp" ? setSheet(true) : setTab(k));
@@ -36,6 +39,7 @@ export function AppShell() {
         className="relative h-full w-full overflow-hidden bg-wipp-bg sm:h-[844px] sm:max-h-full sm:w-[390px] sm:rounded-[44px] sm:border sm:border-wipp-glass-border"
         style={{ ["--tabbar-h" as string]: `${layout.tabBarHeight}px` }}
       >
+        {session === undefined ? null : !session ? <AuthScreen /> : <>
         <StackNavigator
           root={
             <div className="relative h-full">
@@ -51,6 +55,7 @@ export function AppShell() {
         <Sheet open={sheet} onClose={() => setSheet(false)}>
           <AddContactSheet onClose={() => setSheet(false)} />
         </Sheet>
+        </>}
       </div>
     </div>
   );
