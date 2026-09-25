@@ -7,14 +7,16 @@ import { Sheet } from "./Sheet";
 import { layout } from "@/theme/theme";
 import { ChatsScreen } from "@/screens/ChatsScreen";
 import { CallsScreen } from "@/screens/CallsScreen";
-import { ContactsScreen, SettingsScreen, AddContactSheet } from "@/screens/OtherScreens";
+import { ExploreScreen } from "@/screens/ExploreScreen";
+import { ProfileScreen } from "@/screens/ProfileScreen";
+import { AddContactSheet } from "@/screens/OtherScreens";
 
 const tabs: Tab[] = [
-  { key: "chats", label: "Chats", icon: MessageCircle, badge: "9+" },
+  { key: "chats", label: "Discussions", icon: MessageCircle, badge: "9+" },
   { key: "calls", label: "Appels", icon: PhoneCall, badge: 1 },
   { key: "wipp", label: "WIPP", icon: SmartphoneNfc, center: true },
   { key: "explore", label: "Explorer", icon: Compass },
-  { key: "me", label: "Moi", icon: User },
+  { key: "profile", label: "Profil", icon: User },
 ];
 
 /** Coquille native : cadre mobile 390x844 sur grand écran, plein écran sur téléphone. */
@@ -26,7 +28,7 @@ export function AppShell() {
   const screen =
     tab === "chats" ? <ChatsScreen onCompose={() => setSheet(true)} /> :
     tab === "calls" ? <CallsScreen /> :
-    tab === "explore" ? <ContactsScreen /> : <SettingsScreen />;
+    tab === "explore" ? <ExploreScreen /> : <ProfileScreen />;
 
   return (
     <div className="flex h-[100dvh] w-full items-center justify-center bg-wipp-bg font-body">
