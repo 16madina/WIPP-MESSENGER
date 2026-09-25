@@ -185,7 +185,7 @@ export const theme = { colors, fonts, typography, radii, shadows, blur, layout, 
 /** Convertit le thème en variables CSS pour le web. */
 export function themeToCssVars(mode: ThemeMode): string {
   const c = colors[mode];
-  const kebab = (s: string) => s.replace(/[A-Z0-9]+/g, (m) => "-" + m.toLowerCase());
+  const kebab = (s: string) => s.replace(/[A-Z]/g, (m) => "-" + m.toLowerCase());
   const vars = Object.entries(c).map(([k, v]) => `--wipp-${kebab(k)}:${v};`);
   for (const [k, t] of Object.entries(typography)) {
     const n = kebab(k);
