@@ -561,6 +561,7 @@ export type Database = {
       }
       wipp_profiles: {
         Row: {
+          auth_user_id: string | null
           avatar_url: string | null
           bio: string
           created_at: string
@@ -574,6 +575,7 @@ export type Database = {
           username: string
         }
         Insert: {
+          auth_user_id?: string | null
           avatar_url?: string | null
           bio?: string
           created_at?: string
@@ -587,6 +589,7 @@ export type Database = {
           username: string
         }
         Update: {
+          auth_user_id?: string | null
           avatar_url?: string | null
           bio?: string
           created_at?: string
