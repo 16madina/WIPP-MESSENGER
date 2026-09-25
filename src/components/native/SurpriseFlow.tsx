@@ -9,8 +9,9 @@ import { type SurpriseMessage } from "./SurpriseCard";
 import { SurpriseAssistant } from "./SurpriseAssistant";
 import { layout, motion as m } from "@/theme/theme";
 import { haptic } from "@/lib/haptics";
+import { chats } from "@/data/mock";
 
-type Stage = "closed" | "share" | "compose";
+type Stage = "closed" | "share" | "compose" | "stickers" | "contacts";
 type SurpriseKind = "scratch" | "gift" | "confetti" | "countdown";
 const content = [
   { label: "Galerie", icon: Images }, { label: "Caméra", icon: Camera }, { label: "Stickers", icon: Smile },
@@ -32,7 +33,7 @@ const animations = [
 ] as const;
 
 /** Parcours local de composition ; seuls les messages à gratter sont simulés dans la conversation. */
-export function SurpriseFlow({ onSend, onUnavailable }: { onSend: (message: SurpriseMessage) => void; onUnavailable: (label: string) => void }) {
+export function SurpriseFlow({ onSend, onShareContent, onUnavailable }: { onSend: (message: SurpriseMessage) => void; onShareContent: (text: string) => void; onUnavailable: (label: string) => void }) {
   const reducedMotion = useReducedMotion();
   const galleryRef = useRef<HTMLInputElement>(null);
   const cameraRef = useRef<HTMLInputElement>(null);
@@ -47,10 +48,20 @@ export function SurpriseFlow({ onSend, onUnavailable }: { onSend: (message: Surp
     if (label === "Galerie") galleryRef.current?.click();
     else if (label === "Caméra") cameraRef.current?.click();
     else if (label === "Document") documentRef.current?.click();
-    else { close(); onUnavailable(label); }
+    else if (label === "Stickers") setStage("stickers");
+    else if (label === "Contact") setStage("contacts");
+    else if (label === "Localisation") {
+      if (!navigator.geolocation) { onUnavailable("Localisation"); return; }
+      navigator.geolocation.getCurrentPosition(
+        ({ coords }) => { onShareContent(`📍 Ma position : https://maps.google.com/?q=${coords.latitude.toFixed(5)},${coords.longitude.toFixed(5)}`); close(); },
+        () => onUnavailable("Localisation non autorisée"),
+        { timeout: 10000, enableHighAccuracy: false },
+      );
+    }
   };
   const fileChosen = (label: string) => (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.target.files?.length) { close(); onUnavailable(`${label} sélectionné`); }
+    const file = event.target.files?.[0];
+    if (file) { onShareContent(`${label === "Document" ? "📎" : "🖼️"} ${file.name}`); close(); }
     event.target.value = "";
   };
   const send = () => {
@@ -82,6 +93,10 @@ export function SurpriseFlow({ onSend, onUnavailable }: { onSend: (message: Surp
            <ChevronRight size={25} className="shrink-0" />
          </Pressable>
       </div>)}
+       {(stage === "stickers" || stage === "contacts") && <div className="px-4 text-wipp-fg">
+         <div className="mb-4 flex items-center justify-between"><h2 className="type-title2">{stage === "stickers" ? "Stickers" : "Contact"}</h2><Pressable aria-label="Retour au partage" onClick={() => setStage("share")}><X size={22} /></Pressable></div>
+         {stage === "stickers" ? <div className="grid grid-cols-4 gap-2">{["❤️", "✨", "😂", "🥰", "👏", "🎉", "🌸", "💛"].map(sticker => <Pressable key={sticker} aria-label={`Envoyer ${sticker}`} onClick={() => { onShareContent(sticker); close(); }} className="share-tile flex h-16 items-center justify-center rounded-[12px] text-[32px]">{sticker}</Pressable>)}</div> : <div className="max-h-[310px] overflow-y-auto">{chats.map(chat => <Pressable key={chat.id} onClick={() => { onShareContent(`👤 ${chat.name}`); close(); }} className="flex w-full items-center border-b border-wipp-glass-border py-2 text-left type-body">{chat.name}</Pressable>)}</div>}
+       </div>}
       {stage === "compose" && (
       <div className="no-scrollbar h-[calc(100%-24px)] overflow-y-auto px-4 pb-8 text-wipp-fg">
         <div className="flex items-center justify-between"><span className="w-11" /><span className="type-nav">Surprise</span><Pressable aria-label="Fermer" onClick={close}><X size={20} /></Pressable></div>
