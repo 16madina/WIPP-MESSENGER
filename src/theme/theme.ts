@@ -8,7 +8,7 @@
 export type ThemeMode = "light" | "dark";
 
 const palette = {
-  yellow: "#FFD60A", // jaune WIPP (points « lu »)
+  yellow: "#FFE14A", // jaune WIPP (points « lu »)
   yellowDeep: "#E6B800",
   red: "#FF453A",
   green: "#30D158",
@@ -17,8 +17,8 @@ const palette = {
 
 export const colors = {
   dark: {
-    background: "#07080C",
-    surface: "#12141B",
+    background: "#05070A",
+    surface: "#11151C",
     surfaceElevated: "#1B1E27",
     foreground: "#F5F6F8",
     muted: "#8B8F9C",
@@ -77,7 +77,7 @@ export const shadows = {
 export const blur = { glass: 24, sheetBackdrop: 8 };
 
 export const layout = {
-  tabBarHeight: 58,
+  tabBarHeight: 80,
   navBarHeight: 44,
   largeTitleHeight: 52,
   edgeSwipeWidth: 24,

@@ -28,3 +28,27 @@ export const calls = [
   { id: "c2", name: "Aïcha", kind: "audio", missed: true, time: "Hier" },
   { id: "c3", name: "Léa", kind: "audio", missed: false, time: "Mar." },
 ];
+
+export type Story = { name: string; badge?: "add" | "call" | "video" };
+export const stories: Story[] = [
+  { name: "Votre story", badge: "add" },
+  { name: "Samira" },
+  { name: "Julien", badge: "call" },
+  { name: "Maya", badge: "video" },
+  { name: "Alex" },
+  { name: "Inès" },
+];
+
+export type CallEntry = {
+  id: string; name: string; type: "out" | "in" | "missed" | "video" | "group";
+  time: string; video: boolean; locked?: boolean; presence?: "online" | "active" | "busy";
+};
+export const callLog: CallEntry[] = [
+  { id: "a", name: "Alex", type: "out", time: "09:42", video: false, locked: true, presence: "online" },
+  { id: "b", name: "Samira", type: "in", time: "08:17", video: false, presence: "online" },
+  { id: "c", name: "Maya", type: "video", time: "Hier 19:24", video: true, presence: "active" },
+  { id: "d", name: "Léa", type: "missed", time: "Hier 14:08", video: false, locked: true, presence: "busy" },
+  { id: "e", name: "Thomas", type: "out", time: "mar. 18:36", video: false, presence: "online" },
+  { id: "f", name: "Inès", type: "video", time: "mar. 12:14", video: true, presence: "online" },
+  { id: "g", name: "Famille Diallo", type: "group", time: "dim. 20:31", video: false },
+];
