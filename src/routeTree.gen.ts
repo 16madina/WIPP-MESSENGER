@@ -10,33 +10,43 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ApiSurpriseAiRouteImport } from './routes/api/surprise-ai'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiSurpriseAiRoute = ApiSurpriseAiRouteImport.update({
+  id: '/api/surprise-ai',
+  path: '/api/surprise-ai',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/api/surprise-ai': typeof ApiSurpriseAiRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/api/surprise-ai': typeof ApiSurpriseAiRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/api/surprise-ai': typeof ApiSurpriseAiRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths: '/' | '/api/surprise-ai'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to: '/' | '/api/surprise-ai'
+  id: '__root__' | '/' | '/api/surprise-ai'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  ApiSurpriseAiRoute: typeof ApiSurpriseAiRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +58,19 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/surprise-ai': {
+      id: '/api/surprise-ai'
+      path: '/api/surprise-ai'
+      fullPath: '/api/surprise-ai'
+      preLoaderRoute: typeof ApiSurpriseAiRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ApiSurpriseAiRoute: ApiSurpriseAiRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
