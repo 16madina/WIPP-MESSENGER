@@ -85,7 +85,7 @@ export function SurpriseCard({ message, preview = false }: { message?: SurpriseM
       let erased = 0, samples = 0;
       for (let py = 0; py < c.height; py += 12) for (let px = 0; px < c.width; px += 12) {
         samples++;
-        if (data[(py * c.width + px) * 4 + 3] < 64) erased++;
+        if ((data[(py * c.width + px) * 4 + 3] ?? 255) < 64) erased++;
       }
       if (erased / samples >= m.surpriseRevealRatio) finish();
     }

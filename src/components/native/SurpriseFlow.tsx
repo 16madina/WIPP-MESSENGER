@@ -1,10 +1,9 @@
 import { useState } from "react";
-import { motion } from "framer-motion";
-import { Camera, ChevronLeft, Clock3, Contact, FileText, Gift, Image, LockKeyhole, MapPin, PackageOpen, PartyPopper, Sparkles, Sticker, X } from "lucide-react";
+import { Camera, ChevronLeft, Clock3, Contact, FileText, Gift, Image, LockKeyhole, MapPin, PartyPopper, Sparkles, Sticker, X } from "lucide-react";
 import { Pressable } from "./Pressable";
 import { Sheet } from "./Sheet";
 import { SurpriseCard, type SurpriseDesign, type SurpriseMessage } from "./SurpriseCard";
-import { layout, motion as m } from "@/theme/theme";
+import { layout } from "@/theme/theme";
 import { haptic } from "@/lib/haptics";
 
 type Stage = "closed" | "share" | "choices" | "compose";

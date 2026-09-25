@@ -132,7 +132,7 @@ export function ChatScreen({ chat }: { chat: Chat }) {
   }, []);
   useEffect(() => {
     scroller.current?.scrollTo({ top: scroller.current.scrollHeight, behavior: "smooth" });
-  }, [list.length, kb]);
+  }, [list.length, surprises.length, kb]);
 
   const patch = (id: string, p: Partial<Message>) => setList((l) => l.map((x) => (x.id === id ? { ...x, ...p } : x)));
 
