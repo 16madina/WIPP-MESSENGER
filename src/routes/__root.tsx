@@ -10,7 +10,7 @@ import {
 import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
-import { fonts, themeToCssVars } from "../theme/theme";
+import { themeToCssVars } from "../theme/theme";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 
 function NotFoundComponent() {
@@ -89,8 +89,6 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         rel: "stylesheet",
         href: appCss,
       },
-      { rel: "preconnect", href: "https://fonts.googleapis.com" },
-      { rel: "stylesheet", href: fonts.googleHref },
       { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
     ],
   }),
@@ -105,7 +103,7 @@ function RootShell({ children }: { children: ReactNode }) {
     <html lang="fr" className="dark">
       <head>
         <HeadContent />
-        <style>{`:root{${themeToCssVars("light")}}@media (prefers-color-scheme: dark){:root{${themeToCssVars("dark")}}}:root.dark{${themeToCssVars("dark")}}`}</style>
+        <style>{`:root{${themeToCssVars("light")}}@media (prefers-color-scheme: dark){:root{${themeToCssVars("dark")}}}:root.dark{${themeToCssVars("dark")}}:root.light{${themeToCssVars("light")}}`}</style>
       </head>
       <body>
         {children}
