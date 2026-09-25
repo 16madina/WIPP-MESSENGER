@@ -5,6 +5,7 @@ import { Camera, ChevronRight, Clock3, Contact, FileText, Gift, Heart, Image, Ma
 import { Pressable } from "./Pressable";
 import { Sheet } from "./Sheet";
 import { type SurpriseMessage } from "./SurpriseCard";
+import { SurpriseAssistant } from "./SurpriseAssistant";
 import { layout, motion as m } from "@/theme/theme";
 import { haptic } from "@/lib/haptics";
 
@@ -65,6 +66,7 @@ export function SurpriseFlow({ onSend, onUnavailable }: { onSend: (message: Surp
           <textarea aria-label="Écris ton message" value={secret} maxLength={layout.surpriseMessageLimit} onChange={e => setSecret(e.target.value)} placeholder="Écris ton message…" className="h-[76px] w-full resize-none bg-transparent type-body text-wipp-fg outline-none placeholder:text-wipp-muted" />
           <div className="text-right type-caption2 text-wipp-muted">{secret.length}/{layout.surpriseMessageLimit}</div>
         </div>
+        <SurpriseAssistant onText={setSecret} />
         <div className="mt-4 grid grid-cols-2 gap-2.5" role="group" aria-label="Type de surprise">
           {options.map(({ id, title, icon: Icon, mark }) => <Pressable key={id} aria-pressed={kind === id} onClick={() => { setKind(id); haptic("light"); }} className={`relative flex h-[116px] flex-col items-start justify-end overflow-hidden rounded-[8px] border p-3 text-left transition-colors ${kind === id ? "border-wipp-surprise-choice-border bg-wipp-surprise-choice-raised" : "border-wipp-glass-border bg-wipp-surprise-choice"}`}>
             <span aria-hidden className="pointer-events-none absolute -right-2 -top-7 text-[94px] font-light leading-none text-wipp-fg/10">{mark}</span>
