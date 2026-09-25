@@ -1,10 +1,10 @@
 import { useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { createPortal } from "react-dom";
 import { Camera, ChevronRight, Clock3, Contact, FileText, Gift, Heart, Image, MapPin, Moon, PartyPopper, Plane, Sparkles, Sticker, Sun, WandSparkles, X } from "lucide-react";
 import { Pressable } from "./Pressable";
 import { Sheet } from "./Sheet";
-import { SurpriseCard, type SurpriseMessage } from "./SurpriseCard";
+import { type SurpriseMessage } from "./SurpriseCard";
 import { layout, motion as m } from "@/theme/theme";
 import { haptic } from "@/lib/haptics";
 
@@ -31,6 +31,7 @@ const animations = [
 
 /** Parcours local de composition ; seuls les messages à gratter sont simulés dans la conversation. */
 export function SurpriseFlow({ onSend, onUnavailable }: { onSend: (message: SurpriseMessage) => void; onUnavailable: (label: string) => void }) {
+  const reducedMotion = useReducedMotion();
   const [stage, setStage] = useState<Stage>("closed");
   const [secret, setSecret] = useState("");
   const [kind, setKind] = useState<SurpriseKind>("scratch");
@@ -75,8 +76,7 @@ export function SurpriseFlow({ onSend, onUnavailable }: { onSend: (message: Surp
         <Pressable onClick={() => { setDrawerOpen(true); haptic("light"); }} className="mt-4 flex w-full items-center gap-3 rounded-[8px] border border-wipp-glass-border bg-wipp-surface px-3 text-left text-wipp-fg">
           <WandSparkles size={20} className="text-wipp-surprise-gold" /><span className="flex-1 type-subhead">{animation ?? "Ajouter une animation"}</span><ChevronRight size={19} className="text-wipp-muted" />
         </Pressable>
-        {animation && <motion.div key={animation} initial={{ opacity: 0, scale: 0.75, y: 12 }} animate={{ opacity: 1, scale: 1, y: 0 }} transition={m.spring} className="mt-4 flex items-center justify-center gap-3 rounded-[8px] border border-wipp-surprise-line bg-wipp-surprise-ink py-4 text-wipp-surprise-gold"><span className="text-[35px]">{animations.find(item => item.name === animation)?.mark}</span><span className="type-headline">{animation}</span></motion.div>}
-        {kind === "scratch" && <div className="mt-4"><SurpriseCard preview /></div>}
+        {animation && <motion.div key={animation} initial={{ opacity: 0, scale: 0.75, y: 12 }} animate={{ opacity: 1, scale: 1, y: 0 }} transition={m.spring} className="mt-4 flex items-center justify-center gap-3 rounded-[8px] border border-wipp-surprise-line bg-wipp-surprise-ink py-4 text-wipp-surprise-gold"><motion.span animate={reducedMotion ? undefined : { scale: [1, 1.22, 1], rotate: [0, 8, 0] }} transition={reducedMotion ? undefined : { duration: 2, repeat: Infinity, ease: "easeInOut" }} className="text-[35px]">{animations.find(item => item.name === animation)?.mark}</motion.span><span className="type-headline">{animation}</span></motion.div>}
         <Pressable onClick={send} disabled={!secret.trim()} className="mt-5 w-full rounded-full bg-wipp-surprise-gold py-3 type-headline text-wipp-surprise-ink disabled:opacity-40">Envoyer la surprise</Pressable>
       </div>)}
     </Sheet>
