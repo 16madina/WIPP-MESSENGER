@@ -1,8 +1,8 @@
 import type { MessageState } from "@/components/native/MessageStatus";
 
 /** Données factices — remplacées plus tard par le backend WiPP. */
-export type Chat = { id: string; name: string; username: string; last: string; time: string; unread: number; online?: boolean; state?: MessageState };
-export type Message = { id: string; mine: boolean; text: string; time: string; state?: MessageState };
+export type Chat = { id: string; name: string; username: string; last: string; time: string; unread: number; online?: boolean | undefined; state?: MessageState | undefined };
+export type Message = { id: string; mine: boolean; text: string; time: string; state?: MessageState | undefined };
 
 export const chats: Chat[] = [
   { id: "1", name: "Aïcha", username: "aicha.d", last: "On se voit demain ?", time: "21:04", unread: 2, online: true },

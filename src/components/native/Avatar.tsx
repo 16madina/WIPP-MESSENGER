@@ -1,4 +1,4 @@
-export function Avatar({ name, size = 52, online }: { name: string; size?: number; online?: boolean }) {
+export function Avatar({ name, size = 52, online }: { name: string; size?: number; online?: boolean | undefined }) {
   return (
     <span className="relative inline-flex shrink-0" style={{ width: size, height: size }}>
       <span
