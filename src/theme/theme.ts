@@ -19,14 +19,14 @@ const palette = {
 
 export const colors = {
   dark: {
-    background: "#05070A",
-    surface: "#11151C",
-    surfaceElevated: "#1B1E27",
+    background: "#0B1224",
+    surface: "#141D33",
+    surfaceElevated: "#1D2946",
     foreground: "#F5F6F8",
-    muted: "#8B8F9C",
+    muted: "#8B93AC",
     separator: "rgba(255,255,255,0.08)",
-    glass: "rgba(22,24,32,0.55)",
-    glassStrong: "rgba(30,32,42,0.72)",
+    glass: "rgba(24,32,56,0.55)",
+    glassStrong: "rgba(32,42,72,0.72)",
     glassBorder: "rgba(255,255,255,0.10)",
     glassHighlight: "rgba(255,255,255,0.22)",
     backdrop: "rgba(0,0,0,0.35)",
