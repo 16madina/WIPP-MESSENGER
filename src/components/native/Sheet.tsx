@@ -5,7 +5,7 @@ import { motion as m } from "@/theme/theme";
 import { haptic } from "@/lib/haptics";
 import { useOverlay } from "./Overlay";
 
-export type Detent = "half" | "full";
+export type Detent = "half" | "share" | "full";
 
 /** Feuille modale iOS : deux hauteurs (moitié / plein écran) avec accroche en spring. */
 export function Sheet({ open, onClose, children, detent = "half" }: { open: boolean; onClose: () => void; children: ReactNode; detent?: Detent }) {
@@ -34,7 +34,7 @@ function SheetPanel({ onClose, initial, children }: { onClose: () => void; initi
   const current = useRef<Detent>(initial);
   const offsetFor = (d: Detent) => {
     const H = ref.current?.offsetHeight ?? 0;
-    return d === "full" ? 0 : H * (1 - m.sheetHalfRatio);
+    return d === "full" ? 0 : H * (1 - (d === "share" ? m.sheetShareRatio : m.sheetHalfRatio));
   };
   useLayoutEffect(() => {
     y.set(ref.current?.offsetHeight ?? 800);
@@ -50,13 +50,13 @@ function SheetPanel({ onClose, initial, children }: { onClose: () => void; initi
 
   const onDragEnd = (_: unknown, i: PanInfo) => {
     const H = ref.current?.offsetHeight ?? 0;
-    const half = offsetFor("half");
+    const half = offsetFor(initial === "share" ? "share" : "half");
     const projected = y.get() + i.velocity.y * 0.18;
     if (projected > half + (H - half) * 0.4) {
       onClose();
       return;
     }
-    const next: Detent = projected < half / 2 ? "full" : "half";
+    const next: Detent = projected < half / 2 ? "full" : initial === "share" ? "share" : "half";
     if (next !== current.current) haptic("light");
     current.current = next;
     animate(y, offsetFor(next), { ...m.sheet, velocity: i.velocity.y });
@@ -65,7 +65,7 @@ function SheetPanel({ onClose, initial, children }: { onClose: () => void; initi
   return (
     <motion.div
       ref={ref}
-      className="absolute inset-x-0 bottom-0 z-50 rounded-t-[12px] border-t border-wipp-glass-border bg-wipp-elevated"
+      className={`absolute inset-x-0 bottom-0 z-50 rounded-t-[26px] border-t border-wipp-glass-border ${initial === "share" ? "bg-wipp-share-panel" : "bg-wipp-elevated"}`}
       style={{ y, top: "calc(env(safe-area-inset-top) + 44px)", paddingBottom: "calc(env(safe-area-inset-bottom) + 20px)" }}
       exit={{ y: "100%" }}
       transition={m.sheet}

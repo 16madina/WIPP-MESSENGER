@@ -59,6 +59,11 @@ export const colors = {
     surpriseChoice: "#303746",
     surpriseChoiceRaised: "#485160",
     surpriseChoiceBorder: "rgba(235,239,248,0.26)",
+    sharePanel: "#171C21",
+    shareTile: "#191B1B",
+    shareTileHighlight: "#29271C",
+    shareTileBorder: "rgba(215,189,112,0.22)",
+    shareSubtitle: "#B3B9C4",
   },
   light: {
     background: "#F4F4F7",
@@ -101,6 +106,11 @@ export const colors = {
     surpriseChoice: "#E3E5EA",
     surpriseChoiceRaised: "#C9CDD6",
     surpriseChoiceBorder: "rgba(48,55,70,0.38)",
+    sharePanel: "#171C21",
+    shareTile: "#191B1B",
+    shareTileHighlight: "#29271C",
+    shareTileBorder: "rgba(215,189,112,0.22)",
+    shareSubtitle: "#B3B9C4",
   },
 } as const;
 
@@ -159,6 +169,7 @@ export const layout = {
   surpriseMessageLimit: 300,
   surpriseChoiceHeight: 116,
   surpriseAnimationDrawerWidth: 340,
+  shareTileHeight: 91,
 };
 
 export const motion = {
@@ -182,6 +193,7 @@ export const motion = {
   longPressMs: 420,
   reactionStagger: 0.035,
   sheetHalfRatio: 0.52,
+  sheetShareRatio: 0.66,
   recedeScale: 0.94,
   recedeRadius: 12,
   bannerMs: 4000,
