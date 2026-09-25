@@ -1,29 +1,32 @@
 import { useState } from "react";
-import { MessageCircle, Phone, Users, Settings } from "lucide-react";
+import { MessageCircle, PhoneCall, Compass, User, SmartphoneNfc } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { StackNavigator } from "./StackNavigator";
 import { TabBar, type Tab } from "./TabBar";
 import { Sheet } from "./Sheet";
 import { layout } from "@/theme/theme";
 import { ChatsScreen } from "@/screens/ChatsScreen";
-import { CallsScreen, ContactsScreen, SettingsScreen, AddContactSheet } from "@/screens/OtherScreens";
+import { CallsScreen } from "@/screens/CallsScreen";
+import { ContactsScreen, SettingsScreen, AddContactSheet } from "@/screens/OtherScreens";
 
 const tabs: Tab[] = [
-  { key: "chats", label: "Discussions", icon: MessageCircle, badge: 3 },
-  { key: "calls", label: "Appels", icon: Phone },
-  { key: "contacts", label: "Contacts", icon: Users },
-  { key: "settings", label: "Réglages", icon: Settings },
+  { key: "chats", label: "Chats", icon: MessageCircle, badge: "9+" },
+  { key: "calls", label: "Appels", icon: PhoneCall, badge: 1 },
+  { key: "wipp", label: "WIPP", icon: SmartphoneNfc, center: true },
+  { key: "explore", label: "Explorer", icon: Compass },
+  { key: "me", label: "Moi", icon: User },
 ];
 
 /** Coquille native : cadre mobile 390x844 sur grand écran, plein écran sur téléphone. */
 export function AppShell() {
-  const [tab, setTab] = useState("chats");
+  const [tab, setTab] = useState("calls");
   const [sheet, setSheet] = useState(false);
+  const selectTab = (k: string) => (k === "wipp" ? setSheet(true) : setTab(k));
 
   const screen =
     tab === "chats" ? <ChatsScreen onCompose={() => setSheet(true)} /> :
     tab === "calls" ? <CallsScreen /> :
-    tab === "contacts" ? <ContactsScreen /> : <SettingsScreen />;
+    tab === "explore" ? <ContactsScreen /> : <SettingsScreen />;
 
   return (
     <div className="flex h-[100dvh] w-full items-center justify-center bg-wipp-bg font-body">
@@ -39,7 +42,7 @@ export function AppShell() {
                   {screen}
                 </motion.div>
               </AnimatePresence>
-              <TabBar tabs={tabs} active={tab} onChange={setTab} />
+              <TabBar tabs={tabs} active={tab} onChange={selectTab} />
             </div>
           }
         />

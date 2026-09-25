@@ -160,6 +160,7 @@
   --color-wipp-other: var(--wipp-bubble-other);
   --color-wipp-other-fg: var(--wipp-bubble-other-text);
   --color-wipp-danger: var(--wipp-danger);
+  --color-wipp-success: var(--wipp-success);
   --color-wipp-grey: var(--wipp-status-grey);
   --color-wipp-read: var(--wipp-status-read);
   --font-display: var(--wipp-font-display);
