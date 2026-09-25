@@ -169,7 +169,7 @@ export const layout = {
   surpriseMessageLimit: 300,
   surpriseChoiceHeight: 116,
   surpriseAnimationDrawerWidth: 340,
-  shareTileHeight: 91,
+  shareTileHeight: 120,
 };
 
 export const motion = {

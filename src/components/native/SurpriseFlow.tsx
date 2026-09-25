@@ -76,8 +76,8 @@ export function SurpriseFlow({ onSend, onUnavailable }: { onSend: (message: Surp
          <div className="grid grid-cols-3 gap-2">
            {content.map(({ label, icon: Icon }) => <Pressable key={label} onClick={() => chooseContent(label)} className="share-tile flex min-h-0 flex-col items-center justify-center gap-1 rounded-[14px] text-wipp-fg" style={{ height: layout.shareTileHeight }}><Icon className="share-gold-icon text-wipp-surprise-gold" size={34} strokeWidth={1.8} fill={label === "Localisation" || label === "Contact" ? "currentColor" : "none"} /><span className="text-[12px] font-semibold">{label}</span></Pressable>)}
          </div>
-         <Pressable aria-label="Surprise ✨" onClick={() => { haptic("light"); setStage("compose"); }} className="share-surprise mt-3 flex min-h-[92px] w-full items-center rounded-[20px] px-2 text-left text-wipp-surprise-gold">
-           <img src={shareGift} width={768} height={768} alt="" className="-ml-1 h-[88px] w-[88px] shrink-0 object-contain" />
+         <Pressable aria-label="Surprise ✨" onClick={() => { haptic("light"); setStage("compose"); }} className="share-surprise mt-4 flex min-h-[105px] w-full items-center rounded-[20px] px-2 text-left text-wipp-surprise-gold">
+           <img src={shareGift} width={768} height={768} alt="" className="-ml-1 h-[100px] w-[100px] shrink-0 object-contain" />
            <span className="min-w-0 flex-1"><span className="flex items-center gap-1 text-[21px] font-bold leading-6">Surprise <Sparkles size={18} /></span><span className="mt-1 block text-[11px] leading-4 text-wipp-share-subtitle">Transforme tes messages en expériences.</span></span>
            <ChevronRight size={25} className="shrink-0" />
          </Pressable>
