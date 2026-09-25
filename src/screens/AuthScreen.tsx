@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { useServerFn } from "@tanstack/react-start";
 import type { ConfirmationResult } from "firebase/auth";
 import { supabase } from "@/integrations/supabase/client";
-import { signinPhone, signupPhone, resetPasswordPhone, devSignin } from "@/lib/auth.functions";
+import { signinPhone, signupPhone, resetPasswordPhone, devSignin, devLoginAvailable } from "@/lib/auth.functions";
 import { confirmSmsCode, firebaseConfigured, sendSmsCode, toE164 } from "@/lib/firebase-phone";
 import { WippLogo } from "@/components/native/WippLogo";
 import { Pressable } from "@/components/native/Pressable";
