@@ -561,6 +561,7 @@ export type Database = {
       }
       wipp_profiles: {
         Row: {
+          auth_user_id: string | null
           avatar_url: string | null
           bio: string
           created_at: string
@@ -574,6 +575,7 @@ export type Database = {
           username: string
         }
         Insert: {
+          auth_user_id?: string | null
           avatar_url?: string | null
           bio?: string
           created_at?: string
@@ -587,6 +589,7 @@ export type Database = {
           username: string
         }
         Update: {
+          auth_user_id?: string | null
           avatar_url?: string | null
           bio?: string
           created_at?: string
@@ -887,7 +890,15 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      wipp_chat_has_block: { Args: { _chat_id: string }; Returns: boolean }
+      wipp_is_admin: { Args: never; Returns: boolean }
+      wipp_is_blocked_between: {
+        Args: { _a: string; _b: string }
+        Returns: boolean
+      }
+      wipp_is_member: { Args: { _chat_id: string }; Returns: boolean }
+      wipp_me: { Args: never; Returns: string }
+      wipp_message_chat: { Args: { _message_id: string }; Returns: string }
     }
     Enums: {
       [_ in never]: never
