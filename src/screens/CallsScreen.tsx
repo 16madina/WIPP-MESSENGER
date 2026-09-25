@@ -75,7 +75,7 @@ export function CallsScreen() {
         })}
       </div>
 
-      <ul style={{ paddingBottom: "calc(var(--tabbar-h) + env(safe-area-inset-bottom) + 40px)" }}>
+      <ul style={{ paddingBottom: "calc(var(--tabbar-space) + env(safe-area-inset-bottom))" }}>
         {list.map((c) => (
           <li key={c.id} className="flex items-center gap-3 pl-4 pr-2">
             <Avatar name={c.name} size={56} presence={c.presence} />

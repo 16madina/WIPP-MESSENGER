@@ -54,7 +54,7 @@ export function SwipeRow({ leading, trailing, children }: { leading: SwipeAction
   };
 
   const renderAction = (a: SwipeAction, scale: typeof leadScale, dim: typeof othersL | null) => (
-    <button key={a.key} type="button" onClick={() => run(a)} className="flex h-full flex-col items-center justify-center gap-1 text-white" style={{ width: W }}>
+    <button key={a.key} type="button" onClick={() => run(a)} className="flex h-full flex-col items-center justify-center gap-1 text-wipp-knob" style={{ width: W }}>
       <motion.span style={{ scale, opacity: dim ?? 1 }} className="flex flex-col items-center gap-1">
         <a.icon size={22} />
         <span className="type-caption2 font-medium">{a.label}</span>
