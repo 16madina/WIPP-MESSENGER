@@ -25,6 +25,8 @@ export function AuthScreen() {
   const [password, setPassword] = useState("");
   const [code, setCode] = useState("");
   const [busy, setBusy] = useState(false);
+  const [demo, setDemo] = useState(false);
+  useState(() => { devLoginAvailable().then(setDemo).catch(() => {}); });
   const [error, setError] = useState<string | null>(null);
   const confirmation = useRef<ConfirmationResult | null>(null);
 
