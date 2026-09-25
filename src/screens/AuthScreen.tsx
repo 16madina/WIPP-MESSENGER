@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { useServerFn } from "@tanstack/react-start";
 import type { ConfirmationResult } from "firebase/auth";
 import { supabase } from "@/integrations/supabase/client";
-import { signinPhone, signupPhone, resetPasswordPhone } from "@/lib/auth.functions";
+import { signinPhone, signupPhone, resetPasswordPhone, devSignin } from "@/lib/auth.functions";
 import { confirmSmsCode, firebaseConfigured, sendSmsCode, toE164 } from "@/lib/firebase-phone";
 import { WippLogo } from "@/components/native/WippLogo";
 import { Pressable } from "@/components/native/Pressable";
@@ -101,6 +101,16 @@ export function AuthScreen() {
           {mode === "signin" ? "Nouveau sur WIPP ? Créer un compte" : "Déjà un compte ? Se connecter"}
         </Pressable>
         <div id="wipp-recaptcha" />
+        {import.meta.env.DEV && (
+          <Pressable
+            type="button"
+            disabled={busy}
+            onClick={async () => { setBusy(true); setError(null); try { await finish(await devSignin()); } finally { setBusy(false); } }}
+            className="w-full rounded-[14px] border border-wipp-glass-border py-3 text-[14px] font-semibold text-wipp-muted disabled:opacity-60"
+          >
+            Entrer sans numéro (mode démo)
+          </Pressable>
+        )}
       </motion.form>
     </div>
   );
