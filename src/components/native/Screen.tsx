@@ -5,11 +5,11 @@ import { NavHeader } from "./NavHeader";
 type Props = {
   title: string;
   large?: boolean;
-  onBack?: () => void;
-  right?: ReactNode;
+  onBack?: (() => void) | undefined;
+  right?: ReactNode | undefined;
   bottomInset?: boolean;
   children: ReactNode;
-  footer?: ReactNode;
+  footer?: ReactNode | undefined;
 };
 
 /** Écran défilant avec NavHeader. */

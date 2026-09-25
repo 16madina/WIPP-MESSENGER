@@ -7,8 +7,8 @@ type Props = {
   title: string;
   scrollY: MotionValue<number>;
   large?: boolean;
-  onBack?: () => void;
-  right?: ReactNode;
+  onBack?: (() => void) | undefined;
+  right?: ReactNode | undefined;
 };
 
 /** En-tête à grand titre qui se réduit en titre compact au défilement. */
@@ -34,7 +34,7 @@ export function NavHeader({ title, scrollY, large = true, onBack, right }: Props
             )}
           </div>
           <motion.span
-            style={{ opacity: compactOpacity }}
+            style={{ opacity: large ? compactOpacity : 1 }}
             className="font-display text-[17px] font-semibold text-wipp-fg"
           >
             {title}
