@@ -11,3 +11,4 @@
 - Thème : src/theme/theme.ts est la seule source des tokens ; injecté en variables CSS --wipp-* dans __root et exposé en classes Tailwind wipp-*. Pourquoi : portable vers React Native.
 - Navigation native : AppShell + StackNavigator (pile en mémoire, push/pop spring, retour par balayage) dans src/components/native. Pourquoi : sensation d'app native, découpage réutilisable en Expo.
 - Logique serveur en fonctions serveur TanStack (src/lib/*.functions.ts), pas en Edge Functions : la plateforme bloque la création de nouvelles Edge Functions sur ce projet.
+- Surprises de conversation : parcours et carte à gratter dans src/components/native, données temporaires dans ChatScreen ; aucune donnée secrète ne sort vers le serveur tant que le chiffrement et le type de message ne sont pas prêts. Pourquoi : garder une démonstration UI sûre et réutilisable.
