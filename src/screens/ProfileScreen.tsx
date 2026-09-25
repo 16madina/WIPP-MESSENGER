@@ -1,15 +1,17 @@
-import { QrCode, Smartphone, Lock, Palette, Trash2, ChevronRight, type LucideIcon } from "lucide-react";
+import { QrCode, Smartphone, Lock, Palette, Trash2, LogOut, ChevronRight, type LucideIcon } from "lucide-react";
 import { Screen } from "@/components/native/Screen";
 import { Avatar } from "@/components/native/Avatar";
 import { Pressable } from "@/components/native/Pressable";
+import { supabase } from "@/integrations/supabase/client";
 
-type Item = { icon: LucideIcon; label: string; danger?: boolean };
+type Item = { icon: LucideIcon; label: string; danger?: boolean; onPress?: () => void };
 
 /** Profil : mon profil, mon QR, appareils, confidentialité, apparence, suppression de compte. */
 export function ProfileScreen() {
   const groups: Item[][] = [
     [{ icon: QrCode, label: "Mon code QR" }, { icon: Smartphone, label: "Appareils connectés" }],
     [{ icon: Lock, label: "Confidentialité" }, { icon: Palette, label: "Apparence" }],
+    [{ icon: LogOut, label: "Se déconnecter", onPress: () => void supabase.auth.signOut() }],
     [{ icon: Trash2, label: "Supprimer mon compte", danger: true }],
   ];
   return (
