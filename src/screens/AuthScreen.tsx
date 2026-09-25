@@ -1,9 +1,9 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { useServerFn } from "@tanstack/react-start";
 import type { ConfirmationResult } from "firebase/auth";
 import { supabase } from "@/integrations/supabase/client";
-import { signinPhone, signupPhone, resetPasswordPhone, devSignin } from "@/lib/auth.functions";
+import { signinPhone, signupPhone, resetPasswordPhone, devSignin, devLoginAvailable } from "@/lib/auth.functions";
 import { confirmSmsCode, firebaseConfigured, sendSmsCode, toE164 } from "@/lib/firebase-phone";
 import { WippLogo } from "@/components/native/WippLogo";
 import { Pressable } from "@/components/native/Pressable";
@@ -25,6 +25,8 @@ export function AuthScreen() {
   const [password, setPassword] = useState("");
   const [code, setCode] = useState("");
   const [busy, setBusy] = useState(false);
+  const [demo, setDemo] = useState(false);
+  useEffect(() => { devLoginAvailable().then(setDemo).catch(() => {}); }, []);
   const [error, setError] = useState<string | null>(null);
   const confirmation = useRef<ConfirmationResult | null>(null);
 
@@ -101,7 +103,7 @@ export function AuthScreen() {
           {mode === "signin" ? "Nouveau sur WIPP ? Créer un compte" : "Déjà un compte ? Se connecter"}
         </Pressable>
         <div id="wipp-recaptcha" />
-        {import.meta.env.DEV && (
+        {demo && (
           <Pressable
             type="button"
             disabled={busy}
