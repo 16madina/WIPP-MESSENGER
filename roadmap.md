@@ -1,4 +1,5 @@
 - [x] Reproduire le menu Partager et l'entrée Surprise de l'image.
 - [x] Reproduire le choix de surprise et la création d'un message secret avec aperçu.
 - [x] Afficher une carte premium grattable, sa révélation et l'état déjà découvert dans la conversation.
+- [x] Ouvrir directement la création Surprise : message, quatre choix gris, puis tiroir d’animations à droite avec aperçu temporaire.
 - [ ] Envoi réel chiffré, réception et notification sans aperçu — en attente d'un accord explicite pour les changements de données.
