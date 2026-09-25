@@ -73,11 +73,11 @@ export const signinPhone = createServerFn({ method: "POST" })
   });
 
 /** TEMPORAIRE : indique si le mode démo est activé côté serveur. */
-export const devLoginAvailable = createServerFn({ method: "GET" }).handler(async () => process.env["WIPP_DEV_LOGIN"] === "1");
+export const devLoginAvailable = createServerFn({ method: "GET" }).handler(async () => !!process.env["WIPP_DEV_LOGIN"]);
 
 /** TEMPORAIRE (développement) : connexion sans SMS à un compte démo. À retirer avant publication. */
 export const devSignin = createServerFn({ method: "POST" }).handler(async (): Promise<Result> => {
-  if (process.env["WIPP_DEV_LOGIN"] !== "1") return { ok: false, error: "Mode démo désactivé" };
+  if (!process.env["WIPP_DEV_LOGIN"]) return { ok: false, error: "Mode démo désactivé" };
   const { admin, signIn } = await ctx();
   const id = "u_demo";
   const email = `${id}@users.wipp.app`;
