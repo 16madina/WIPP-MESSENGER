@@ -13,7 +13,7 @@ export function ExploreScreen() {
   const suggestions = chats.slice(0, 5);
 
   return (
-    <Screen title="Explorer">
+    <Screen title="Explorer" tabKey="explore">
       <div className="px-4 pb-3">
         <label className="glass flex items-center gap-2 rounded-[14px] border border-wipp-glass-border px-3 py-2.5">
           <Search size={18} className="text-wipp-muted" />
