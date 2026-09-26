@@ -29,13 +29,13 @@ export function ChromaSticker({ src, fallback, label, size }: { src: string; fal
         const image = context.getImageData(0, 0, canvas.width, canvas.height);
         const data = image.data;
         for (let i = 0; i < data.length; i += 4) {
-          const r = data[i];
-          const g = data[i + 1];
-          const b = data[i + 2];
+          const r = data[i] ?? 0;
+          const g = data[i + 1] ?? 0;
+          const b = data[i + 2] ?? 0;
           // Fond vert dominant ; conserver le jaune, la peau et les autres couleurs du personnage.
           const dominance = g - Math.max(r, b);
           const alpha = Math.max(0, Math.min(1, (timings.stickerKeyGreenStrong - dominance) / (timings.stickerKeyGreenStrong - timings.stickerKeyGreenStart)));
-          data[i + 3] = Math.round(data[i + 3] * alpha);
+          data[i + 3] = Math.round((data[i + 3] ?? 0) * alpha);
           if (alpha > 0 && alpha < 1) data[i + 1] = Math.round(g * alpha + Math.max(r, b) * (1 - alpha));
         }
         context.putImageData(image, 0, 0);
