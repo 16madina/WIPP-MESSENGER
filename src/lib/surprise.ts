@@ -1,5 +1,4 @@
 import { Clock3, Gift, Images, PartyPopper, type LucideIcon } from "lucide-react";
-import amourArt from "@/assets/animation-amour.jpg";
 import beauteArt from "@/assets/animation-beaute.jpg";
 import journeeArt from "@/assets/animation-journee.jpg";
 import nuitArt from "@/assets/animation-nuit.jpg";
