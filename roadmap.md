@@ -12,5 +12,5 @@
 - [x] Animer les 86 stickers avec la méthode « Stop ! » : image intacte, partie isolée par clip-path, éclair en couche, geste réglé par sticker (src/lib/sticker-gestures.ts + GestureSticker).
 - [x] Découper et intégrer les 20 stickers comiques dans un onglet « Mood ».
 - [x] Découper et intégrer les 20 stickers comiques #2 dans l'onglet « Mood ».
-- [ ] Lire « Va là-bas ! » depuis son MP4 avec fond vert retiré sur canvas — lecteur prêt, vidéo non encore fournie (public/stickers/fun/va-la-bas.mp4).
+- [x] Remplacer toutes les découpes par les vrais stickers du dépôt 16madina/wipp : 7 packs (elle, lui, fun, fun2 filmés en MP4 fond vert ; sig, moji, scene en PNG), 192 stickers, onglets Tout / Pour elle / Pour lui / Mood / Amusant / Drôle / WIPP / Général.
 - [ ] Remplacer les stickers provisoires de Général et ajouter Pour lui, Amusant, Drôle — en attente des images.
