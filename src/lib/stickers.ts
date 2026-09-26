@@ -103,6 +103,53 @@ export const wippStickers = [
   { id: "wipp-prends-soin-de-toi", label: "Prends soin de toi !", image: s30.url, motion: "kiss", accent: "💛" },
 ] as const;
 
+import m01 from "@/assets/stickers/mood/va-la-bas.png.asset.json";
+import m02 from "@/assets/stickers/mood/stop.png.asset.json";
+import m03 from "@/assets/stickers/mood/hahaha.png.asset.json";
+import m04 from "@/assets/stickers/mood/pas-aujourdhui.png.asset.json";
+import m05 from "@/assets/stickers/mood/le-boss.png.asset.json";
+import m06 from "@/assets/stickers/mood/trop-tot.png.asset.json";
+import m07 from "@/assets/stickers/mood/ca-marche.png.asset.json";
+import m08 from "@/assets/stickers/mood/valide.png.asset.json";
+import m09 from "@/assets/stickers/mood/bisousss.png.asset.json";
+import m10 from "@/assets/stickers/mood/nimporte-quoi.png.asset.json";
+import m11 from "@/assets/stickers/mood/bien-joue.png.asset.json";
+import m12 from "@/assets/stickers/mood/ecoute-bien.png.asset.json";
+import m13 from "@/assets/stickers/mood/laisse-moi.png.asset.json";
+import m14 from "@/assets/stickers/mood/cool.png.asset.json";
+import m15 from "@/assets/stickers/mood/vraiment.png.asset.json";
+import m16 from "@/assets/stickers/mood/oh-non.png.asset.json";
+import m17 from "@/assets/stickers/mood/yesss.png.asset.json";
+import m18 from "@/assets/stickers/mood/dodo.png.asset.json";
+import m19 from "@/assets/stickers/mood/tchip.png.asset.json";
+import m20 from "@/assets/stickers/mood/focus.png.asset.json";
+
+/** Collection « Mood » : les 20 stickers comiques. */
+export const moodStickers = [
+  { id: "mood-va-la-bas", label: "Va là-bas !", image: m01.url, motion: "wave", accent: "👉" },
+  { id: "mood-stop", label: "Stop !", image: m02.url, motion: "pop", accent: "✋" },
+  { id: "mood-hahaha", label: "HAHAHA !", image: m03.url, motion: "laugh", accent: "😂" },
+  { id: "mood-pas-aujourdhui", label: "Pas aujourd’hui !", image: m04.url, motion: "shrug", accent: "☕" },
+  { id: "mood-le-boss", label: "Le boss !", image: m05.url, motion: "pop", accent: "👑" },
+  { id: "mood-trop-tot", label: "Trop tôt !", image: m06.url, motion: "sleep", accent: "😴" },
+  { id: "mood-ca-marche", label: "Ça marche !", image: m07.url, motion: "bounce", accent: "💸" },
+  { id: "mood-valide", label: "Validé !", image: m08.url, motion: "pop", accent: "✓" },
+  { id: "mood-bisousss", label: "Bisousss !", image: m09.url, motion: "kiss", accent: "♥" },
+  { id: "mood-nimporte-quoi", label: "N’importe quoi !", image: m10.url, motion: "shrug", accent: "😤" },
+  { id: "mood-bien-joue", label: "Bien joué !", image: m11.url, motion: "wink", accent: "👍" },
+  { id: "mood-ecoute-bien", label: "Écoute bien !", image: m12.url, motion: "ponder", accent: "👂" },
+  { id: "mood-laisse-moi", label: "Laisse-moi !", image: m13.url, motion: "wave", accent: "✋" },
+  { id: "mood-cool", label: "Cool !", image: m14.url, motion: "wink", accent: "😎" },
+  { id: "mood-vraiment", label: "Vraiment ?!", image: m15.url, motion: "ponder", accent: "?" },
+  { id: "mood-oh-non", label: "Oh non…", image: m16.url, motion: "shock", accent: "🤦" },
+  { id: "mood-yesss", label: "Yesss !", image: m17.url, motion: "applause", accent: "🎉" },
+  { id: "mood-dodo", label: "Dodo…", image: m18.url, motion: "sleep", accent: "Zzz" },
+  { id: "mood-tchip", label: "Tchip !", image: m19.url, motion: "shrug", accent: "😒" },
+  { id: "mood-focus", label: "Focus !", image: m20.url, motion: "pop", accent: "👑" },
+] as const;
+
+export type MoodSticker = (typeof moodStickers)[number];
+
 export type WippSticker = (typeof wippStickers)[number];
-export const allImageStickers = [...elleStickers, ...wippStickers];
+export const allImageStickers = [...elleStickers, ...wippStickers, ...moodStickers];
 export const findImageSticker = (id: string) => allImageStickers.find(sticker => sticker.id === id);

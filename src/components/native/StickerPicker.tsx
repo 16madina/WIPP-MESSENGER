@@ -5,9 +5,9 @@ import { layout } from "@/theme/theme";
 import { Pressable } from "./Pressable";
 import { Sheet } from "./Sheet";
 import { AnimatedSticker } from "./AnimatedSticker";
-import { allImageStickers, elleStickers, type ElleSticker, type WippSticker } from "@/lib/stickers";
+import { allImageStickers, elleStickers, moodStickers, type ElleSticker, type MoodSticker, type WippSticker } from "@/lib/stickers";
 
-type ImageSticker = ElleSticker | WippSticker;
+type ImageSticker = ElleSticker | WippSticker | MoodSticker;
 
 /** Catalogue de démonstration : les images WIPP seront ajoutées collection par collection. */
 const collections = [
