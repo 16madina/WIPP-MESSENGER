@@ -13,7 +13,8 @@ import { messages as seed, type Chat, type Message } from "@/data/mock";
 import { motion as m } from "@/theme/theme";
 import { haptic } from "@/lib/haptics";
 import { SurpriseFlow } from "@/components/native/SurpriseFlow";
-import { SurpriseCard, type SurpriseMessage } from "@/components/native/SurpriseCard";
+import { SurpriseReveal } from "@/components/native/SurpriseReveal";
+import type { Surprise } from "@/lib/surprise";
 
 type Pos = "single" | "first" | "middle" | "last";
 const EMOJIS = ["❤️", "👍", "😂", "😮", "😢", "🙏"];
@@ -116,7 +117,7 @@ export function ChatScreen({ chat }: { chat: Chat }) {
   const { pop } = useStack();
   const { openMenu, notify } = useOverlay();
   const [list, setList] = useState<Message[]>(seed);
-  const [surprises, setSurprises] = useState<SurpriseMessage[]>([]);
+  const [surprises, setSurprises] = useState<Surprise[]>([]);
   const [text, setText] = useState("");
   const [replyTo, setReplyTo] = useState<Message | null>(null);
   const [editing, setEditing] = useState<Message | null>(null);
@@ -232,7 +233,7 @@ export function ChatScreen({ chat }: { chat: Chat }) {
             })}
             {surprises.map((surprise) => (
               <motion.div key={surprise.id} initial={{ opacity: 0, y: 28, scale: 0.94 }} animate={{ opacity: 1, y: 0, scale: 1 }} transition={m.message} className={`mt-3 flex ${surprise.mine ? "justify-end" : "justify-start"}`}>
-                <div className="relative"><SurpriseCard message={surprise} /><span className="absolute bottom-1 right-3 type-caption2 text-wipp-surprise-paper/70">{surprise.time}</span></div>
+                <div className="relative"><SurpriseReveal surprise={surprise} /><span className="absolute bottom-1 right-3 type-caption2 text-wipp-surprise-paper/70">{surprise.time}</span></div>
               </motion.div>
             ))}
           </AnimatePresence>
