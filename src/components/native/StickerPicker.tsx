@@ -5,15 +5,16 @@ import { layout } from "@/theme/theme";
 import { Pressable } from "./Pressable";
 import { Sheet } from "./Sheet";
 import { AnimatedSticker } from "./AnimatedSticker";
-import { allImageStickers, elleStickers, type ElleSticker, type WippSticker } from "@/lib/stickers";
+import { allImageStickers, elleStickers, moodStickers, type ElleSticker, type MoodSticker, type WippSticker } from "@/lib/stickers";
 
-type ImageSticker = ElleSticker | WippSticker;
+type ImageSticker = ElleSticker | WippSticker | MoodSticker;
 
 /** Catalogue de démonstration : les images WIPP seront ajoutées collection par collection. */
 const collections = [
   { id: "tout", label: "Tout", stickers: allImageStickers },
   { id: "general", label: "Général", stickers: ["❤️", "✨", "😂", "🥰", "👏", "🎉", "🌸", "💛", "😍", "😘", "👍", "🔥", "🙏", "💐", "🎁", "😎", "🤩", "😊", "💖", "🌟"] },
   { id: "pour-elle", label: "Pour elle", stickers: elleStickers },
+  { id: "mood", label: "Mood", stickers: moodStickers },
   { id: "pour-lui", label: "Pour lui", stickers: [] },
   { id: "amusant", label: "Amusant", stickers: [] },
   { id: "drole", label: "Drôle", stickers: [] },
@@ -38,7 +39,7 @@ export function StickerPicker({ open, onClose, onSend, onSendImage }: { open: bo
           ))}
         </div>
         <div role="tabpanel" id="sticker-panel" aria-labelledby={`sticker-tab-${collection.id}`} className="no-scrollbar min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-4">
-          {collection.id === "pour-elle" || collection.id === "tout" ? (
+          {collection.id === "pour-elle" || collection.id === "tout" || collection.id === "mood" ? (
             <div className="grid grid-cols-2 gap-2 pb-4">
               {(collection.stickers as readonly ImageSticker[]).map((sticker) => (
                 <Pressable key={sticker.id} aria-label={`Envoyer ${sticker.label}`} onClick={() => { onSendImage(sticker.id); haptic("light"); onClose(); }} className="flex min-w-0 flex-col items-center justify-center rounded-[8px] bg-wipp-surface px-1 pb-2">
