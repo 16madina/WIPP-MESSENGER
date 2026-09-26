@@ -95,7 +95,33 @@ function AnimationOverlay({ animationId, onDone }: { animationId: string | null;
   if (typeof document === "undefined") return null;
   return createPortal(<AnimatePresence>{item && (
     <motion.div key={item.id} className="pointer-events-none fixed inset-0 z-[120] flex items-center justify-center" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0, transition: { duration: m.surpriseAnimationExitMs / 1000 } }} aria-live="polite" aria-label={`Animation ${item.label}`}>
-      <motion.img src={item.art} alt="" width={768} height={768} className="h-[min(72vw,420px)] w-[min(72vw,420px)] object-contain drop-shadow-[0_10px_28px_rgba(255,60,90,0.4)]" initial={reduced ? { opacity: 0 } : { scale: 0.35, opacity: 0, y: 36 }} animate={reduced ? { opacity: [0, 1, 1, 0] } : { scale: [0.35, 1.08, 1, 1, 0.94], opacity: [0, 1, 1, 1, 0], y: [36, 0, -10, 8, -18] }} transition={{ duration: m.surpriseAnimationMs / 1000, times: reduced ? [0, 0.08, 0.86, 1] : [0, 0.14, 0.34, 0.82, 1], ease: "easeOut" }} />
+      {item.id === "amour-monstre"
+        ? <MonstreScene art={item.art} reduced={!!reduced} />
+        : <motion.img src={item.art} alt="" width={768} height={768} className="h-[min(72vw,420px)] w-[min(72vw,420px)] object-contain drop-shadow-[0_10px_28px_rgba(255,60,90,0.4)]" initial={reduced ? { opacity: 0 } : { scale: 0.35, opacity: 0, y: 36 }} animate={reduced ? { opacity: [0, 1, 1, 0] } : { scale: [0.35, 1.08, 1, 1, 0.94], opacity: [0, 1, 1, 1, 0], y: [36, 0, -10, 8, -18] }} transition={{ duration: m.surpriseAnimationMs / 1000, times: reduced ? [0, 0.08, 0.86, 1] : [0, 0.14, 0.34, 0.82, 1], ease: "easeOut" }} />}
     </motion.div>
   )}</AnimatePresence>, document.body);
+}
+
+/** Petit monstre : rebond à l'arrivée, balancement, cœurs qui montent autour. */
+function MonstreScene({ art, reduced }: { art: string; reduced: boolean }) {
+  const d = m.surpriseAnimationMs / 1000;
+  const hearts = [
+    { left: "12%", delay: 0.5, size: 30 }, { left: "78%", delay: 0.9, size: 38 },
+    { left: "24%", delay: 1.4, size: 22 }, { left: "66%", delay: 1.9, size: 26 },
+    { left: "45%", delay: 2.4, size: 20 }, { left: "88%", delay: 2.9, size: 24 },
+  ];
+  return (
+    <div className="relative flex h-full w-full items-center justify-center">
+      <motion.img src={art} alt="" className="h-[min(74vw,430px)] w-[min(74vw,430px)] object-contain drop-shadow-[0_12px_32px_rgba(255,60,140,0.45)]"
+        initial={reduced ? { opacity: 0 } : { scale: 0.2, opacity: 0, y: 60 }}
+        animate={reduced ? { opacity: [0, 1, 1, 0] } : { scale: [0.2, 1.12, 0.96, 1.04, 1, 1, 0.9], opacity: [0, 1, 1, 1, 1, 1, 0], y: [60, -8, 4, 0, 0, 0, -24], rotate: [0, -3, 3, -2, 0, 0, 0] }}
+        transition={{ duration: d, times: reduced ? [0, 0.08, 0.86, 1] : [0, 0.16, 0.28, 0.38, 0.5, 0.86, 1], ease: "easeOut" }} />
+      {!reduced && hearts.map((h, i) => (
+        <motion.span key={i} className="absolute bottom-[18%] text-wipp-surprise-bright" style={{ left: h.left, fontSize: h.size }}
+          initial={{ opacity: 0, y: 0, scale: 0.4 }}
+          animate={{ opacity: [0, 1, 1, 0], y: [0, -90, -190, -280], scale: [0.4, 1, 1, 0.7] }}
+          transition={{ duration: 2.6, delay: h.delay, ease: "easeOut" }}>♥</motion.span>
+      ))}
+    </div>
+  );
 }
