@@ -3,4 +3,6 @@
 - [x] Afficher une carte premium grattable, sa révélation et l'état déjà découvert dans la conversation.
 - [x] Ouvrir directement la création Surprise : message, quatre choix gris, puis tiroir d’animations à droite avec aperçu temporaire.
 - [x] Ajouter un aperçu interactif avant envoi et six illustrations pour les choix d’animation.
+- [x] Jouer l’animation une fois après la révélation (pause courte, calque transparent, 4–5 s), puis proposer ✨ pour la rejouer.
+- [ ] Intégrer les dix visuels Amour séparés à fond transparent et leurs mouvements — en attente des dix fichiers individuels.
 - [ ] Envoi réel chiffré, réception et notification sans aperçu — en attente d'un accord explicite pour les changements de données.
