@@ -5,14 +5,14 @@ import artwork from "@/assets/surprise-card.jpg";
 import { layout } from "@/theme/theme";
 import { haptic } from "@/lib/haptics";
 
-export type SurpriseDesign = "heart" | "stars" | "crown" | "neon";
+export type SurpriseDesign = string;
 export type SurpriseMessage = { id: string; text: string; design: SurpriseDesign; time: string; mine: boolean };
 
-const motifs: Record<SurpriseDesign, string> = { heart: "♥", stars: "✦", crown: "♛", neon: "♡" };
+const motifs: Record<string, string> = { heart: "♥", stars: "✦", crown: "♛", neon: "♡" };
 const revealedKey = (id: string) => `wipp:surprise:revealed:${id}`;
 
 /** La surface est réellement effacée au doigt ; l'état de découverte reste sur cet appareil. */
-export function SurpriseCard({ message, preview = false, demo = false }: { message?: SurpriseMessage; preview?: boolean; demo?: boolean }) {
+export function SurpriseCard({ message, preview = false, demo = false, onRevealComplete }: { message?: SurpriseMessage; preview?: boolean; demo?: boolean; onRevealComplete?: () => void }) {
   const canvas = useRef<HTMLCanvasElement>(null);
   const image = useRef<HTMLImageElement | null>(null);
   const drawing = useRef(false);
@@ -50,12 +50,13 @@ export function SurpriseCard({ message, preview = false, demo = false }: { messa
   }, [message?.id, preview, revealed]);
 
   const finish = () => {
-    if (!message) return;
+    if (!message || revealed) return;
     if (!demo) localStorage.setItem(revealedKey(message.id), "1");
     haptic("success");
     setRevealed(true);
     setSparks(Array.from({ length: 15 }, (_, i) => ({ id: Date.now() + i, x: 130, y: 108, dx: Math.cos(i * 2.4) * 95, dy: Math.sin(i * 2.4) * 90 })));
     window.setTimeout(() => setSparks([]), 700);
+    onRevealComplete?.();
   };
 
   const scratch = (e: PointerEvent<HTMLCanvasElement>) => {
@@ -97,7 +98,7 @@ export function SurpriseCard({ message, preview = false, demo = false }: { messa
       <div className="absolute inset-0 flex flex-col items-center justify-center overflow-hidden bg-wipp-surprise-paper px-5 text-center text-wipp-surprise-ink">
         <span className="pointer-events-none absolute -left-5 -top-4 rotate-[-15deg] text-[100px] text-wipp-surprise-gold/50">✦</span>
         <span className="pointer-events-none absolute -bottom-8 -right-3 text-[112px] text-wipp-surprise-gold/50">✦</span>
-        <span className="relative text-[30px] text-wipp-surprise-gold-deep">{motifs[message?.design ?? "heart"]}</span>
+        <span className="relative text-[30px] text-wipp-surprise-gold-deep">{(motifs[message?.design ?? "heart"] ?? "♥")}</span>
         <span className="relative break-words font-semibold italic text-[16px] leading-6">{preview ? "Ton message secret" : message?.text}</span>
         <span className="relative mt-3 text-[18px] font-black text-wipp-surprise-ink">ẅ</span>
       </div>
