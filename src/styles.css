@@ -186,6 +186,10 @@
   --color-wipp-share-tile-highlight: var(--wipp-share-tile-highlight);
   --color-wipp-share-tile-border: var(--wipp-share-tile-border);
   --color-wipp-share-subtitle: var(--wipp-share-subtitle);
+  --color-wipp-surprise-panel: var(--wipp-surprise-panel);
+  --color-wipp-surprise-tile: var(--wipp-surprise-tile);
+  --color-wipp-surprise-secondary: var(--wipp-surprise-secondary);
+  --color-wipp-surprise-bright: var(--wipp-surprise-bright);
   --font-display: var(--wipp-font-display);
   --font-body: var(--wipp-font-body);
 }
@@ -225,6 +229,27 @@
   background: linear-gradient(110deg, var(--wipp-share-tile-highlight), var(--wipp-surprise-ink) 64%, var(--wipp-share-tile-highlight));
   border: 1px solid var(--wipp-surprise-gold);
   box-shadow: 0 0 18px var(--wipp-surprise-gold-deep), inset 0 0 18px var(--wipp-surprise-gold-deep);
+}
+@utility surprise-option {
+  background: radial-gradient(circle at 50% 14%, var(--wipp-surprise-tile-top), var(--wipp-surprise-tile) 72%);
+  border: 1px solid var(--wipp-share-tile-border);
+  box-shadow: inset 0 1px 0 var(--wipp-glass-highlight);
+}
+@utility surprise-option-active {
+  border: 1px solid var(--wipp-surprise-bright);
+  box-shadow: 0 0 15px var(--wipp-surprise-glow), inset 0 0 12px var(--wipp-surprise-glow);
+}
+@utility surprise-input-glow {
+  box-shadow: 0 0 17px var(--wipp-surprise-glow), inset 0 0 10px var(--wipp-surprise-glow);
+}
+@utility surprise-action {
+  background: linear-gradient(125deg, var(--wipp-surprise-tile), var(--wipp-surprise-panel));
+  border: 1px solid var(--wipp-surprise-gold-deep);
+  box-shadow: inset 0 1px 0 var(--wipp-share-tile-border);
+}
+@utility surprise-send {
+  background: linear-gradient(105deg, var(--wipp-surprise-bright), var(--wipp-surprise-gold), var(--wipp-surprise-bright));
+  box-shadow: 0 0 22px var(--wipp-surprise-glow);
 }
 @utility shimmer {
   position: relative;

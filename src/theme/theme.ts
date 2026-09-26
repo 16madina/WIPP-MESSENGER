@@ -64,6 +64,12 @@ export const colors = {
     shareTileHighlight: "#29271C",
     shareTileBorder: "rgba(215,189,112,0.22)",
     shareSubtitle: "#B3B9C4",
+    surprisePanel: "#10171B",
+    surpriseTile: "#171B1B",
+    surpriseTileTop: "#29271D",
+    surpriseSecondary: "#AEB7CD",
+    surpriseBright: "#FFE34F",
+    surpriseGlow: "rgba(255,214,46,0.45)",
   },
   light: {
     background: "#F4F4F7",
@@ -111,6 +117,12 @@ export const colors = {
     shareTileHighlight: "#29271C",
     shareTileBorder: "rgba(215,189,112,0.22)",
     shareSubtitle: "#B3B9C4",
+    surprisePanel: "#10171B",
+    surpriseTile: "#171B1B",
+    surpriseTileTop: "#29271D",
+    surpriseSecondary: "#AEB7CD",
+    surpriseBright: "#FFE34F",
+    surpriseGlow: "rgba(255,214,46,0.45)",
   },
 } as const;
 
@@ -168,6 +180,9 @@ export const layout = {
   surpriseRevealRatio: 0.68,
   surpriseMessageLimit: 300,
   surpriseChoiceHeight: 116,
+  surpriseComposeInset: 44,
+  surpriseArtworkHeight: 86,
+  surpriseOptionHeight: 146,
   surpriseAnimationDrawerWidth: 340,
   shareTileHeight: 120,
 };

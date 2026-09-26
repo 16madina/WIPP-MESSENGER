@@ -8,7 +8,7 @@ import { layout } from "@/theme/theme";
 const tones = ["Tendre", "Drôle", "Poétique", "Enthousiaste", "Sobre"] as const;
 
 /** Assistant : décrit l'occasion + ton, le texte généré arrive en direct dans le champ, modifiable. */
-export function SurpriseAssistant({ onText }: { onText: (text: string) => void }) {
+export function SurpriseAssistant({ onText, compact = false }: { onText: (text: string) => void; compact?: boolean }) {
   const [open, setOpen] = useState(false);
   const [occasion, setOccasion] = useState("");
   const [tone, setTone] = useState<string>(tones[0]);
@@ -54,8 +54,8 @@ export function SurpriseAssistant({ onText }: { onText: (text: string) => void }
   };
 
   if (!open) return (
-    <Pressable onClick={() => { setOpen(true); haptic("light"); }} className="mt-2 flex w-full items-center gap-2 rounded-[8px] border border-wipp-surprise-line bg-wipp-surprise-ink px-3 py-2.5 text-left text-wipp-surprise-gold">
-      <WandSparkles size={18} /><span className="type-subhead">Écrire avec l'assistant</span>
+    <Pressable onClick={() => { setOpen(true); haptic("light"); }} className={compact ? "surprise-send flex shrink-0 items-center gap-1 rounded-full px-2.5 py-1 text-[12px] font-semibold text-wipp-surprise-ink" : "mt-2 flex w-full items-center gap-2 rounded-[8px] border border-wipp-surprise-line bg-wipp-surprise-ink px-3 py-2.5 text-left text-wipp-surprise-gold"}>
+      <WandSparkles size={compact ? 16 : 18} /><span>{compact ? "Assistant ✧" : "Écrire avec l'assistant"}</span>
     </Pressable>
   );
   return (
