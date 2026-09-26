@@ -4,16 +4,7 @@ import journeeArt from "@/assets/animation-journee.jpg";
 import nuitArt from "@/assets/animation-nuit.jpg";
 import voyageArt from "@/assets/animation-voyage.jpg";
 import amitieArt from "@/assets/animation-amitie.jpg";
-import amour01 from "@/assets/amour/amour-01.png";
-import amour02 from "@/assets/amour/amour-02.png";
-import amour03 from "@/assets/amour/amour-03.png";
-import amour04 from "@/assets/amour/amour-04.png";
-import amour05 from "@/assets/amour/amour-05.png";
-import amour06 from "@/assets/amour/amour-06.png";
-import amour07 from "@/assets/amour/amour-07.png";
-import amour08 from "@/assets/amour/amour-08.png";
-import amour09 from "@/assets/amour/amour-09.png";
-import amour10 from "@/assets/amour/amour-10.png";
+import amourMonstre from "@/assets/amour/amour-monstre.png";
 
 /**
  * Modèle d'une WIPP Surprise. Type, design et animation sont indépendants :
@@ -68,23 +59,14 @@ export const countdownChoices = [
   { seconds: 3600, label: "1 heure" },
 ];
 
-/** Les dix animations Amour sont des choix indépendants, issus de la planche transparente fournie. */
+/** Les animations Amour sont des choix indépendants, fournis un par un avec fond transparent. */
 export const amourAnimations: SurpriseAnimationItem[] = [
-  { id: "amour-coeurs", label: "Cœurs", art: amour01 },
-  { id: "amour-bouquet", label: "Bouquet", art: amour02 },
-  { id: "amour-nounours", label: "Nounours", art: amour03 },
-  { id: "amour-ballons", label: "Ballons", art: amour04 },
-  { id: "amour-cadeaux", label: "Cadeaux", art: amour05 },
-  { id: "amour-coeur-fleurs", label: "Cœur fleuri", art: amour06 },
-  { id: "amour-champagne", label: "Champagne", art: amour07 },
-  { id: "amour-feux-artifice", label: "Feux d’artifice", art: amour08 },
-  { id: "amour-coeurs-petales", label: "Cœurs et pétales", art: amour09 },
-  { id: "amour-enveloppe", label: "Enveloppe", art: amour10 },
+  { id: "amour-monstre", label: "Petit monstre", art: amourMonstre },
 ];
 
 /** Catégories affichées au premier niveau du tiroir. */
 export const surpriseAnimationCategories: SurpriseAnimationCategory[] = [
-  { id: "amour", label: "Amour", art: amour03 },
+  { id: "amour", label: "Amour", art: amourMonstre },
   { id: "beaute", label: "Beauté", art: beauteArt },
   { id: "bonne-journee", label: "Bonne journée", art: journeeArt },
   { id: "bonne-nuit", label: "Bonne nuit", art: nuitArt },
