@@ -32,7 +32,7 @@ const collections: { id: string; label: string; stickers: readonly StickerDef[] 
 
 export function StickerPicker({ open, onClose, onSend, onSendImage }: { open: boolean; onClose: () => void; onSend: (sticker: string) => void; onSendImage: (id: string) => void }) {
   const [active, setActive] = useState<string>("tout");
-  const collection = collections.find((item) => item.id === active) ?? collections[0];
+  const collection = collections.find((item) => item.id === active) ?? collections[0]!;
   const isEmoji = collection.id === "general";
   return (
     <Sheet open={open} onClose={onClose} detent="full">

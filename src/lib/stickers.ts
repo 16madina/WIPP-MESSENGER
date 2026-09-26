@@ -14,7 +14,7 @@ export type StickerDef = {
   video?: string;
   /** Geste CSS pour les packs image (cœurs, confettis… restent des couches séparées). */
   motion: string;
-  accent?: string;
+  accent: string;
 };
 
 const elle = (id: string, label: string, motion: string, accent = "✦"): StickerDef =>
