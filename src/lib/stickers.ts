@@ -197,5 +197,5 @@ export type MoodSticker = (typeof moodStickers)[number] | (typeof moodStickers2)
 export const allMoodStickers = [...moodStickers, ...moodStickers2];
 
 export type WippSticker = (typeof wippStickers)[number];
-export const allImageStickers = [...elleStickers, ...wippStickers, ...moodStickers];
+export const allImageStickers = [...elleStickers, ...wippStickers, ...allMoodStickers];
 export const findImageSticker = (id: string) => allImageStickers.find(sticker => sticker.id === id);
