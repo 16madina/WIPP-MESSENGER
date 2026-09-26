@@ -230,6 +230,8 @@ export const motion = {
   stickerAccentSeconds: 1.1,
   /** Moteur de stickers : durée du geste CSS (cast), des effets dans le chat, du WIPP Moment plein écran. */
   stickerCastMs: 1400,
+  /** Prototype STOP : geste interne (main projetée, texte amplifié, impact). */
+  stickerGestureMs: 1800,
   stickerFxMs: 2200,
   stickerMomentMs: 3200,
   stickerSoundVolume: 0.08,
