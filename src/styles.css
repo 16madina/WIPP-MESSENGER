@@ -309,3 +309,37 @@ img, svg { -webkit-user-drag: none; }
     scroll-behavior: auto !important;
   }
 }
+
+/* Moteur de stickers : PNG intact, geste en @keyframes (cast-go cast-<motion>), effets en couches séparées. */
+.cast-go { animation-timing-function: cubic-bezier(.34,1.56,.64,1); animation-fill-mode: both; transform-origin: 50% 85%; will-change: transform, opacity; }
+.cast-wink { animation-name: cast-wink; } .cast-bounce { animation-name: cast-bounce; } .cast-heart { animation-name: cast-heart; }
+.cast-laugh { animation-name: cast-laugh; } .cast-ponder { animation-name: cast-ponder; } .cast-shock { animation-name: cast-shock; }
+.cast-pop { animation-name: cast-pop; } .cast-wave { animation-name: cast-wave; } .cast-sleep { animation-name: cast-sleep; }
+.cast-morning { animation-name: cast-morning; } .cast-ring { animation-name: cast-ring; } .cast-kiss { animation-name: cast-kiss; }
+.cast-applause { animation-name: cast-applause; } .cast-shrug { animation-name: cast-shrug; } .cast-bump { animation-name: cast-bump; }
+@keyframes cast-wink { 0%{opacity:0;transform:scale(.6) rotate(-8deg)} 35%{opacity:1;transform:scale(1.08) rotate(3deg)} 55%{transform:scale(1,.94)} 70%{transform:scale(1.02) rotate(-2deg)} 100%{opacity:1;transform:none} }
+@keyframes cast-bounce { 0%{opacity:0;transform:translateY(40%) scale(.7)} 30%{opacity:1;transform:translateY(-14%) scale(1.1,.95)} 45%{transform:translateY(0) scale(.94,1.06)} 60%{transform:translateY(-6%)} 75%{transform:translateY(0) scale(1.03,.97)} 100%{opacity:1;transform:none} }
+@keyframes cast-heart { 0%{opacity:0;transform:scale(.5)} 25%{opacity:1;transform:scale(1.12)} 38%{transform:scale(.96)} 52%{transform:scale(1.1)} 66%{transform:scale(.98)} 100%{opacity:1;transform:none} }
+@keyframes cast-laugh { 0%{opacity:0;transform:scale(.7)} 20%{opacity:1;transform:rotate(-7deg) translateY(-4%)} 35%{transform:rotate(6deg)} 50%{transform:rotate(-10deg) translateY(-8%)} 65%{transform:rotate(5deg)} 80%{transform:rotate(-3deg)} 100%{opacity:1;transform:none} }
+@keyframes cast-ponder { 0%{opacity:0;transform:translateX(-10%)} 30%{opacity:1;transform:rotate(-6deg)} 60%{transform:rotate(4deg) translateX(3%)} 100%{opacity:1;transform:none} }
+@keyframes cast-shock { 0%{opacity:0;transform:scale(.4)} 22%{opacity:1;transform:scale(1.25)} 32%{transform:scale(.92) translateX(-4%)} 40%{transform:translateX(4%)} 48%{transform:translateX(-3%)} 56%{transform:translateX(2%)} 100%{opacity:1;transform:none} }
+@keyframes cast-pop { 0%{opacity:0;transform:scale(.3) rotate(-12deg)} 40%{opacity:1;transform:scale(1.18) rotate(4deg)} 60%{transform:scale(.94)} 80%{transform:scale(1.03)} 100%{opacity:1;transform:none} }
+@keyframes cast-wave { 0%{opacity:0;transform:translateX(-40%) rotate(-10deg)} 30%{opacity:1;transform:translateX(4%) rotate(6deg)} 45%{transform:rotate(-6deg)} 60%{transform:rotate(5deg)} 75%{transform:rotate(-3deg)} 100%{opacity:1;transform:none} }
+@keyframes cast-sleep { 0%{opacity:0;transform:translateY(10%)} 30%{opacity:1;transform:rotate(-5deg) translateY(3%)} 60%{transform:rotate(-7deg) translateY(4%) scale(1.02,.98)} 100%{opacity:1;transform:none} }
+@keyframes cast-morning { 0%{opacity:0;transform:translateY(30%) scale(.85)} 40%{opacity:1;transform:translateY(-8%) scale(1.04)} 65%{transform:translateY(2%)} 100%{opacity:1;transform:none} }
+@keyframes cast-ring { 0%{opacity:0;transform:scale(.8)} 15%{opacity:1} 20%,40%,60%{transform:rotate(-9deg)} 30%,50%,70%{transform:rotate(9deg)} 100%{opacity:1;transform:none} }
+@keyframes cast-kiss { 0%{opacity:0;transform:scale(.6)} 30%{opacity:1;transform:scale(1.05) translateX(-3%)} 45%{transform:scale(1.14) translateX(4%) rotate(4deg)} 65%{transform:scale(.97)} 100%{opacity:1;transform:none} }
+@keyframes cast-applause { 0%{opacity:0;transform:scale(.7)} 15%{opacity:1} 20%,40%,60%{transform:scale(1.06,.95) rotate(-4deg)} 30%,50%,70%{transform:scale(.97,1.04) rotate(4deg)} 100%{opacity:1;transform:none} }
+@keyframes cast-shrug { 0%{opacity:0;transform:translateY(8%)} 30%{opacity:1;transform:translateY(-8%) rotate(4deg) scale(1.03,.97)} 55%{transform:translateY(0) rotate(-2deg)} 100%{opacity:1;transform:none} }
+@keyframes cast-bump { 0%{opacity:0;transform:translateX(-30%) scale(.8)} 35%{opacity:1;transform:translateX(6%) scale(1.14)} 45%{transform:translateX(-2%) scale(.95)} 100%{opacity:1;transform:none} }
+
+.fx-particle { opacity: 0; animation-fill-mode: both; animation-timing-function: ease-out; will-change: transform, opacity; }
+.fx-rise { animation-name: fx-rise; } .fx-fall { animation-name: fx-fall; } .fx-crown { animation-name: fx-crown; font-size: 72px; margin-left: -36px; }
+@keyframes fx-rise { 0%{opacity:0;transform:translateY(0) scale(.4)} 20%{opacity:1;transform:translateY(-8vh) scale(1.1)} 100%{opacity:0;transform:translateY(-70vh) scale(.8) rotate(20deg)} }
+@keyframes fx-fall { 0%{opacity:0;transform:translateY(0) rotate(0)} 10%{opacity:1} 100%{opacity:0;transform:translateY(110vh) rotate(540deg)} }
+@keyframes fx-crown { 0%{opacity:0;transform:translateY(0)} 45%{opacity:1;transform:translateY(40vh) scale(1.2)} 60%{transform:translateY(38vh) scale(.95)} 85%{opacity:1;transform:translateY(40vh)} 100%{opacity:0;transform:translateY(40vh)} }
+.fx-moment { animation-name: fx-moment; animation-fill-mode: both; background: color-mix(in oklab, var(--wipp-bg, #0B1224) 55%, transparent); }
+@keyframes fx-moment { 0%{opacity:0} 10%{opacity:1} 85%{opacity:1} 100%{opacity:0} }
+.fx-shake body, html.fx-shake #root, html.fx-shake body > div:first-child { animation: fx-shake .45s ease-in-out; }
+@keyframes fx-shake { 0%,100%{transform:none} 20%{transform:translateX(-6px)} 40%{transform:translateX(6px)} 60%{transform:translateX(-4px)} 80%{transform:translateX(3px)} }
+@media (prefers-reduced-motion: reduce) { .cast-go, .fx-particle, .fx-moment { animation: none !important; opacity: 1; } .fx-particle { display: none; } }
