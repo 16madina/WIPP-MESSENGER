@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { findImageSticker } from "@/lib/stickers";
 import { emitStickerFx, fxFor, playStickerSound } from "@/lib/sticker-fx";
 import { motion as timings } from "@/theme/theme";
+import { ChromaSticker } from "./ChromaSticker";
 
 /**
  * Le PNG reste intact dans une <img object-contain>. Le geste est une classe CSS (cast-go cast-<motion>) ;
@@ -13,6 +14,7 @@ export function AnimatedSticker({ id, size = "message", fresh = false }: { id: s
   const [run, setRun] = useState(0);
   const fired = useRef(false);
   const isPicker = size === "picker";
+  const filmed = id === "mood-va-la-bas";
 
   const fire = () => {
     if (!sticker) return;
@@ -22,31 +24,33 @@ export function AnimatedSticker({ id, size = "message", fresh = false }: { id: s
   };
 
   useEffect(() => {
-    if (!fresh || fired.current || isPicker) return;
+    if (!fresh || fired.current || isPicker || filmed) return;
     fired.current = true;
     fire();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [fresh, isPicker]);
+  }, [fresh, isPicker, filmed]);
 
   if (!sticker) return null;
   const replay = () => {
     if (isPicker) return;
     setRun((n) => n + 1);
-    const detail = fxFor(sticker);
-    emitStickerFx({ ...detail, level: detail.level === "moment" ? "moment" : detail.level });
-    playStickerSound(detail.fx);
+    if (!filmed) {
+      const detail = fxFor(sticker);
+      emitStickerFx(detail);
+      playStickerSound(detail.fx);
+    }
   };
 
   return (
     <span onClick={replay} className={`relative inline-flex shrink-0 items-center justify-center ${isPicker ? "h-[100px] w-full" : "h-[180px] w-[180px]"}`}>
-      <img
+      {filmed ? <ChromaSticker key={run} src="/stickers/fun/va-la-bas.mp4" fallback={sticker.image} label={sticker.label} size={size} /> : <img
         key={run}
         src={sticker.image}
         alt={sticker.label}
         draggable={false}
         className={`cast-go cast-${sticker.motion} relative z-10 h-full w-full object-contain`}
         style={{ animationDuration: `${isPicker ? timings.stickerPickerSeconds * 1000 : timings.stickerCastMs}ms` }}
-      />
+      />}
     </span>
   );
 }
