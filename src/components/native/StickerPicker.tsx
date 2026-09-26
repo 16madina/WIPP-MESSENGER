@@ -5,7 +5,9 @@ import { layout } from "@/theme/theme";
 import { Pressable } from "./Pressable";
 import { Sheet } from "./Sheet";
 import { AnimatedSticker } from "./AnimatedSticker";
-import { allImageStickers, elleStickers } from "@/lib/stickers";
+import { allImageStickers, elleStickers, type ElleSticker, type WippSticker } from "@/lib/stickers";
+
+type ImageSticker = ElleSticker | WippSticker;
 
 /** Catalogue de démonstration : les images WIPP seront ajoutées collection par collection. */
 const collections = [
@@ -38,7 +40,7 @@ export function StickerPicker({ open, onClose, onSend, onSendImage }: { open: bo
         <div role="tabpanel" id="sticker-panel" aria-labelledby={`sticker-tab-${collection.id}`} className="no-scrollbar min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-4">
           {collection.id === "pour-elle" || collection.id === "tout" ? (
             <div className="grid grid-cols-2 gap-2 pb-4">
-              {collection.stickers.map((sticker) => (
+              {(collection.stickers as readonly ImageSticker[]).map((sticker) => (
                 <Pressable key={sticker.id} aria-label={`Envoyer ${sticker.label}`} onClick={() => { onSendImage(sticker.id); haptic("light"); onClose(); }} className="flex min-w-0 flex-col items-center justify-center rounded-[8px] bg-wipp-surface px-1 pb-2">
                   <AnimatedSticker id={sticker.id} size="picker" />
                   <span className="type-footnote font-semibold text-wipp-fg">{sticker.label}</span>
