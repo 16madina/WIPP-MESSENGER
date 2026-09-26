@@ -5,10 +5,11 @@ import { layout } from "@/theme/theme";
 import { Pressable } from "./Pressable";
 import { Sheet } from "./Sheet";
 import { AnimatedSticker } from "./AnimatedSticker";
-import { elleStickers } from "@/lib/stickers";
+import { allImageStickers, elleStickers } from "@/lib/stickers";
 
 /** Catalogue de démonstration : les images WIPP seront ajoutées collection par collection. */
 const collections = [
+  { id: "tout", label: "Tout", stickers: allImageStickers },
   { id: "general", label: "Général", stickers: ["❤️", "✨", "😂", "🥰", "👏", "🎉", "🌸", "💛", "😍", "😘", "👍", "🔥", "🙏", "💐", "🎁", "😎", "🤩", "😊", "💖", "🌟"] },
   { id: "pour-elle", label: "Pour elle", stickers: elleStickers },
   { id: "pour-lui", label: "Pour lui", stickers: [] },
