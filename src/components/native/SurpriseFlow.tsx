@@ -7,22 +7,17 @@ import scratchArt from "@/assets/surprise-scratch.png";
 import hourglassArt from "@/assets/surprise-hourglass.png";
 import giftArt from "@/assets/surprise-gift.png";
 import confettiArt from "@/assets/surprise-confetti.png";
-import amourArt from "@/assets/animation-amour.jpg";
-import beauteArt from "@/assets/animation-beaute.jpg";
-import journeeArt from "@/assets/animation-journee.jpg";
-import nuitArt from "@/assets/animation-nuit.jpg";
-import voyageArt from "@/assets/animation-voyage.jpg";
-import amitieArt from "@/assets/animation-amitie.jpg";
 import { Pressable } from "./Pressable";
 import { Sheet } from "./Sheet";
-import { SurpriseCard, type SurpriseDesign, type SurpriseMessage } from "./SurpriseCard";
+import { SurpriseReveal } from "./SurpriseReveal";
+import { countdownChoices, defaultDesign, defaultOptions, designPicker, findAnimation, surpriseAnimations, surpriseDesigns, type Surprise, type SurpriseOptions, type SurpriseType } from "@/lib/surprise";
 import { SurpriseAssistant } from "./SurpriseAssistant";
 import { layout, motion as m } from "@/theme/theme";
 import { haptic } from "@/lib/haptics";
 import { chats } from "@/data/mock";
 
 type Stage = "closed" | "share" | "compose" | "stickers" | "contacts";
-type SurpriseKind = "scratch" | "gift" | "confetti" | "countdown";
+type SurpriseKind = SurpriseType;
 const content = [
   { label: "Galerie", icon: Images }, { label: "Caméra", icon: Camera }, { label: "Stickers", icon: Smile },
   { label: "Document", icon: FileText }, { label: "Localisation", icon: MapPin }, { label: "Contact", icon: UserRound },
@@ -33,21 +28,9 @@ const options = [
   { id: "gift", title: "Message cadeau", description: "Un joli paquet à ouvrir pour découvrir ton message.", icon: Gift, art: giftArt },
   { id: "confetti", title: "Confettis", description: "Ton message s’affiche avec une animation spéciale.", icon: PartyPopper, art: confettiArt },
 ] as const;
-const cards: { design: SurpriseDesign; label: string; mark: string }[] = [
-  { design: "heart", label: "Cœur", mark: "♥" }, { design: "stars", label: "Étoiles", mark: "✦" },
-  { design: "crown", label: "Couronne", mark: "♛" }, { design: "neon", label: "Néon", mark: "♡" },
-];
-const animations = [
-  { name: "Amour", art: amourArt },
-  { name: "Beauté", art: beauteArt },
-  { name: "Bonne journée", art: journeeArt },
-  { name: "Bonne nuit", art: nuitArt },
-  { name: "Voyage", art: voyageArt },
-  { name: "Amitié", art: amitieArt },
-] as const;
 
 /** Parcours local de composition ; seuls les messages à gratter sont simulés dans la conversation. */
-export function SurpriseFlow({ onSend, onShareContent, onUnavailable }: { onSend: (message: SurpriseMessage) => void; onShareContent: (text: string) => void; onUnavailable: (label: string) => void }) {
+export function SurpriseFlow({ onSend, onShareContent, onUnavailable }: { onSend: (surprise: Surprise) => void; onShareContent: (text: string) => void; onUnavailable: (label: string) => void }) {
   const reducedMotion = useReducedMotion();
   const galleryRef = useRef<HTMLInputElement>(null);
   const cameraRef = useRef<HTMLInputElement>(null);
@@ -55,14 +38,19 @@ export function SurpriseFlow({ onSend, onShareContent, onUnavailable }: { onSend
   const [stage, setStage] = useState<Stage>("closed");
   const [secret, setSecret] = useState("");
   const [kind, setKind] = useState<SurpriseKind>("scratch");
-  const [design, setDesign] = useState<SurpriseDesign>("heart");
+  const [design, setDesign] = useState<string | null>(defaultDesign("scratch"));
+  const [surpriseOptions, setSurpriseOptions] = useState<SurpriseOptions>(defaultOptions("scratch"));
   const [animation, setAnimation] = useState<string | null>(null);
   const [drawer, setDrawer] = useState<"animation" | "card" | null>(null);
   const [showPreview, setShowPreview] = useState(false);
   const [previewRun, setPreviewRun] = useState(0);
   const close = () => { setShowPreview(false); setDrawer(null); setStage("closed"); };
   const selectedOption = options.find(option => option.id === kind) ?? options[0];
-  const selectedAnimation = animations.find(item => item.name === animation);
+  const selectedAnimation = findAnimation(animation);
+  const picker = designPicker[kind];
+  const PickerIcon = picker.icon;
+  const chooseKind = (id: SurpriseKind) => { if (id !== kind) { setKind(id); setDesign(defaultDesign(id)); setSurpriseOptions(defaultOptions(id)); } haptic("light"); };
+  const draft = (id: string): Surprise => ({ id, message: secret.trim() || "Ton message secret", surpriseType: kind, designId: design, animationId: animation, surpriseOptions, mine: true, time: new Date().toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" }) });
   const chooseContent = (label: string) => {
     if (label === "Galerie") galleryRef.current?.click();
     else if (label === "Caméra") cameraRef.current?.click();
@@ -85,8 +73,7 @@ export function SurpriseFlow({ onSend, onShareContent, onUnavailable }: { onSend
   };
   const send = () => {
     if (!secret.trim()) return;
-    if (kind !== "scratch") { onUnavailable(options.find(option => option.id === kind)?.title ?? "Surprise"); return; }
-    onSend({ id: `surprise-${Date.now()}`, text: secret.trim(), design, mine: true, time: new Date().toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" }) });
+    onSend(draft(`surprise-${Date.now()}`));
     haptic("success");
     setSecret("");
     close();
@@ -129,19 +116,19 @@ export function SurpriseFlow({ onSend, onShareContent, onUnavailable }: { onSend
              <div className="text-right text-[11px] text-wipp-surprise-secondary">{secret.length}/{layout.surpriseMessageLimit}</div>
            </div>
            <div className="mt-2 grid grid-cols-2 gap-2">
-             <Pressable onClick={() => { setDrawer("animation"); haptic("light"); }} className="surprise-action flex items-center gap-2 rounded-[10px] px-2.5 text-left text-wipp-fg"><WandSparkles size={23} className="shrink-0 text-wipp-surprise-bright" /><span className="min-w-0 flex-1 text-[12px] font-semibold leading-tight">{animation ?? "Ajouter une animation"}</span><ChevronRight size={17} className="shrink-0 text-wipp-surprise-bright" /></Pressable>
-             <Pressable onClick={() => { setDrawer("card"); haptic("light"); }} className="surprise-action flex items-center gap-2 rounded-[10px] px-2.5 text-left text-wipp-fg"><Images size={23} className="shrink-0 text-wipp-surprise-bright" /><span className="min-w-0 flex-1 text-[12px] font-semibold leading-tight">Choisir la carte</span><ChevronRight size={17} className="shrink-0 text-wipp-surprise-bright" /></Pressable>
+             <Pressable onClick={() => { setDrawer("animation"); haptic("light"); }} className="surprise-action flex items-center gap-2 rounded-[10px] px-2.5 text-left text-wipp-fg"><WandSparkles size={23} className="shrink-0 text-wipp-surprise-bright" /><span className="min-w-0 flex-1 text-[12px] font-semibold leading-tight">Ajouter une animation</span><ChevronRight size={17} className="shrink-0 text-wipp-surprise-bright" /></Pressable>
+             <Pressable onClick={() => { setDrawer("card"); haptic("light"); }} className="surprise-action flex items-center gap-2 rounded-[10px] px-2.5 text-left text-wipp-fg"><PickerIcon size={23} className="shrink-0 text-wipp-surprise-bright" /><span className="min-w-0 flex-1 text-[12px] font-semibold leading-tight">{picker.label}</span><ChevronRight size={17} className="shrink-0 text-wipp-surprise-bright" /></Pressable>
            </div>
            <div className="mt-2.5 px-0.5"><h3 className="text-[18px] font-bold leading-6">Choisis le type de surprise</h3><p className="text-[12px] text-wipp-surprise-secondary">Comment veux-tu révéler ton message ?</p></div>
            <div className="mt-2 grid grid-cols-2 gap-2" role="group" aria-label="Type de surprise">
-             {options.map(({ id, title, description, icon: Icon, art }) => <Pressable key={id} aria-pressed={kind === id} onClick={() => { setKind(id); haptic("light"); }} className={`surprise-option relative flex flex-col overflow-hidden rounded-[12px] px-2.5 pb-2.5 pt-1 text-left text-wipp-fg ${kind === id ? "surprise-option-active" : ""}`} style={{ height: layout.surpriseOptionHeight }}>
+             {options.map(({ id, title, description, icon: Icon, art }) => <Pressable key={id} aria-pressed={kind === id} onClick={() => chooseKind(id)} className={`surprise-option relative flex flex-col overflow-hidden rounded-[12px] px-2.5 pb-2.5 pt-1 text-left text-wipp-fg ${kind === id ? "surprise-option-active" : ""}`} style={{ height: layout.surpriseOptionHeight }}>
                <span className="absolute left-2.5 top-2.5 z-10 flex h-7 w-7 items-center justify-center rounded-full border border-wipp-surprise-bright text-wipp-surprise-bright"><Icon size={16} strokeWidth={1.8} /></span>
                <img src={art} alt="" width={768} height={768} loading="lazy" className="mx-auto w-[90%] shrink-0 object-contain" style={{ height: layout.surpriseArtworkHeight }} />
                <span className="block text-[13px] font-semibold leading-4">{title}</span>
                <span className="mt-0.5 line-clamp-2 text-[11px] leading-[14px] text-wipp-surprise-secondary">{description}</span>
              </Pressable>)}
            </div>
-            {selectedAnimation && <motion.div key={animation} initial={{ opacity: 0, scale: 0.75 }} animate={{ opacity: 1, scale: 1 }} transition={m.spring} className="mt-2 flex items-center justify-center gap-2 text-wipp-surprise-bright"><img src={selectedAnimation.art} alt="" width={512} height={512} className="h-8 w-8 rounded-full object-cover" /><span className="text-[12px]">{animation}</span></motion.div>}
+            {selectedAnimation && <motion.div key={animation} initial={{ opacity: 0, scale: 0.75 }} animate={{ opacity: 1, scale: 1 }} transition={m.spring} className="mt-2 flex items-center justify-center gap-2 text-wipp-surprise-bright"><img src={selectedAnimation.art} alt="" width={512} height={512} className="h-8 w-8 rounded-full object-cover" /><span className="text-[12px]">Animation : {selectedAnimation.label}</span></motion.div>}
          </div>
           <div className="shrink-0 space-y-2 px-3.5 pt-1 pb-1">
             <Pressable onClick={() => { setPreviewRun(run => run + 1); setShowPreview(true); haptic("light"); }} className="surprise-action flex w-full items-center justify-center gap-2 rounded-full text-[15px] font-semibold text-wipp-surprise-bright"><Eye size={19} />Aperçu</Pressable>
@@ -151,9 +138,13 @@ export function SurpriseFlow({ onSend, onShareContent, onUnavailable }: { onSend
     </Sheet>
      {typeof document !== "undefined" && createPortal(<AnimatePresence>{drawer && stage === "compose" && <div className="fixed inset-0 z-[90]">
        <motion.div className="absolute inset-0 bg-wipp-backdrop" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setDrawer(null)} />
-       <motion.aside role="dialog" aria-modal="true" aria-label={drawer === "card" ? "Choisir la carte" : "Animations"} initial={{ x: "100%" }} animate={{ x: 0 }} exit={{ x: "100%" }} transition={m.sheet} className="glass-menu absolute inset-y-0 right-0 w-[min(340px,90vw)] overflow-y-auto border-l border-wipp-glass-border px-4 pt-[calc(env(safe-area-inset-top)+28px)] pb-[calc(env(safe-area-inset-bottom)+24px)] text-wipp-fg">
-         <div className="mb-6 flex items-center justify-between"><h3 className="type-title2">{drawer === "card" ? "Choisir la carte" : "Animations"}</h3><Pressable aria-label="Fermer le tiroir" onClick={() => setDrawer(null)}><X size={21} /></Pressable></div>
-          {drawer === "card" ? <div className="grid grid-cols-2 gap-3">{cards.map(card => <Pressable key={card.design} aria-pressed={design === card.design} onClick={() => { setDesign(card.design); setDrawer(null); haptic("light"); }} className={`surprise-option flex h-[110px] flex-col items-center justify-center rounded-[8px] text-wipp-fg ${design === card.design ? "surprise-option-active" : ""}`}><span className="text-[34px] text-wipp-surprise-bright">{card.mark}</span><span className="type-footnote">{card.label}</span></Pressable>)}</div> : <><div className="grid grid-cols-2 gap-3">{animations.map(({ name, art }) => <Pressable key={name} aria-pressed={animation === name} onClick={() => { setAnimation(name); setDrawer(null); haptic("light"); }} className={`relative flex flex-col items-center justify-center overflow-hidden rounded-[8px] border text-wipp-fg ${animation === name ? "border-wipp-surprise-gold bg-wipp-surprise-choice-raised" : "border-wipp-glass-border bg-wipp-surprise-choice"}`} style={{ height: layout.surpriseAnimationTileHeight }}><img src={art} alt="" width={512} height={512} loading="lazy" className="h-[78%] w-full object-contain" /><span className="relative type-footnote font-semibold">{name}</span></Pressable>)}</div>
+       <motion.aside role="dialog" aria-modal="true" aria-label={drawer === "card" ? picker.label : "Animations"} initial={{ x: "100%" }} animate={{ x: 0 }} exit={{ x: "100%" }} transition={m.sheet} className="glass-menu absolute inset-y-0 right-0 w-[min(340px,90vw)] overflow-y-auto border-l border-wipp-glass-border px-4 pt-[calc(env(safe-area-inset-top)+28px)] pb-[calc(env(safe-area-inset-bottom)+24px)] text-wipp-fg">
+         <div className="mb-6 flex items-center justify-between"><h3 className="type-title2">{drawer === "card" ? picker.label : "Ajouter une animation"}</h3><Pressable aria-label="Fermer le tiroir" onClick={() => setDrawer(null)}><X size={21} /></Pressable></div>
+          {drawer === "card" ? <div className="space-y-4">
+            {surpriseDesigns[kind].length > 0 ? <div className="grid grid-cols-2 gap-3">{surpriseDesigns[kind].map(card => <Pressable key={card.id} aria-pressed={design === card.id} onClick={() => { setDesign(card.id); setDrawer(null); haptic("light"); }} className={`surprise-option flex h-[110px] flex-col items-center justify-center rounded-[8px] text-wipp-fg ${design === card.id ? "surprise-option-active" : ""}`}>{card.art ? <img src={card.art} alt="" className="h-16 w-16 object-contain" /> : <span className="text-[34px] text-wipp-surprise-bright">{card.mark}</span>}<span className="type-footnote">{card.label}</span></Pressable>)}</div>
+              : <p className="type-subhead text-wipp-muted">Les styles arrivent bientôt.</p>}
+            {kind === "countdown" && <div><h4 className="mb-2 type-headline">Durée</h4><div className="grid grid-cols-2 gap-3">{countdownChoices.map(choice => <Pressable key={choice.seconds} aria-pressed={surpriseOptions.countdown?.seconds === choice.seconds} onClick={() => { setSurpriseOptions({ countdown: { seconds: choice.seconds } }); haptic("light"); }} className={`surprise-option flex h-14 items-center justify-center rounded-[8px] type-footnote font-semibold text-wipp-fg ${surpriseOptions.countdown?.seconds === choice.seconds ? "surprise-option-active" : ""}`}>{choice.label}</Pressable>)}</div></div>}
+          </div> : <><div className="grid grid-cols-2 gap-3">{surpriseAnimations.map(({ id, label: name, art }) => <Pressable key={id} aria-pressed={animation === id} onClick={() => { setAnimation(id); setDrawer(null); haptic("light"); }} className={`relative flex flex-col items-center justify-center overflow-hidden rounded-[8px] border text-wipp-fg ${animation === id ? "border-wipp-surprise-gold bg-wipp-surprise-choice-raised" : "border-wipp-glass-border bg-wipp-surprise-choice"}`} style={{ height: layout.surpriseAnimationTileHeight }}><img src={art} alt="" width={512} height={512} loading="lazy" className="h-[78%] w-full object-contain" /><span className="relative type-footnote font-semibold">{name}</span></Pressable>)}</div>
          {animation && <Pressable onClick={() => { setAnimation(null); setDrawer(null); }} className="mt-5 w-full text-center type-subhead text-wipp-muted">Retirer l’animation</Pressable>}</>}
       </motion.aside>
     </div>}</AnimatePresence>, document.body)}
@@ -162,8 +153,8 @@ export function SurpriseFlow({ onSend, onShareContent, onUnavailable }: { onSend
         <motion.div role="dialog" aria-modal="true" aria-label="Aperçu de la surprise" initial={reducedMotion ? { opacity: 0 } : { opacity: 0, scale: 0.94 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.94 }} transition={m.spring} className="relative w-full max-w-[360px] overflow-hidden rounded-[20px] border border-wipp-surprise-line bg-wipp-surprise-panel px-4 pb-5 pt-3 text-center text-wipp-fg shadow-lift">
           <div className="flex items-center justify-between"><span className="text-[13px] font-semibold text-wipp-surprise-secondary">Aperçu · {selectedOption.title}</span><Pressable aria-label="Fermer l’aperçu" onClick={() => setShowPreview(false)} className="flex h-11 w-11 items-center justify-center rounded-full text-wipp-fg"><X size={22} /></Pressable></div>
           <div className="mb-4 mt-1 flex items-center justify-center gap-2 text-[21px] font-bold">Surprise <Sparkles size={21} className="text-wipp-surprise-bright" /></div>
-          {selectedAnimation && <motion.div initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} transition={m.spring} className="mb-3 flex items-center justify-center gap-2 text-[13px] text-wipp-surprise-bright"><img src={selectedAnimation.art} alt="" width={512} height={512} className="h-11 w-11 rounded-full object-cover" />{selectedAnimation.name}</motion.div>}
-          {kind === "scratch" ? <SurpriseCard key={previewRun} demo message={{ id: `preview-${previewRun}`, text: secret.trim() || "Ton message secret", design, mine: true, time: "" }} /> : <div className="surprise-option mx-auto flex min-h-[240px] w-[260px] max-w-full flex-col items-center justify-center gap-3 rounded-[17px] px-5"><img src={selectedOption.art} alt="" width={768} height={768} className="h-28 w-28 object-contain" /><span className="break-words text-[15px] font-medium leading-6">{secret.trim() || "Ton message secret"}</span></div>}
+          {selectedAnimation && <motion.div initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} transition={m.spring} className="mb-3 flex items-center justify-center gap-2 text-[13px] text-wipp-surprise-bright"><img src={selectedAnimation.art} alt="" width={512} height={512} className="h-11 w-11 rounded-full object-cover" />Animation après la révélation : {selectedAnimation.label}</motion.div>}
+          <SurpriseReveal key={previewRun} demo surprise={draft(`preview-${previewRun}`)} />
           <Pressable onClick={() => setShowPreview(false)} className="surprise-action mt-5 w-full rounded-full text-[15px] font-semibold text-wipp-surprise-bright">Retour à ma surprise</Pressable>
         </motion.div>
       </div>}</AnimatePresence>, document.body)}
