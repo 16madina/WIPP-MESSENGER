@@ -12,4 +12,5 @@
 - [ ] Traduire les animations détaillées des 30 stickers (fichier de consignes) en mouvements dédiés — aujourd'hui mouvements génériques.
 - [x] Découper et intégrer les 20 stickers comiques dans un onglet « Mood ».
 - [x] Découper et intégrer les 20 stickers comiques #2 dans l'onglet « Mood ».
+- [ ] Lire « Va là-bas ! » depuis son MP4 avec fond vert retiré sur canvas — lecteur prêt, vidéo non encore fournie (public/stickers/fun/va-la-bas.mp4).
 - [ ] Remplacer les stickers provisoires de Général et ajouter Pour lui, Amusant, Drôle — en attente des images.

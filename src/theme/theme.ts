@@ -233,6 +233,12 @@ export const motion = {
   stickerFxMs: 2200,
   stickerMomentMs: 3200,
   stickerSoundVolume: 0.08,
+  /** Film chroma : traitement à la taille d'affichage, vert dominant estompé sur les contours. */
+  stickerVideoFps: 24,
+  stickerVideoPickerPixels: 100,
+  stickerVideoMessagePixels: 180,
+  stickerKeyGreenStart: 24,
+  stickerKeyGreenStrong: 78,
 };
 
 /** Vibrations courtes (ms) — navigator.vibrate sur le web, Haptics sur Expo. */
