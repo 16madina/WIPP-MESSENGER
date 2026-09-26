@@ -3,6 +3,7 @@ import { findImageSticker } from "@/lib/stickers";
 import { emitStickerFx, fxFor, playStickerSound } from "@/lib/sticker-fx";
 import { motion as timings } from "@/theme/theme";
 import { ChromaSticker } from "./ChromaSticker";
+import { GestureSticker } from "./GestureSticker";
 import { StopGesture } from "./StopGesture";
 
 /**
@@ -44,13 +45,12 @@ export function AnimatedSticker({ id, size = "message", fresh = false }: { id: s
 
   return (
     <span onClick={replay} className={`relative inline-flex shrink-0 items-center justify-center ${isPicker ? "h-[100px] w-full" : "h-[180px] w-[180px]"}`}>
-      {filmed ? <ChromaSticker key={run} src="/stickers/fun/va-la-bas.mp4" fallback={sticker.image} label={sticker.label} size={size} /> : id === "mood-stop" ? <StopGesture key={run} src={sticker.image} label={sticker.label} ms={isPicker ? timings.stickerGestureMs : undefined} /> : <img
+      {filmed ? <ChromaSticker key={run} src="/stickers/fun/va-la-bas.mp4" fallback={sticker.image} label={sticker.label} size={size} /> : id === "mood-stop" ? <StopGesture key={run} src={sticker.image} label={sticker.label} ms={isPicker ? timings.stickerGestureMs : undefined} /> : <GestureSticker
         key={run}
+        id={id}
         src={sticker.image}
-        alt={sticker.label}
-        draggable={false}
-        className={`cast-go cast-${sticker.motion} relative z-10 h-full w-full object-contain`}
-        style={{ animationDuration: `${isPicker ? timings.stickerPickerSeconds * 1000 : timings.stickerCastMs}ms` }}
+        label={sticker.label}
+        ms={isPicker ? timings.stickerPickerSeconds * 1000 : timings.stickerGestureMs}
       />}
     </span>
   );

@@ -9,7 +9,7 @@
 - [x] Placer Stickers à côté du bouton vocal et préparer les onglets Général, Pour elle, Pour lui, Amusant, Drôle.
 - [x] Découper et animer les 16 stickers de la planche « Pour elle » dans leur onglet et dans la conversation.
 - [x] Découper et intégrer les 30 stickers officiels WIPP dans un nouvel onglet « Tout » (premier onglet du sélecteur).
-- [ ] Traduire les animations détaillées des 30 stickers (fichier de consignes) en mouvements dédiés — aujourd'hui mouvements génériques.
+- [x] Animer les 86 stickers avec la méthode « Stop ! » : image intacte, partie isolée par clip-path, éclair en couche, geste réglé par sticker (src/lib/sticker-gestures.ts + GestureSticker).
 - [x] Découper et intégrer les 20 stickers comiques dans un onglet « Mood ».
 - [x] Découper et intégrer les 20 stickers comiques #2 dans l'onglet « Mood ».
 - [ ] Lire « Va là-bas ! » depuis son MP4 avec fond vert retiré sur canvas — lecteur prêt, vidéo non encore fournie (public/stickers/fun/va-la-bas.mp4).
