@@ -15,6 +15,7 @@ import { haptic } from "@/lib/haptics";
 import { SurpriseFlow } from "@/components/native/SurpriseFlow";
 import { SurpriseReveal } from "@/components/native/SurpriseReveal";
 import { StickerPicker } from "@/components/native/StickerPicker";
+import { AnimatedSticker } from "@/components/native/AnimatedSticker";
 import type { Surprise } from "@/lib/surprise";
 
 type Pos = "single" | "first" | "middle" | "last";
@@ -123,6 +124,7 @@ export function ChatScreen({ chat }: { chat: Chat }) {
   const [replyTo, setReplyTo] = useState<Message | null>(null);
   const [editing, setEditing] = useState<Message | null>(null);
   const [stickersOpen, setStickersOpen] = useState(false);
+  const [imageStickers, setImageStickers] = useState<{ id: string; stickerId: string; time: string }[]>([]);
   const scroller = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const kb = useKeyboardInset();
@@ -136,7 +138,7 @@ export function ChatScreen({ chat }: { chat: Chat }) {
   useEffect(() => {
     const id = requestAnimationFrame(() => requestAnimationFrame(() => scroller.current?.scrollTo({ top: scroller.current.scrollHeight, behavior: "smooth" })));
     return () => cancelAnimationFrame(id);
-  }, [list.length, surprises.length, kb]);
+  }, [list.length, surprises.length, imageStickers.length, kb]);
 
   const patch = (id: string, p: Partial<Message>) => setList((l) => l.map((x) => (x.id === id ? { ...x, ...p } : x)));
 
@@ -238,6 +240,11 @@ export function ChatScreen({ chat }: { chat: Chat }) {
                 <div className="relative"><SurpriseReveal surprise={surprise} /><span className="absolute bottom-1 right-3 type-caption2 text-wipp-surprise-paper/70">{surprise.time}</span></div>
               </motion.div>
             ))}
+            {imageStickers.map((sticker) => (
+              <motion.div key={sticker.id} initial={{ opacity: 0, y: 28 }} animate={{ opacity: 1, y: 0 }} transition={m.message} className="mt-3 flex justify-end pr-2">
+                <div className="flex flex-col items-end"><AnimatedSticker id={sticker.stickerId} /><span className="type-caption2 text-wipp-muted">{sticker.time}</span></div>
+              </motion.div>
+            ))}
           </AnimatePresence>
         </motion.div>
       </div>
@@ -281,7 +288,7 @@ export function ChatScreen({ chat }: { chat: Chat }) {
            <Pressable onClick={() => { haptic("light"); setStickersOpen(true); }} aria-label="Stickers" className="flex h-11 w-11 shrink-0 items-center justify-center text-wipp-accent"><Sticker size={24} strokeWidth={1.8} /></Pressable>
         </div>
       </div>
-       <StickerPicker open={stickersOpen} onClose={() => setStickersOpen(false)} onSend={(sticker) => setList((items) => [...items, { id: `sticker-${Date.now()}`, mine: true, text: sticker, time: now(), state: "sent" }])} />
+       <StickerPicker open={stickersOpen} onClose={() => setStickersOpen(false)} onSend={(sticker) => setList((items) => [...items, { id: `sticker-${Date.now()}`, mine: true, text: sticker, time: now(), state: "sent" }])} onSendImage={(stickerId) => setImageStickers((items) => [...items, { id: `image-sticker-${Date.now()}`, stickerId, time: now() }])} />
     </div>
   );
 }

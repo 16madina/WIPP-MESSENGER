@@ -7,4 +7,5 @@
 - [x] Découper proprement les dix visuels Amour transparents, les proposer comme choix individuels et jouer uniquement celui sélectionné après la révélation.
 - [ ] Envoi réel chiffré, réception et notification sans aperçu — en attente d'un accord explicite pour les changements de données.
 - [x] Placer Stickers à côté du bouton vocal et préparer les onglets Général, Pour elle, Pour lui, Amusant, Drôle.
-- [ ] Remplacer les stickers provisoires par les images WIPP envoyées une par une — en attente des images.
+- [x] Découper et animer les 16 stickers de la planche « Pour elle » dans leur onglet et dans la conversation.
+- [ ] Remplacer les stickers provisoires de Général et ajouter Pour lui, Amusant, Drôle — en attente des images.
