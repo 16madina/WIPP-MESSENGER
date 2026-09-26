@@ -184,6 +184,7 @@ export const layout = {
   surpriseArtworkHeight: 86,
   surpriseOptionHeight: 146,
   surpriseAnimationDrawerWidth: 340,
+  surpriseAnimationTileHeight: 132,
   shareTileHeight: 120,
 };
 
