@@ -1,5 +1,5 @@
 import { AnimatePresence, motion, useMotionValue, useMotionValueEvent, useScroll, useTransform, type PanInfo } from "framer-motion";
-import { ArrowUp, Copy, Mic, Pencil, Phone, Pin, Reply, Trash2, Video, X } from "lucide-react";
+import { ArrowUp, Copy, Mic, Pencil, Phone, Pin, Reply, Sticker, Trash2, Video, X } from "lucide-react";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { NavBar } from "@/components/native/NavHeader";
 import { Pressable } from "@/components/native/Pressable";
@@ -14,6 +14,7 @@ import { motion as m } from "@/theme/theme";
 import { haptic } from "@/lib/haptics";
 import { SurpriseFlow } from "@/components/native/SurpriseFlow";
 import { SurpriseReveal } from "@/components/native/SurpriseReveal";
+import { StickerPicker } from "@/components/native/StickerPicker";
 import type { Surprise } from "@/lib/surprise";
 
 type Pos = "single" | "first" | "middle" | "last";
@@ -121,6 +122,7 @@ export function ChatScreen({ chat }: { chat: Chat }) {
   const [text, setText] = useState("");
   const [replyTo, setReplyTo] = useState<Message | null>(null);
   const [editing, setEditing] = useState<Message | null>(null);
+  const [stickersOpen, setStickersOpen] = useState(false);
   const scroller = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const kb = useKeyboardInset();
@@ -254,7 +256,7 @@ export function ChatScreen({ chat }: { chat: Chat }) {
           )}
         </AnimatePresence>
         <div className="flex items-center gap-1 px-1.5 pt-1.5">
-           <SurpriseFlow onSend={(message) => setSurprises((items) => [...items, message])} onShareContent={(body) => setList((items) => [...items, { id: `shared-${Date.now()}`, mine: true, text: body, time: now(), state: "sent" }])} onUnavailable={(label) => notify(label)} />
+           <SurpriseFlow onSend={(message) => setSurprises((items) => [...items, message])} onShareContent={(body) => setList((items) => [...items, { id: `shared-${Date.now()}`, mine: true, text: body, time: now(), state: "sent" }])} onOpenStickers={() => setStickersOpen(true)} onUnavailable={(label) => notify(label)} />
           <input
             ref={inputRef}
             value={text}
@@ -276,8 +278,10 @@ export function ChatScreen({ chat }: { chat: Chat }) {
               )}
             </AnimatePresence>
           </Pressable>
+           <Pressable onClick={() => { haptic("light"); setStickersOpen(true); }} aria-label="Stickers" className="flex h-11 w-11 shrink-0 items-center justify-center text-wipp-accent"><Sticker size={24} strokeWidth={1.8} /></Pressable>
         </div>
       </div>
+       <StickerPicker open={stickersOpen} onClose={() => setStickersOpen(false)} onSend={(sticker) => setList((items) => [...items, { id: `sticker-${Date.now()}`, mine: true, text: sticker, time: now(), state: "sent" }])} />
     </div>
   );
 }
