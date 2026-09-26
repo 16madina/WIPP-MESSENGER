@@ -1,14 +1,14 @@
 import { AnimatePresence, animate, motion, useMotionValue, type PanInfo } from "framer-motion";
 import { useEffect, useLayoutEffect, useRef, type ReactNode } from "react";
 import { createPortal } from "react-dom";
-import { motion as m } from "@/theme/theme";
+import { layout, motion as m } from "@/theme/theme";
 import { haptic } from "@/lib/haptics";
 import { useOverlay } from "./Overlay";
 
 export type Detent = "half" | "share" | "full";
 
 /** Feuille modale iOS : deux hauteurs (moitié / plein écran) avec accroche en spring. */
-export function Sheet({ open, onClose, children, detent = "half" }: { open: boolean; onClose: () => void; children: ReactNode; detent?: Detent }) {
+export function Sheet({ open, onClose, children, detent = "half", appearance = "default" }: { open: boolean; onClose: () => void; children: ReactNode; detent?: Detent; appearance?: "default" | "surprise" }) {
   const { setSheetOpen } = useOverlay();
   useEffect(() => {
     setSheetOpen(open);
@@ -19,7 +19,7 @@ export function Sheet({ open, onClose, children, detent = "half" }: { open: bool
       {open && (
         <div className="fixed inset-0 z-[80]">
           <motion.div key="bd" className="absolute inset-0 bg-wipp-backdrop" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose} />
-          <SheetPanel key="sheet" onClose={onClose} initial={detent}>
+          <SheetPanel key="sheet" onClose={onClose} initial={detent} appearance={appearance}>
             {children}
           </SheetPanel>
         </div>
@@ -28,7 +28,7 @@ export function Sheet({ open, onClose, children, detent = "half" }: { open: bool
   );
 }
 
-function SheetPanel({ onClose, initial, children }: { onClose: () => void; initial: Detent; children: ReactNode }) {
+function SheetPanel({ onClose, initial, children, appearance }: { onClose: () => void; initial: Detent; children: ReactNode; appearance: "default" | "surprise" }) {
   const ref = useRef<HTMLDivElement>(null);
   const y = useMotionValue(2000);
   const current = useRef<Detent>(initial);
@@ -65,8 +65,8 @@ function SheetPanel({ onClose, initial, children }: { onClose: () => void; initi
   return (
     <motion.div
       ref={ref}
-      className={`absolute inset-x-0 bottom-0 z-50 rounded-t-[26px] border-t border-wipp-glass-border ${initial === "share" ? "bg-wipp-share-panel" : "bg-wipp-elevated"}`}
-      style={{ y, top: "calc(env(safe-area-inset-top) + 44px)", paddingBottom: "calc(env(safe-area-inset-bottom) + 20px)" }}
+      className={`absolute inset-x-0 bottom-0 z-50 rounded-t-[26px] border-t border-wipp-glass-border ${appearance === "surprise" ? "bg-wipp-surprise-panel" : initial === "share" ? "bg-wipp-share-panel" : "bg-wipp-elevated"}`}
+      style={{ y, top: `calc(env(safe-area-inset-top) + ${layout.surpriseComposeInset}px)`, paddingBottom: "calc(env(safe-area-inset-bottom) + 20px)" }}
       exit={{ y: "100%" }}
       transition={m.sheet}
       drag="y"
