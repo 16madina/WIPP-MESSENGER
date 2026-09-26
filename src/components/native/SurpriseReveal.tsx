@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { createPortal } from "react-dom";
 import { Sparkles } from "lucide-react";
@@ -21,23 +21,27 @@ const format = (s: number) => s >= 3600 ? `${Math.floor(s / 3600)}:${String(Math
  */
 export function SurpriseReveal({ surprise, demo = false }: { surprise: Surprise; demo?: boolean }) {
   const [playing, setPlaying] = useState(false);
+  const [revealed, setRevealed] = useState(false);
   const started = useRef(false);
   const timer = useRef<number | null>(null);
+  useEffect(() => { setRevealed(!demo && localStorage.getItem(revealedKey(surprise.id)) === "1"); }, [demo, surprise.id]);
   useEffect(() => () => { if (timer.current !== null) window.clearTimeout(timer.current); }, []);
   const onRevealComplete = () => {
     if (!demo) localStorage.setItem(revealedKey(surprise.id), "1");
+    setRevealed(true);
     if (!surprise.animationId || started.current || (!demo && localStorage.getItem(playedKey(surprise.id)) === "1")) return;
     started.current = true;
     if (!demo) localStorage.setItem(playedKey(surprise.id), "1");
-    timer.current = window.setTimeout(() => setPlaying(true), m.surpriseRevealPauseMs);
+    timer.current = window.setTimeout(() => { timer.current = null; setPlaying(true); }, m.surpriseRevealPauseMs);
   };
   const replay = () => { if (playing || timer.current !== null) return; haptic("light"); setPlaying(true); };
+  const finishAnimation = useCallback(() => setPlaying(false), []);
   return <div className="flex flex-col items-center">
     {surprise.surpriseType === "scratch"
       ? <SurpriseCard demo={demo} message={{ id: surprise.id, text: surprise.message, design: surprise.designId ?? "heart", time: surprise.time, mine: surprise.mine }} onRevealComplete={onRevealComplete} />
       : <Mechanism surprise={surprise} demo={demo} onRevealComplete={onRevealComplete} />}
-    {surprise.animationId && (demo || (typeof window !== "undefined" && localStorage.getItem(revealedKey(surprise.id)) === "1")) && <Pressable aria-label="Rejouer l’animation" title="Rejouer l’animation" onClick={replay} disabled={playing} className="mt-1 flex min-h-11 min-w-11 items-center justify-center text-wipp-surprise-gold"><Sparkles size={19} /></Pressable>}
-    <AnimationOverlay animationId={playing ? surprise.animationId : null} onDone={() => setPlaying(false)} />
+    {surprise.animationId && revealed && <Pressable aria-label="Rejouer l’animation" title="Rejouer l’animation" onClick={replay} disabled={playing || timer.current !== null} className="mt-1 flex min-h-11 min-w-11 items-center justify-center text-wipp-surprise-gold"><Sparkles size={19} /></Pressable>}
+    <AnimationOverlay animationId={playing ? surprise.animationId : null} onDone={finishAnimation} />
   </div>;
 }
 
