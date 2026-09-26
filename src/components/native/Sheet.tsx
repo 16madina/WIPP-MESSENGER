@@ -1,7 +1,7 @@
 import { AnimatePresence, animate, motion, useMotionValue, type PanInfo } from "framer-motion";
 import { useEffect, useLayoutEffect, useRef, type ReactNode } from "react";
 import { createPortal } from "react-dom";
-import { motion as m } from "@/theme/theme";
+import { layout, motion as m } from "@/theme/theme";
 import { haptic } from "@/lib/haptics";
 import { useOverlay } from "./Overlay";
 
@@ -66,7 +66,7 @@ function SheetPanel({ onClose, initial, children, appearance }: { onClose: () =>
     <motion.div
       ref={ref}
       className={`absolute inset-x-0 bottom-0 z-50 rounded-t-[26px] border-t border-wipp-glass-border ${appearance === "surprise" ? "bg-wipp-surprise-panel" : initial === "share" ? "bg-wipp-share-panel" : "bg-wipp-elevated"}`}
-      style={{ y, top: `calc(env(safe-area-inset-top) + ${m.surpriseComposeInset}px)`, paddingBottom: "calc(env(safe-area-inset-bottom) + 20px)" }}
+      style={{ y, top: `calc(env(safe-area-inset-top) + ${layout.surpriseComposeInset}px)`, paddingBottom: "calc(env(safe-area-inset-bottom) + 20px)" }}
       exit={{ y: "100%" }}
       transition={m.sheet}
       drag="y"
