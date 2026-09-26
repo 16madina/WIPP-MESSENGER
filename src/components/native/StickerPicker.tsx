@@ -5,10 +5,13 @@ import { layout } from "@/theme/theme";
 import { Pressable } from "./Pressable";
 import { Sheet } from "./Sheet";
 import { AnimatedSticker } from "./AnimatedSticker";
-import { elleStickers } from "@/lib/stickers";
+import { allImageStickers, elleStickers, type ElleSticker, type WippSticker } from "@/lib/stickers";
+
+type ImageSticker = ElleSticker | WippSticker;
 
 /** Catalogue de démonstration : les images WIPP seront ajoutées collection par collection. */
 const collections = [
+  { id: "tout", label: "Tout", stickers: allImageStickers },
   { id: "general", label: "Général", stickers: ["❤️", "✨", "😂", "🥰", "👏", "🎉", "🌸", "💛", "😍", "😘", "👍", "🔥", "🙏", "💐", "🎁", "😎", "🤩", "😊", "💖", "🌟"] },
   { id: "pour-elle", label: "Pour elle", stickers: elleStickers },
   { id: "pour-lui", label: "Pour lui", stickers: [] },
@@ -17,7 +20,7 @@ const collections = [
 ] as const;
 
 export function StickerPicker({ open, onClose, onSend, onSendImage }: { open: boolean; onClose: () => void; onSend: (sticker: string) => void; onSendImage: (id: string) => void }) {
-  const [active, setActive] = useState<string>("general");
+  const [active, setActive] = useState<string>("tout");
   const collection = collections.find((item) => item.id === active) ?? collections[0];
   return (
     <Sheet open={open} onClose={onClose} detent="full">
@@ -35,9 +38,9 @@ export function StickerPicker({ open, onClose, onSend, onSendImage }: { open: bo
           ))}
         </div>
         <div role="tabpanel" id="sticker-panel" aria-labelledby={`sticker-tab-${collection.id}`} className="no-scrollbar min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-4">
-          {collection.id === "pour-elle" ? (
+          {collection.id === "pour-elle" || collection.id === "tout" ? (
             <div className="grid grid-cols-2 gap-2 pb-4">
-              {elleStickers.map((sticker) => (
+              {(collection.stickers as readonly ImageSticker[]).map((sticker) => (
                 <Pressable key={sticker.id} aria-label={`Envoyer ${sticker.label}`} onClick={() => { onSendImage(sticker.id); haptic("light"); onClose(); }} className="flex min-w-0 flex-col items-center justify-center rounded-[8px] bg-wipp-surface px-1 pb-2">
                   <AnimatedSticker id={sticker.id} size="picker" />
                   <span className="type-footnote font-semibold text-wipp-fg">{sticker.label}</span>

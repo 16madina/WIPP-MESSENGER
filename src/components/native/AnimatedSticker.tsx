@@ -1,5 +1,5 @@
 import { motion, useReducedMotion } from "framer-motion";
-import { findElleSticker } from "@/lib/stickers";
+import { findImageSticker } from "@/lib/stickers";
 import { motion as timings } from "@/theme/theme";
 
 const gestures: Record<string, { rotate?: number[]; scale?: number[]; x?: number[]; y?: number[] }> = {
@@ -22,7 +22,7 @@ const gestures: Record<string, { rotate?: number[]; scale?: number[]; x?: number
 
 /** Une image découpée reste intacte ; les mouvements et les éclats sont superposés sans déformer le dessin. */
 export function AnimatedSticker({ id, size = "message" }: { id: string; size?: "picker" | "message" }) {
-  const sticker = findElleSticker(id);
+  const sticker = findImageSticker(id);
   const reduced = useReducedMotion();
   if (!sticker) return null;
   const isPicker = size === "picker";
