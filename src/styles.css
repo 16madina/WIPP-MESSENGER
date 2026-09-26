@@ -354,3 +354,20 @@ img, svg { -webkit-user-drag: none; }
 @keyframes gst-text { 0%,20% { transform: none; } 34% { transform: scale(1.32) rotate(-3deg); } 42% { transform: scale(1.14) rotate(1deg); } 52% { transform: scale(1.22); } 76% { transform: scale(1.18); } 100% { transform: none; } }
 @keyframes gst-flash { 0%,26% { opacity: 0; transform: translate(-50%,-50%) scale(0); } 32% { opacity: 1; transform: translate(-50%,-50%) scale(1); } 50% { opacity: 0; transform: translate(-50%,-50%) scale(1.8); } 100% { opacity: 0; } }
 @media (prefers-reduced-motion: reduce) { .gst-base, .gst-hand, .gst-text { animation: none !important; } .gst-flash, .gst-hand, .gst-text { display: none; } }
+
+/* Gestes dédiés : même structure que « Stop ! » — base stable, partie isolée par clip-path, éclair en couche. */
+.gj-base { animation: gj-base var(--gst-ms) ease-out both; transform-origin: 50% 70%; }
+.gj-part { animation: var(--gj-move) var(--gst-ms) cubic-bezier(.3,1.4,.5,1) both; filter: drop-shadow(0 6px 10px rgba(0,0,0,.4)); }
+.gj-flash { width: 52%; aspect-ratio: 1; border-radius: 9999px; transform: translate(-50%,-50%) scale(0); background: radial-gradient(circle, rgba(255,255,255,.9) 0%, var(--gj-color) 35%, transparent 70%); animation: gj-flash var(--gst-ms) ease-out both; mix-blend-mode: screen; }
+@keyframes gj-base { 0%,100% { transform: none; } 25% { transform: translateX(-2%) scale(.98); } 40% { transform: translateX(1.5%) scale(1.01); } 60% { transform: none; } }
+@keyframes gj-lunge { 0% { transform: none; } 15% { transform: scale(.92); } 35% { transform: scale(var(--gj-peak)); } 45% { transform: scale(calc(var(--gj-peak) * .9)); } 55% { transform: scale(var(--gj-peak)); } 80% { transform: scale(calc(var(--gj-peak) * .96)); } 100% { transform: none; } }
+@keyframes gj-pop { 0% { transform: none; } 30% { transform: scale(var(--gj-peak)) rotate(-3deg); } 45% { transform: scale(1.05) rotate(1deg); } 60% { transform: scale(calc(var(--gj-peak) * .85)); } 100% { transform: none; } }
+@keyframes gj-bob { 0%,100% { transform: none; } 20% { transform: rotate(-7deg) translateY(-3%); } 40% { transform: rotate(6deg); } 60% { transform: rotate(-5deg) translateY(-2%); } 80% { transform: rotate(3deg); } }
+@keyframes gj-sway { 0%,100% { transform: none; } 30% { transform: rotate(-6deg) translateY(3%); } 60% { transform: rotate(-8deg) translateY(4%) scale(1.03,.97); } }
+@keyframes gj-shake { 0%,100% { transform: none; } 15% { transform: translateX(-8%); } 30% { transform: translateX(7%); } 45% { transform: translateX(-5%); } 60% { transform: translateX(4%); } 75% { transform: translateX(-2%); } }
+@keyframes gj-run { 0% { transform: translateX(-18%); } 30% { transform: translateX(6%); } 50% { transform: translateX(-3%); } 70% { transform: translateX(2%); } 100% { transform: none; } }
+@keyframes gj-ring { 0%,100% { transform: none; } 15%,45%,75% { transform: rotate(-9deg); } 30%,60%,90% { transform: rotate(9deg); } }
+@keyframes gj-drop { 0% { transform: translateY(-45%) scale(.8); opacity: 0; } 35% { transform: translateY(4%) scale(1.05); opacity: 1; } 55% { transform: translateY(-2%); } 100% { transform: none; } }
+@keyframes gj-pulse { 0%,100% { transform: none; } 25% { transform: scale(var(--gj-peak)); } 45% { transform: scale(.96); } 65% { transform: scale(calc(var(--gj-peak) * .8)); } }
+@keyframes gj-flash { 0%,24% { opacity: 0; transform: translate(-50%,-50%) scale(0); } 32% { opacity: 1; transform: translate(-50%,-50%) scale(1); } 55% { opacity: 0; transform: translate(-50%,-50%) scale(1.9); } 100% { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .gj-base, .gj-part { animation: none !important; } .gj-flash, .gj-part { display: none; } }

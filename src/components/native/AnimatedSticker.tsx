@@ -3,6 +3,7 @@ import { findImageSticker } from "@/lib/stickers";
 import { emitStickerFx, fxFor, playStickerSound } from "@/lib/sticker-fx";
 import { motion as timings } from "@/theme/theme";
 import { ChromaSticker } from "./ChromaSticker";
+import { GestureSticker } from "./GestureSticker";
 import { StopGesture } from "./StopGesture";
 
 /**
