@@ -59,7 +59,7 @@ export function SurpriseAssistant({ onText, compact = false }: { onText: (text: 
     </Pressable>
   );
   return (
-    <div className="mt-2 rounded-[12px] border border-wipp-surprise-line bg-wipp-surprise-ink p-3 text-wipp-fg">
+    <div className={compact ? "absolute left-0 right-0 top-full z-20 mt-2 rounded-[12px] border border-wipp-surprise-line bg-wipp-surprise-ink p-3 text-wipp-fg shadow-lift" : "mt-2 rounded-[12px] border border-wipp-surprise-line bg-wipp-surprise-ink p-3 text-wipp-fg"}>
       <div className="mb-2 flex items-center gap-2 text-wipp-surprise-gold"><WandSparkles size={18} /><span className="type-subhead font-semibold">Assistant surprise</span></div>
       <input aria-label="Occasion" value={occasion} maxLength={300} onChange={e => setOccasion(e.target.value)} placeholder="L'occasion… ex. anniversaire de Deena, 30 ans" className="w-full rounded-[8px] bg-wipp-surface px-3 py-2.5 type-body text-wipp-fg outline-none placeholder:text-wipp-muted" />
       <div className="no-scrollbar mt-2 flex gap-2 overflow-x-auto" role="group" aria-label="Ton">

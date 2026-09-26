@@ -126,14 +126,14 @@ export function SurpriseFlow({ onSend, onShareContent, onUnavailable }: { onSend
            <div className="mt-2 grid grid-cols-2 gap-2" role="group" aria-label="Type de surprise">
              {options.map(({ id, title, description, icon: Icon, art }) => <Pressable key={id} aria-pressed={kind === id} onClick={() => { setKind(id); haptic("light"); }} className={`surprise-option relative flex flex-col overflow-hidden rounded-[12px] px-2.5 pb-2.5 pt-1 text-left text-wipp-fg ${kind === id ? "surprise-option-active" : ""}`} style={{ height: layout.surpriseOptionHeight }}>
                <span className="absolute left-2.5 top-2.5 z-10 flex h-7 w-7 items-center justify-center rounded-full border border-wipp-surprise-bright text-wipp-surprise-bright"><Icon size={16} strokeWidth={1.8} /></span>
-               <img src={art} alt="" width={768} height={768} loading="lazy" className="mx-auto h-[86px] w-[90%] shrink-0 object-contain" />
+               <img src={art} alt="" width={768} height={768} loading="lazy" className="mx-auto w-[90%] shrink-0 object-contain" style={{ height: layout.surpriseArtworkHeight }} />
                <span className="block text-[13px] font-semibold leading-4">{title}</span>
                <span className="mt-0.5 line-clamp-2 text-[11px] leading-[14px] text-wipp-surprise-secondary">{description}</span>
              </Pressable>)}
            </div>
            {animation && <motion.div key={animation} initial={{ opacity: 0, scale: 0.75 }} animate={{ opacity: 1, scale: 1 }} transition={m.spring} className="mt-2 flex items-center justify-center gap-2 text-wipp-surprise-bright"><motion.span animate={reducedMotion ? { scale: 1 } : { scale: [1, 1.22, 1] }} transition={reducedMotion ? { duration: 0 } : { duration: 2, repeat: Infinity }} className="text-[24px]">{animations.find(item => item.name === animation)?.mark}</motion.span><span className="text-[12px]">{animation}</span></motion.div>}
          </div>
-         <div className="shrink-0 px-3.5 pt-1 pb-1"><Pressable onClick={send} disabled={!secret.trim()} className="surprise-send flex w-full items-center justify-center gap-2 rounded-full py-2.5 text-[16px] font-bold text-wipp-surprise-ink disabled:opacity-50">Envoyer la surprise <Sparkles size={19} /></Pressable></div>
+         <div className="shrink-0 px-3.5 pt-1 pb-1"><Pressable onClick={send} disabled={!secret.trim()} className="surprise-send flex w-full items-center justify-center gap-2 rounded-full py-2.5 text-[16px] font-bold text-wipp-surprise-ink">Envoyer la surprise <Sparkles size={19} /></Pressable></div>
       </div>)}
     </Sheet>
      {typeof document !== "undefined" && createPortal(<AnimatePresence>{drawer && stage === "compose" && <div className="fixed inset-0 z-[90]">
