@@ -28,7 +28,7 @@ export function AnimatedSticker({ id, size = "message" }: { id: string; size?: "
   const isPicker = size === "picker";
   return (
     <span className={`relative inline-flex shrink-0 items-center justify-center ${isPicker ? "h-[100px] w-full" : "h-[180px] w-[180px]"}`}>
-      <motion.img src={sticker.image} alt={sticker.label} draggable={false} className="relative z-10 h-full w-full object-contain" initial={reduced ? false : { opacity: 0, scale: 0.85 }} animate={reduced ? { opacity: 1, scale: 1 } : { ...gestures[sticker.motion], opacity: 1 }} transition={{ duration: isPicker ? timings.stickerPickerSeconds : timings.stickerMessageSeconds, times: undefined, ease: "easeInOut" }} />
+      <motion.img src={sticker.image} alt={sticker.label} draggable={false} className="relative z-10 h-full w-full object-contain" initial={reduced ? false : { opacity: 0, scale: 0.85 }} animate={reduced ? { opacity: 1, scale: 1 } : { ...gestures[sticker.motion], opacity: 1 }} transition={{ duration: isPicker ? timings.stickerPickerSeconds : timings.stickerMessageSeconds, ease: "easeInOut" }} />
       {!reduced && <motion.span aria-hidden="true" className="pointer-events-none absolute right-1 top-1 z-20 type-title2 font-bold text-wipp-accent" initial={{ opacity: 0, y: 8, scale: 0.4 }} animate={{ opacity: [0, 1, 0], y: [8, -12, -34], scale: [0.4, 1.15, 0.6] }} transition={{ delay: isPicker ? 0.15 : 0.4, duration: timings.stickerAccentSeconds }}>{sticker.accent}</motion.span>}
     </span>
   );
