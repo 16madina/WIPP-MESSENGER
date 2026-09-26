@@ -7,7 +7,7 @@ import giftArt from "@/assets/surprise-gift.png";
 import confettiArt from "@/assets/surprise-confetti.png";
 import { SurpriseCard } from "./SurpriseCard";
 import { Pressable } from "./Pressable";
-import { findAnimation, type Surprise } from "@/lib/surprise";
+import { amourAssets, findAnimation, type Surprise } from "@/lib/surprise";
 import { motion as m } from "@/theme/theme";
 import { haptic } from "@/lib/haptics";
 
@@ -95,7 +95,9 @@ function AnimationOverlay({ animationId, onDone }: { animationId: string | null;
   if (typeof document === "undefined") return null;
   return createPortal(<AnimatePresence>{item && (
     <motion.div key={item.id} className="pointer-events-none fixed inset-0 z-[120] flex items-center justify-center" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0, transition: { duration: m.surpriseAnimationExitMs / 1000 } }} aria-live="polite" aria-label={`Animation ${item.label}`}>
-      <motion.img src={item.art} alt="" width={512} height={512} className="h-44 w-44 rounded-full object-cover shadow-glow" initial={reduced ? { opacity: 0 } : { scale: 0.6, opacity: 0 }} animate={reduced ? { opacity: 1 } : { scale: [0.6, 1.08, 1, 1], opacity: [0, 1, 1, 1] }} transition={{ duration: reduced ? 0.2 : m.surpriseAnimationMs / 1000, times: [0, 0.12, 0.24, 1] }} />
+      {item.id === "amour" ? <AmourScene reduced={!!reduced} /> : (
+        <motion.img src={item.art} alt="" width={512} height={512} className="h-44 w-44 rounded-full object-cover shadow-glow" initial={reduced ? { opacity: 0 } : { scale: 0.6, opacity: 0 }} animate={reduced ? { opacity: 1 } : { scale: [0.6, 1.08, 1, 1], opacity: [0, 1, 1, 1] }} transition={{ duration: reduced ? 0.2 : m.surpriseAnimationMs / 1000, times: [0, 0.12, 0.24, 1] }} />
+      )}
     </motion.div>
   )}</AnimatePresence>, document.body);
 }
