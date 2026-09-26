@@ -10,4 +10,5 @@
 - [x] Découper et animer les 16 stickers de la planche « Pour elle » dans leur onglet et dans la conversation.
 - [x] Découper et intégrer les 30 stickers officiels WIPP dans un nouvel onglet « Tout » (premier onglet du sélecteur).
 - [ ] Traduire les animations détaillées des 30 stickers (fichier de consignes) en mouvements dédiés — aujourd'hui mouvements génériques.
+- [x] Découper et intégrer les 20 stickers comiques dans un onglet « Mood ».
 - [ ] Remplacer les stickers provisoires de Général et ajouter Pour lui, Amusant, Drôle — en attente des images.
