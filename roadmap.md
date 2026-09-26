@@ -6,3 +6,5 @@
 - [x] Jouer l’animation une fois après la révélation (pause courte, calque transparent, 4–5 s), puis proposer ✨ pour la rejouer.
 - [x] Découper proprement les dix visuels Amour transparents, les proposer comme choix individuels et jouer uniquement celui sélectionné après la révélation.
 - [ ] Envoi réel chiffré, réception et notification sans aperçu — en attente d'un accord explicite pour les changements de données.
+- [x] Placer Stickers à côté du bouton vocal et préparer les onglets Général, Pour elle, Pour lui, Amusant, Drôle.
+- [ ] Remplacer les stickers provisoires par les images WIPP envoyées une par une — en attente des images.

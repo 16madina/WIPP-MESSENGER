@@ -186,6 +186,7 @@ export const layout = {
   surpriseAnimationDrawerWidth: 340,
   surpriseAnimationTileHeight: 132,
   shareTileHeight: 120,
+  stickerTileSize: 72,
 };
 
 export const motion = {
