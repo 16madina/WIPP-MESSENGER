@@ -221,6 +221,8 @@ export const motion = {
   refreshMs: 1200,
   skeletonMs: 900,
   shimmerSeconds: 1.4,
+  surpriseRevealPauseMs: 450,
+  surpriseAnimationMs: 2600,
 };
 
 /** Vibrations courtes (ms) — navigator.vibrate sur le web, Haptics sur Expo. */
