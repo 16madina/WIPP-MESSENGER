@@ -17,7 +17,7 @@ export type StickerSoundKind =
 
 export type StickerDef = {
   id: string;
-  pack: "elle" | "lui" | "fun" | "fun2" | "sig" | "moji" | "scene";
+  pack: "elle" | "lui" | "fun" | "fun2" | "sig" | "moji" | "scene" | "general";
   label: string;
   /** Image fixe (secours et aperçu du sélecteur). */
   image: string;
@@ -241,6 +241,33 @@ export const sceneStickers: StickerDef[] = [
   scene(30, "Prends soin de toi !", "sc-care", { fx: "heartwave", sound: "ting" }),
 ];
 
+// Pack « Général » : émojis couronne W, découpés et animés comme les packs image.
+const gen = (n: number, label: string, motion: string, extra: Partial<StickerDef> = {}): StickerDef =>
+  ({ id: `gen-${String(n).padStart(2, "0")}`, pack: "general", label, image: `/stickers/general/gen-${String(n).padStart(2, "0")}.png`, motion, ...extra });
+
+export const genStickers: StickerDef[] = [
+  gen(1, "Validé !", "yes", { fx: "ring", sound: "crystal" }),
+  gen(2, "Fou rire", "laugh", { fx: "shake", sound: "laugh" }),
+  gen(3, "Bisou", "kiss", { fx: "hearts", sound: "mwah" }),
+  gen(4, "Cool", "cool", { sound: "bling" }),
+  gen(5, "Câlin", "hug", { fx: "heartwave" }),
+  gen(6, "Choqué", "shock", { sound: "dundun" }),
+  gen(7, "Fête", "party", { fx: "confetti", sound: "party" }),
+  gen(8, "Merci", "pray", { fx: "hearts" }),
+  gen(9, "Facepalm", "palm", { sound: "bonk" }),
+  gen(10, "King", "crown", { fx: "crown", sound: "boss" }),
+  gen(11, "Gros chagrin", "cry"),
+  gen(12, "Furieux", "rage", { fx: "steam", sound: "hiss" }),
+  gen(13, "Oh là là !", "shock", { fx: "flash", sound: "pop" }),
+  gen(14, "Foufou", "silly", { sound: "laugh" }),
+  gen(15, "Dodo", "sleep"),
+  gen(16, "Hmm…", "hmm"),
+  gen(17, "Amour", "love", { fx: "heartwave", sound: "heart", moment: "love" }),
+  gen(18, "Please", "plead"),
+  gen(19, "Malade", "sip"),
+  gen(20, "Money", "money", { sound: "ching" }),
+];
+
 export const allImageStickers: StickerDef[] = [
   ...elleStickers,
   ...luiStickers,
@@ -249,6 +276,7 @@ export const allImageStickers: StickerDef[] = [
   ...sigStickers,
   ...mojiStickers,
   ...sceneStickers,
+  ...genStickers,
 ];
 
 export const findImageSticker = (id: string) => allImageStickers.find((sticker) => sticker.id === id);
