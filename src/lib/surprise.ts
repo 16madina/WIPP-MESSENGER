@@ -70,7 +70,7 @@ export const countdownChoices = [
 
 /** Animations finales. Les images sont provisoires ; les animations WIPP seront branchées par id. */
 export const surpriseAnimations: SurpriseAnimationItem[] = [
-  { id: "amour", label: "Amour", art: amourArt },
+  { id: "amour", label: "Amour", art: amour03 },
   { id: "beaute", label: "Beauté", art: beauteArt },
   { id: "bonne-journee", label: "Bonne journée", art: journeeArt },
   { id: "bonne-nuit", label: "Bonne nuit", art: nuitArt },
