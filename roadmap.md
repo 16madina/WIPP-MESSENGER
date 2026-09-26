@@ -11,4 +11,5 @@
 - [x] Découper et intégrer les 30 stickers officiels WIPP dans un nouvel onglet « Tout » (premier onglet du sélecteur).
 - [ ] Traduire les animations détaillées des 30 stickers (fichier de consignes) en mouvements dédiés — aujourd'hui mouvements génériques.
 - [x] Découper et intégrer les 20 stickers comiques dans un onglet « Mood ».
+- [x] Découper et intégrer les 20 stickers comiques #2 dans l'onglet « Mood ».
 - [ ] Remplacer les stickers provisoires de Général et ajouter Pour lui, Amusant, Drôle — en attente des images.

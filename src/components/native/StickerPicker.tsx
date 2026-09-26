@@ -5,7 +5,7 @@ import { layout } from "@/theme/theme";
 import { Pressable } from "./Pressable";
 import { Sheet } from "./Sheet";
 import { AnimatedSticker } from "./AnimatedSticker";
-import { allImageStickers, elleStickers, moodStickers, type ElleSticker, type MoodSticker, type WippSticker } from "@/lib/stickers";
+import { allImageStickers, allMoodStickers, elleStickers, type ElleSticker, type MoodSticker, type WippSticker } from "@/lib/stickers";
 
 type ImageSticker = ElleSticker | WippSticker | MoodSticker;
 
@@ -14,7 +14,7 @@ const collections = [
   { id: "tout", label: "Tout", stickers: allImageStickers },
   { id: "general", label: "Général", stickers: ["❤️", "✨", "😂", "🥰", "👏", "🎉", "🌸", "💛", "😍", "😘", "👍", "🔥", "🙏", "💐", "🎁", "😎", "🤩", "😊", "💖", "🌟"] },
   { id: "pour-elle", label: "Pour elle", stickers: elleStickers },
-  { id: "mood", label: "Mood", stickers: moodStickers },
+  { id: "mood", label: "Mood", stickers: allMoodStickers },
   { id: "pour-lui", label: "Pour lui", stickers: [] },
   { id: "amusant", label: "Amusant", stickers: [] },
   { id: "drole", label: "Drôle", stickers: [] },
