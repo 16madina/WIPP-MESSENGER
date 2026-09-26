@@ -7,7 +7,7 @@ import { motion as timings } from "@/theme/theme";
  * La base reste stable, la partie isolée par clip-path (texte, tête, haut ou image entière)
  * est amplifiée selon le geste du sticker, et l'éclair coloré est une couche à part.
  */
-export function GestureSticker({ id, src, label, ms = timings.stickerGestureMs }: { id: string; src: string; label: string; ms?: number }) {
+export function GestureSticker({ id, src, label, ms = timings.stickerGestureMs }: { id: string; src: string; label: string; ms?: number | undefined }) {
   const gesture = gestureFor(id);
   const style = {
     "--gst-ms": `${ms}ms`,
