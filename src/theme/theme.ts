@@ -225,6 +225,9 @@ export const motion = {
   surpriseRevealPauseMs: 275,
   surpriseAnimationMs: 4400,
   surpriseAnimationExitMs: 300,
+  stickerPickerSeconds: 0.8,
+  stickerMessageSeconds: 1.8,
+  stickerAccentSeconds: 1.1,
 };
 
 /** Vibrations courtes (ms) — navigator.vibrate sur le web, Haptics sur Expo. */
