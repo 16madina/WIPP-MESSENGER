@@ -6,11 +6,13 @@ import hourglassArt from "@/assets/surprise-hourglass.png";
 import giftArt from "@/assets/surprise-gift.png";
 import confettiArt from "@/assets/surprise-confetti.png";
 import { SurpriseCard } from "./SurpriseCard";
+import { Pressable } from "./Pressable";
 import { findAnimation, type Surprise } from "@/lib/surprise";
 import { motion as m } from "@/theme/theme";
 import { haptic } from "@/lib/haptics";
 
 const revealedKey = (id: string) => `wipp:surprise:revealed:${id}`;
+const playedKey = (id: string) => `wipp:surprise:animation-played:${id}`;
 const format = (s: number) => s >= 3600 ? `${Math.floor(s / 3600)}:${String(Math.floor(s % 3600 / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}` : `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
 
 /**
@@ -19,19 +21,24 @@ const format = (s: number) => s >= 3600 ? `${Math.floor(s / 3600)}:${String(Math
  */
 export function SurpriseReveal({ surprise, demo = false }: { surprise: Surprise; demo?: boolean }) {
   const [playing, setPlaying] = useState(false);
+  const started = useRef(false);
   const timer = useRef<number | null>(null);
-  useEffect(() => () => { if (timer.current) window.clearTimeout(timer.current); }, []);
+  useEffect(() => () => { if (timer.current !== null) window.clearTimeout(timer.current); }, []);
   const onRevealComplete = () => {
     if (!demo) localStorage.setItem(revealedKey(surprise.id), "1");
-    if (!surprise.animationId) return;
+    if (!surprise.animationId || started.current || (!demo && localStorage.getItem(playedKey(surprise.id)) === "1")) return;
+    started.current = true;
+    if (!demo) localStorage.setItem(playedKey(surprise.id), "1");
     timer.current = window.setTimeout(() => setPlaying(true), m.surpriseRevealPauseMs);
   };
-  return <>
+  const replay = () => { if (playing || timer.current !== null) return; haptic("light"); setPlaying(true); };
+  return <div className="flex flex-col items-center">
     {surprise.surpriseType === "scratch"
       ? <SurpriseCard demo={demo} message={{ id: surprise.id, text: surprise.message, design: surprise.designId ?? "heart", time: surprise.time, mine: surprise.mine }} onRevealComplete={onRevealComplete} />
       : <Mechanism surprise={surprise} demo={demo} onRevealComplete={onRevealComplete} />}
+    {surprise.animationId && (demo || (typeof window !== "undefined" && localStorage.getItem(revealedKey(surprise.id)) === "1")) && <Pressable aria-label="Rejouer l’animation" title="Rejouer l’animation" onClick={replay} disabled={playing} className="mt-1 flex min-h-11 min-w-11 items-center justify-center text-wipp-surprise-gold"><Sparkles size={19} /></Pressable>}
     <AnimationOverlay animationId={playing ? surprise.animationId : null} onDone={() => setPlaying(false)} />
-  </>;
+  </div>;
 }
 
 function Mechanism({ surprise, demo, onRevealComplete }: { surprise: Surprise; demo: boolean; onRevealComplete: () => void }) {
@@ -80,11 +87,11 @@ function AnimationOverlay({ animationId, onDone }: { animationId: string | null;
     haptic("light");
     const t = window.setTimeout(onDone, m.surpriseAnimationMs);
     return () => window.clearTimeout(t);
-  }, [item?.id]);
+  }, [item?.id, onDone]);
   if (typeof document === "undefined") return null;
   return createPortal(<AnimatePresence>{item && (
-    <motion.div key={item.id} className="pointer-events-none fixed inset-0 z-[120] flex items-center justify-center" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} aria-live="polite" aria-label={`Animation ${item.label}`}>
-      <motion.img src={item.art} alt="" width={512} height={512} className="h-44 w-44 rounded-full object-cover shadow-glow" initial={reduced ? { opacity: 0 } : { scale: 0.4, opacity: 0 }} animate={reduced ? { opacity: 1 } : { scale: [0.4, 1.15, 1], opacity: 1 }} exit={{ opacity: 0, scale: reduced ? 1 : 1.2 }} transition={{ duration: 0.7 }} />
+    <motion.div key={item.id} className="pointer-events-none fixed inset-0 z-[120] flex items-center justify-center" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0, transition: { duration: m.surpriseAnimationExitMs / 1000 } }} aria-live="polite" aria-label={`Animation ${item.label}`}>
+      <motion.img src={item.art} alt="" width={512} height={512} className="h-44 w-44 rounded-full object-cover shadow-glow" initial={reduced ? { opacity: 0 } : { scale: 0.6, opacity: 0 }} animate={reduced ? { opacity: 1 } : { scale: [0.6, 1.08, 1, 1], opacity: [0, 1, 1, 1] }} transition={{ duration: reduced ? 0.2 : m.surpriseAnimationMs / 1000, times: [0, 0.12, 0.24, 1] }} />
     </motion.div>
   )}</AnimatePresence>, document.body);
 }
