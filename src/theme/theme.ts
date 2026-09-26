@@ -228,6 +228,11 @@ export const motion = {
   stickerPickerSeconds: 0.8,
   stickerMessageSeconds: 1.8,
   stickerAccentSeconds: 1.1,
+  /** Moteur de stickers : durée du geste CSS (cast), des effets dans le chat, du WIPP Moment plein écran. */
+  stickerCastMs: 1400,
+  stickerFxMs: 2200,
+  stickerMomentMs: 3200,
+  stickerSoundVolume: 0.08,
 };
 
 /** Vibrations courtes (ms) — navigator.vibrate sur le web, Haptics sur Expo. */

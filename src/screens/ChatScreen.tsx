@@ -16,6 +16,7 @@ import { SurpriseFlow } from "@/components/native/SurpriseFlow";
 import { SurpriseReveal } from "@/components/native/SurpriseReveal";
 import { StickerPicker } from "@/components/native/StickerPicker";
 import { AnimatedSticker } from "@/components/native/AnimatedSticker";
+import { StickerFxLayer } from "@/components/native/StickerFxLayer";
 import type { Surprise } from "@/lib/surprise";
 
 type Pos = "single" | "first" | "middle" | "last";
@@ -242,13 +243,14 @@ export function ChatScreen({ chat }: { chat: Chat }) {
             ))}
             {imageStickers.map((sticker) => (
               <motion.div key={sticker.id} initial={{ opacity: 0, y: 28 }} animate={{ opacity: 1, y: 0 }} transition={m.message} className="mt-3 flex justify-end pr-2">
-                <div className="flex flex-col items-end"><AnimatedSticker id={sticker.stickerId} /><span className="type-caption2 text-wipp-muted">{sticker.time}</span></div>
+                <div className="flex flex-col items-end"><AnimatedSticker id={sticker.stickerId} fresh /><span className="type-caption2 text-wipp-muted">{sticker.time}</span></div>
               </motion.div>
             ))}
           </AnimatePresence>
         </motion.div>
       </div>
 
+      <StickerFxLayer />
       <div className="glass absolute inset-x-0 bottom-0 z-20 border-t border-wipp-sep" style={{ transform: `translateY(${-kb}px)`, paddingBottom: kb ? 6 : "calc(env(safe-area-inset-bottom) + 6px)" }}>
         <AnimatePresence initial={false}>
           {banner && (
