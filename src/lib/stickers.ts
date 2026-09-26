@@ -148,7 +148,53 @@ export const moodStickers = [
   { id: "mood-focus", label: "Focus !", image: m20.url, motion: "pop", accent: "👑" },
 ] as const;
 
-export type MoodSticker = (typeof moodStickers)[number];
+import n01 from "@/assets/stickers/mood/toi-la-2.png.asset.json";
+import n02 from "@/assets/stickers/mood/cours-2.png.asset.json";
+import n03 from "@/assets/stickers/mood/hahaha-2.png.asset.json";
+import n04 from "@/assets/stickers/mood/pas-mon-probleme-2.png.asset.json";
+import n05 from "@/assets/stickers/mood/nananana-2.png.asset.json";
+import n06 from "@/assets/stickers/mood/hum-2.png.asset.json";
+import n07 from "@/assets/stickers/mood/mdr-2.png.asset.json";
+import n08 from "@/assets/stickers/mood/je-suis-ko-2.png.asset.json";
+import n09 from "@/assets/stickers/mood/bye-bye-2.png.asset.json";
+import n10 from "@/assets/stickers/mood/je-vais-taper-2.png.asset.json";
+import n11 from "@/assets/stickers/mood/tu-parles-trop-2.png.asset.json";
+import n12 from "@/assets/stickers/mood/oh-mon-dieu-2.png.asset.json";
+import n13 from "@/assets/stickers/mood/je-te-vois-2.png.asset.json";
+import n14 from "@/assets/stickers/mood/argent-dabord-2.png.asset.json";
+import n15 from "@/assets/stickers/mood/degage-2.png.asset.json";
+import n16 from "@/assets/stickers/mood/cest-bon-hein-2.png.asset.json";
+import n17 from "@/assets/stickers/mood/trop-mange-2.png.asset.json";
+import n18 from "@/assets/stickers/mood/wesh-2.png.asset.json";
+import n19 from "@/assets/stickers/mood/ecoutez-moi-bien-2.png.asset.json";
+import n20 from "@/assets/stickers/mood/je-ne-sais-pas-2.png.asset.json";
+
+/** Collection « Mood » série 2 : les 20 stickers comiques #2. */
+const moodStickers2 = [
+  { id: "mood2-toi-la", label: "Toi là !", image: n01.url, motion: "wave", accent: "👉" },
+  { id: "mood2-cours", label: "Cours !!!", image: n02.url, motion: "bounce", accent: "💨" },
+  { id: "mood2-hahaha", label: "Hahaha !", image: n03.url, motion: "laugh", accent: "😂" },
+  { id: "mood2-pas-mon-probleme", label: "Pas mon problème !", image: n04.url, motion: "shrug", accent: "☕" },
+  { id: "mood2-nananana", label: "Nananana !", image: n05.url, motion: "laugh", accent: "😝" },
+  { id: "mood2-hum", label: "Hum !", image: n06.url, motion: "ponder", accent: "😒" },
+  { id: "mood2-mdr", label: "MDR !", image: n07.url, motion: "laugh", accent: "😂" },
+  { id: "mood2-je-suis-ko", label: "Je suis KO !", image: n08.url, motion: "sleep", accent: "💫" },
+  { id: "mood2-bye-bye", label: "Bye bye !", image: n09.url, motion: "wave", accent: "💅" },
+  { id: "mood2-je-vais-taper", label: "Je vais taper !", image: n10.url, motion: "shock", accent: "🪰" },
+  { id: "mood2-tu-parles-trop", label: "Tu parles trop !", image: n11.url, motion: "ponder", accent: "☕" },
+  { id: "mood2-oh-mon-dieu", label: "Oh mon Dieu !", image: n12.url, motion: "shock", accent: "😱" },
+  { id: "mood2-je-te-vois", label: "Je te vois !", image: n13.url, motion: "wink", accent: "👀" },
+  { id: "mood2-argent-dabord", label: "Argent d’abord !", image: n14.url, motion: "bounce", accent: "💸" },
+  { id: "mood2-degage", label: "Dégage !", image: n15.url, motion: "wave", accent: "✋" },
+  { id: "mood2-cest-bon-hein", label: "C’est bon hein !", image: n16.url, motion: "heart", accent: "😋" },
+  { id: "mood2-trop-mange", label: "Trop mangé !", image: n17.url, motion: "sleep", accent: "🍽️" },
+  { id: "mood2-wesh", label: "Wesh ?!", image: n18.url, motion: "pop", accent: "🐐" },
+  { id: "mood2-ecoutez-moi-bien", label: "Écoutez-moi bien !", image: n19.url, motion: "shock", accent: "📢" },
+  { id: "mood2-je-ne-sais-pas", label: "Je ne sais pas !", image: n20.url, motion: "shrug", accent: "🤷" },
+] as const;
+
+export type MoodSticker = (typeof moodStickers)[number] | (typeof moodStickers2)[number];
+export const allMoodStickers = [...moodStickers, ...moodStickers2];
 
 export type WippSticker = (typeof wippStickers)[number];
 export const allImageStickers = [...elleStickers, ...wippStickers, ...moodStickers];
