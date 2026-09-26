@@ -37,6 +37,7 @@ export type Surprise = {
 
 export type SurpriseDesignItem = { id: string; label: string; mark: string; art?: string };
 export type SurpriseAnimationItem = { id: string; label: string; art: string };
+export type SurpriseAnimationCategory = { id: string; label: string; art: string };
 
 /** Libellé et icône du 2e bouton, selon le type choisi. « Ajouter une animation » ne change jamais. */
 export const designPicker: Record<SurpriseType, { label: string; icon: LucideIcon }> = {
@@ -67,8 +68,22 @@ export const countdownChoices = [
   { seconds: 3600, label: "1 heure" },
 ];
 
-/** Animations finales. Les images sont provisoires ; les animations WIPP seront branchées par id. */
-export const surpriseAnimations: SurpriseAnimationItem[] = [
+/** Les dix animations Amour sont des choix indépendants, issus de la planche transparente fournie. */
+export const amourAnimations: SurpriseAnimationItem[] = [
+  { id: "amour-coeurs", label: "Cœurs", art: amour01 },
+  { id: "amour-bouquet", label: "Bouquet", art: amour02 },
+  { id: "amour-nounours", label: "Nounours", art: amour03 },
+  { id: "amour-ballons", label: "Ballons", art: amour04 },
+  { id: "amour-cadeaux", label: "Cadeaux", art: amour05 },
+  { id: "amour-coeur-fleurs", label: "Cœur fleuri", art: amour06 },
+  { id: "amour-champagne", label: "Champagne", art: amour07 },
+  { id: "amour-feux-artifice", label: "Feux d’artifice", art: amour08 },
+  { id: "amour-coeurs-petales", label: "Cœurs et pétales", art: amour09 },
+  { id: "amour-enveloppe", label: "Enveloppe", art: amour10 },
+];
+
+/** Catégories affichées au premier niveau du tiroir. */
+export const surpriseAnimationCategories: SurpriseAnimationCategory[] = [
   { id: "amour", label: "Amour", art: amour03 },
   { id: "beaute", label: "Beauté", art: beauteArt },
   { id: "bonne-journee", label: "Bonne journée", art: journeeArt },
@@ -77,10 +92,13 @@ export const surpriseAnimations: SurpriseAnimationItem[] = [
   { id: "amitie", label: "Amitié", art: amitieArt },
 ];
 
-export const findAnimation = (id: string | null) => surpriseAnimations.find(a => a.id === id) ?? null;
+/** Les autres catégories restent uniques jusqu'à la réception de leurs collections. */
+export const surpriseAnimations: SurpriseAnimationItem[] = [
+  ...amourAnimations,
+  ...surpriseAnimationCategories.filter(item => item.id !== "amour"),
+];
 
-/** Les 10 visuels Amour, découpés de la planche fournie (fond transparent). */
-export const amourAssets = [amour01, amour02, amour03, amour04, amour05, amour06, amour07, amour08, amour09, amour10];
+export const findAnimation = (id: string | null) => surpriseAnimations.find(animation => animation.id === id) ?? null;
 export const defaultDesign = (type: SurpriseType) => surpriseDesigns[type][0]?.id ?? null;
 export const defaultOptions = (type: SurpriseType): SurpriseOptions =>
   type === "countdown" ? { countdown: { seconds: countdownChoices[0]!.seconds } } : {};

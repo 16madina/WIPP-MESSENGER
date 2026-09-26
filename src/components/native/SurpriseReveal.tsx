@@ -7,7 +7,7 @@ import giftArt from "@/assets/surprise-gift.png";
 import confettiArt from "@/assets/surprise-confetti.png";
 import { SurpriseCard } from "./SurpriseCard";
 import { Pressable } from "./Pressable";
-import { amourAssets, findAnimation, type Surprise } from "@/lib/surprise";
+import { findAnimation, type Surprise } from "@/lib/surprise";
 import { motion as m } from "@/theme/theme";
 import { haptic } from "@/lib/haptics";
 
@@ -82,39 +82,6 @@ function Mechanism({ surprise, demo, onRevealComplete }: { surprise: Surprise; d
   );
 }
 
-/** Scène Amour : les 10 visuels apparaissent en cascade, flottent doucement, puis s'effacent. */
-const amourSpots = [
-  { left: "6%", top: "12%", size: 104 }, { left: "66%", top: "8%", size: 96 },
-  { left: "30%", top: "4%", size: 88 }, { left: "8%", top: "42%", size: 92 },
-  { left: "68%", top: "38%", size: 100 }, { left: "34%", top: "34%", size: 112 },
-  { left: "12%", top: "70%", size: 90 }, { left: "64%", top: "68%", size: 98 },
-  { left: "36%", top: "62%", size: 84 }, { left: "42%", top: "18%", size: 80 },
-];
-function AmourScene({ reduced }: { reduced: boolean }) {
-  const total = m.surpriseAnimationMs / 1000;
-  return (
-    <div className="absolute inset-0">
-      {amourAssets.map((src, i) => {
-        const spot = amourSpots[i % amourSpots.length]!;
-        const delay = reduced ? 0 : i * 0.22;
-        const drift = i % 2 === 0 ? -14 : 14;
-        return (
-          <motion.img
-            key={i} src={src} alt="" width={320} height={320}
-            className="absolute object-contain drop-shadow-[0_6px_18px_rgba(255,60,90,0.35)]"
-            style={{ left: spot.left, top: spot.top, width: spot.size, height: spot.size }}
-            initial={reduced ? { opacity: 0 } : { opacity: 0, scale: 0.3, y: 26 }}
-            animate={reduced
-              ? { opacity: [0, 1, 1, 0] }
-              : { opacity: [0, 1, 1, 1, 0], scale: [0.3, 1.06, 1, 1, 0.9], y: [26, 0, drift, drift * -0.6, -10] }}
-            transition={{ duration: total, delay, times: reduced ? [0, 0.1, 0.85, 1] : [0, 0.12, 0.45, 0.8, 1], ease: "easeOut" }}
-          />
-        );
-      })}
-    </div>
-  );
-}
-
 /** Calque transparent au-dessus de l'écran ; l'animation WIPP définitive se branchera ici par id. */
 function AnimationOverlay({ animationId, onDone }: { animationId: string | null; onDone: () => void }) {
   const reduced = useReducedMotion();
@@ -128,9 +95,7 @@ function AnimationOverlay({ animationId, onDone }: { animationId: string | null;
   if (typeof document === "undefined") return null;
   return createPortal(<AnimatePresence>{item && (
     <motion.div key={item.id} className="pointer-events-none fixed inset-0 z-[120] flex items-center justify-center" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0, transition: { duration: m.surpriseAnimationExitMs / 1000 } }} aria-live="polite" aria-label={`Animation ${item.label}`}>
-      {item.id === "amour" ? <AmourScene reduced={!!reduced} /> : (
-        <motion.img src={item.art} alt="" width={512} height={512} className="h-44 w-44 rounded-full object-cover shadow-glow" initial={reduced ? { opacity: 0 } : { scale: 0.6, opacity: 0 }} animate={reduced ? { opacity: 1 } : { scale: [0.6, 1.08, 1, 1], opacity: [0, 1, 1, 1] }} transition={{ duration: reduced ? 0.2 : m.surpriseAnimationMs / 1000, times: [0, 0.12, 0.24, 1] }} />
-      )}
+      <motion.img src={item.art} alt="" width={768} height={768} className="h-[min(72vw,420px)] w-[min(72vw,420px)] object-contain drop-shadow-[0_10px_28px_rgba(255,60,90,0.4)]" initial={reduced ? { opacity: 0 } : { scale: 0.35, opacity: 0, y: 36 }} animate={reduced ? { opacity: [0, 1, 1, 0] } : { scale: [0.35, 1.08, 1, 1, 0.94], opacity: [0, 1, 1, 1, 0], y: [36, 0, -10, 8, -18] }} transition={{ duration: m.surpriseAnimationMs / 1000, times: reduced ? [0, 0.08, 0.86, 1] : [0, 0.14, 0.34, 0.82, 1], ease: "easeOut" }} />
     </motion.div>
   )}</AnimatePresence>, document.body);
 }
