@@ -12,7 +12,7 @@ const motifs: Record<SurpriseDesign, string> = { heart: "♥", stars: "✦", cro
 const revealedKey = (id: string) => `wipp:surprise:revealed:${id}`;
 
 /** La surface est réellement effacée au doigt ; l'état de découverte reste sur cet appareil. */
-export function SurpriseCard({ message, preview = false }: { message?: SurpriseMessage; preview?: boolean }) {
+export function SurpriseCard({ message, preview = false, demo = false }: { message?: SurpriseMessage; preview?: boolean; demo?: boolean }) {
   const canvas = useRef<HTMLCanvasElement>(null);
   const image = useRef<HTMLImageElement | null>(null);
   const drawing = useRef(false);
@@ -25,8 +25,8 @@ export function SurpriseCard({ message, preview = false }: { message?: SurpriseM
 
   useEffect(() => {
     setStarted(false);
-    setRevealed(!preview && !!message && localStorage.getItem(revealedKey(message.id)) === "1");
-  }, [message?.id, preview]);
+    setRevealed(!preview && !demo && !!message && localStorage.getItem(revealedKey(message.id)) === "1");
+  }, [message?.id, preview, demo]);
 
   useEffect(() => {
     if (revealed || !message || preview) return;
@@ -51,7 +51,7 @@ export function SurpriseCard({ message, preview = false }: { message?: SurpriseM
 
   const finish = () => {
     if (!message) return;
-    localStorage.setItem(revealedKey(message.id), "1");
+    if (!demo) localStorage.setItem(revealedKey(message.id), "1");
     haptic("success");
     setRevealed(true);
     setSparks(Array.from({ length: 15 }, (_, i) => ({ id: Date.now() + i, x: 130, y: 108, dx: Math.cos(i * 2.4) * 95, dy: Math.sin(i * 2.4) * 90 })));
