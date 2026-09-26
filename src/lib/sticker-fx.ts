@@ -59,7 +59,7 @@ export function playStickerSound(fx: StickerFx) {
     const Ctor = window.AudioContext ?? (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
     ctx ??= new Ctor();
     const now = ctx.currentTime;
-    (tones[fx] ?? tones.none).forEach((freq, i) => {
+    (tones[fx] ?? [600]).forEach((freq, i) => {
       const osc = ctx!.createOscillator();
       const gain = ctx!.createGain();
       osc.type = fx === "shake" ? "square" : "sine";
