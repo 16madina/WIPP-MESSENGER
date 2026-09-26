@@ -47,8 +47,16 @@ const sig = (id: string, label: string, motion: string, extra: Partial<StickerDe
   ({ id: `sig-${id}`, pack: "sig", label, image: `/stickers/sig/sig-${id}.png`, motion, ...extra });
 const moji = (n: number, label: string, motion: string, extra: Partial<StickerDef> = {}): StickerDef =>
   ({ id: `moji-${String(n).padStart(2, "0")}`, pack: "moji", label, image: `/stickers/moji/moji-${String(n).padStart(2, "0")}.png`, motion, ...extra });
-const scene = (n: number, label: string, motion: string, extra: Partial<StickerDef> = {}): StickerDef =>
-  ({ id: `scene-${String(n).padStart(2, "0")}`, pack: "scene", label, image: `/stickers/scene/scene-${String(n).padStart(2, "0")}.png`, motion, ...extra });
+// Les fichiers scene-13 à scene-30 du dépôt ne suivent pas l'ordre du catalogue :
+// ce tableau relie chaque sticker à l'image qui porte réellement son texte.
+const SCENE_FILE: Record<number, number> = {
+  13: 16, 14: 13, 15: 17, 16: 14, 17: 18, 18: 15, 20: 24, 21: 20, 22: 21,
+  23: 22, 24: 23, 25: 28, 26: 29, 27: 25, 28: 30, 29: 26, 30: 27,
+};
+const scene = (n: number, label: string, motion: string, extra: Partial<StickerDef> = {}): StickerDef => {
+  const file = SCENE_FILE[n] ?? n;
+  return { id: `scene-${String(n).padStart(2, "0")}`, pack: "scene", label, image: `/stickers/scene/scene-${String(file).padStart(2, "0")}.png`, motion, ...extra };
+};
 
 export const elleStickers: StickerDef[] = [
   elle("wippe-moi", "Wippe-moi !"),
