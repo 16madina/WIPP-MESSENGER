@@ -265,6 +265,13 @@ export function ConversationScreen({ chatId }: { chatId: string }) {
   const recordStartedAt = useRef(0);
   const pausedAccumMs = useRef(0);
   const [active, setActive] = useState<Message | null>(null);
+  // Balayer une bulle vers la droite = répondre (geste natif). On bloque le clic qui suit le geste.
+  const swipe = useRef<{ id: string; x: number; y: number; el: HTMLElement; dx: number } | null>(null);
+  const swallowClick = useRef(false);
+  const localPatch = (id: string, fn: (m: Message) => Message) =>
+    useWgoStore.setState((st) => ({
+      messages: { ...st.messages, [chatId]: (st.messages[chatId] ?? []).map((m) => (m.id === id ? fn(m) : m)) },
+    }));
   const [attach, setAttach] = useState(false);
   const [surprise, setSurprise] = useState(false);
   const [revealSurprise, setRevealSurprise] = useState<Surprise | null>(null);
@@ -284,9 +291,12 @@ export function ConversationScreen({ chatId }: { chatId: string }) {
     const st = useWgoStore.getState();
     if ((st.messages[chatId] ?? []).some((m) => m.id === "l3-sys")) return;
     void import("@/lib/seed").then(({ lot3DemoMessages }) =>
-      useWgoStore.setState((s) => ({
-        messages: { ...s.messages, [chatId]: [...(s.messages[chatId] ?? []), ...lot3DemoMessages(chatId, "alex")] },
-      })),
+      useWgoStore.setState((s) => {
+        // Revérifié ici : deux ouvertures rapprochées ajoutaient la démo en double.
+        const cur = s.messages[chatId] ?? [];
+        if (cur.some((m) => m.id === "l3-sys")) return {};
+        return { messages: { ...s.messages, [chatId]: [...cur, ...lot3DemoMessages(chatId, "alex")] } };
+      }),
     );
   }, [chatId]);
   const [nowTick, setNowTick] = useState(() => Date.now());
@@ -958,7 +968,7 @@ export function ConversationScreen({ chatId }: { chatId: string }) {
               {sealed ? null : <span className="truncate">{title}</span>}
               {!sealed && peerId && verifiedIds.includes(peerId) ? (
                 <ShieldCheck className="size-3.5 shrink-0 text-accent" />
-              ) : !sealed ? (
+              ) : !sealed && !isGroup ? (
                 <Lock className="size-3.5 shrink-0 text-muted" />
               ) : null}
             </button>
@@ -1111,7 +1121,35 @@ export function ConversationScreen({ chatId }: { chatId: string }) {
                     id={`msg-${m.id}`}
                     role={m.type === "scratch" ? "group" : "button"}
                     tabIndex={0}
+                    onPointerDown={(e) => {
+                      if (m.type === "scratch" || m.type === "system" || m.deletedForAll) return;
+                      swipe.current = { id: m.id, x: e.clientX, y: e.clientY, el: e.currentTarget as HTMLElement, dx: 0 };
+                    }}
+                    onPointerMove={(e) => {
+                      const g = swipe.current;
+                      if (!g || g.id !== m.id) return;
+                      const dx = e.clientX - g.x;
+                      const dy = e.clientY - g.y;
+                      if (Math.abs(dy) > 24 && Math.abs(dy) > Math.abs(dx)) { swipe.current = null; g.el.style.transform = ""; return; }
+                      g.dx = Math.max(0, Math.min(80, dx));
+                      g.el.style.transition = "none";
+                      g.el.style.transform = `translate3d(${g.dx}px,0,0)`;
+                    }}
+                    onPointerUp={() => {
+                      const g = swipe.current;
+                      swipe.current = null;
+                      if (!g) return;
+                      g.el.style.transition = "transform 220ms cubic-bezier(.2,.9,.3,1.2)";
+                      g.el.style.transform = "";
+                      if (g.dx > 56) {
+                        swallowClick.current = true;
+                        setReply(m);
+                        if (navigator.vibrate) navigator.vibrate(10);
+                      }
+                    }}
+                    onPointerCancel={() => { const g = swipe.current; swipe.current = null; if (g) g.el.style.transform = ""; }}
                     onClick={() => {
+                      if (swallowClick.current) { swallowClick.current = false; return; }
                       if (m.type === "scratch") return;
                       if (mine && m.status === "failed") {
                         retryMessage(chatId, m.id);
@@ -1276,7 +1314,7 @@ export function ConversationScreen({ chatId }: { chatId: string }) {
                             mine ? "text-paper/50" : "text-muted",
                           )}
                         >
-                          {m.enc ? <Lock className="size-2.5 opacity-70" /> : null}
+                          {m.enc && !isGroup ? <Lock className="size-2.5 opacity-70" /> : null}
                           {m.expiresAt ? <Timer className="size-2.5 opacity-70" /> : null}
                           {formatClock(m.createdAt)}
                           {mine ? <ReceiptMark status={m.status} /> : null}
@@ -1852,6 +1890,18 @@ export function ConversationScreen({ chatId }: { chatId: string }) {
               Transférer
             </button>
             ) : null}
+            {!chatId.startsWith("srv:") && !active.deletedForAll ? (
+              <button
+                type="button"
+                className="flex h-12 items-center gap-3 rounded-lg px-2"
+                onClick={() => {
+                  localPatch(active.id, (x) => ({ ...x, pinned: !x.pinned }));
+                  setActive(null);
+                }}
+              >
+                {active.pinned ? "Désépingler" : "Épingler"}
+              </button>
+            ) : null}
             {chatId.startsWith("srv:") ? (
               <button
                 type="button"
@@ -1908,6 +1958,18 @@ export function ConversationScreen({ chatId }: { chatId: string }) {
             >
               <Trash2 className="size-4" /> {t("deleteMe")}
             </button>
+            {active.fromId === "me" && !chatId.startsWith("srv:") && !active.deletedForAll ? (
+              <button
+                type="button"
+                className="flex h-12 items-center gap-3 rounded-lg px-2 text-danger"
+                onClick={() => {
+                  localPatch(active.id, (x) => ({ ...x, deletedForAll: true, text: "", pinned: false, reactions: [] }));
+                  setActive(null);
+                }}
+              >
+                Supprimer pour tout le monde
+              </button>
+            ) : null}
             {active.fromId === "me" && chatId.startsWith("srv:") ? (
               <button
                 type="button"
@@ -2213,6 +2275,7 @@ export function ConversationScreen({ chatId }: { chatId: string }) {
           </div>
         ) : (
           <div className="grid gap-1">
+            {isGroup ? null : (
             <button
               type="button"
               className="flex h-12 items-center gap-3 rounded-lg px-2"
@@ -2223,6 +2286,7 @@ export function ConversationScreen({ chatId }: { chatId: string }) {
             >
               <Lock className="size-4" /> {t("e2e")}
             </button>
+            )}
             <button
               type="button"
               className="flex h-12 items-center gap-3 rounded-lg px-2"
