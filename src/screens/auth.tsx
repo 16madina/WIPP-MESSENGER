@@ -379,9 +379,9 @@ export function LoginScreen() {
     let displayName = "";
     if (u.user) {
       const { data: p } = await supabase
-        .from("wipp_profiles")
-        .select("display_name, phone_e164")
-        .eq("auth_user_id", u.user.id)
+        .from("wipp_public_profiles")
+        .select("display_name")
+        .eq("id", (await supabase.rpc("wipp_my_profile_id" as never)).data ?? "")
         .maybeSingle();
       displayName = p?.display_name ?? "";
     }
@@ -581,9 +581,9 @@ export function OtpScreen() {
     let displayName = "";
     if (u.user) {
       const { data: p } = await supabase
-        .from("wipp_profiles")
+        .from("wipp_public_profiles")
         .select("display_name")
-        .eq("auth_user_id", u.user.id)
+        .eq("id", (await supabase.rpc("wipp_my_profile_id" as never)).data ?? "")
         .maybeSingle();
       displayName = p?.display_name ?? "";
     }

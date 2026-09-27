@@ -13,7 +13,8 @@ const MAX_CHUNKS = 64;
 type Ctx = { supabase: any; userId: string };
 
 async function myProfileId(ctx: Ctx) {
-  const { data } = await ctx.supabase.from("wipp_profiles").select("id").eq("auth_user_id", ctx.userId).maybeSingle();
+  const { data: id } = await (ctx.supabase as any).rpc("wipp_my_profile_id");
+  const data = id ? { id: id as string } : null;
   if (!data) throw new Error("Profil introuvable");
   return data.id as string;
 }

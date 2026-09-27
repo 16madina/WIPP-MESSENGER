@@ -70,3 +70,7 @@ Registre local des QR temporaires (`qr-payload.ts`, localStorage), simulateur To
 - B/C : `DROP TABLE` des nouvelles tables uniquement (aucune donnée existante touchée).
 - D : `DROP POLICY`/`DROP CONSTRAINT` ajoutés.
 Chaque migration est indépendante et réversible ; aucune table wipp_ existante n'est supprimée ni renommée.
+
+## Exécution (27/09/2026)
+- A appliquée (A.1 fonction + vue, A.2 révocation + politique hors blocage). B appliquée. C et D NON exécutées.
+- Rollback A = procédure d'urgence documentée uniquement, jamais automatique ; corriger la fonction cassée plutôt que rouvrir les champs.

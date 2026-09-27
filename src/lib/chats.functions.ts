@@ -7,11 +7,8 @@ export const openDm = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d) => z.object({ peerUsername: z.string().min(1).max(64) }).parse(d))
   .handler(async ({ data, context }) => {
-    const { data: me } = await context.supabase
-      .from("wipp_profiles")
-      .select("id")
-      .eq("auth_user_id", context.userId)
-      .maybeSingle();
+    const { data: myId } = await (context.supabase as any).rpc("wipp_my_profile_id");
+    const me = myId ? { id: myId as string } : null;
     if (!me) throw new Error("Profil introuvable");
     const { data: peer } = await context.supabase
       .from("wipp_profiles")

@@ -7,13 +7,10 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 // ne transporte jamais le texte, seulement « Nouveau message ».
 
 async function myProfileId(supabase: any, userId: string): Promise<string> {
-  const { data } = await supabase
-    .from("wipp_profiles")
-    .select("id")
-    .eq("auth_user_id", userId)
-    .maybeSingle();
+  void userId; // l'identité vient uniquement de la session
+  const { data } = await supabase.rpc("wipp_my_profile_id");
   if (!data) throw new Error("Profil introuvable");
-  return data.id as string;
+  return data as string;
 }
 
 /** Enregistre (ou rafraîchit) le jeton push de cet appareil. */
