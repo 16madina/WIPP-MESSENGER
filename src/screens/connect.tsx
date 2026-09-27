@@ -30,11 +30,11 @@ export function ConnectScreen() {
     <div className="flex h-full flex-col">
       <div className="glass sticky top-0 z-10">
         <StatusBar />
-        <div className="px-5 pt-2 pb-4">
-          <h1 className="text-[24px] leading-tight font-semibold tracking-tight">{t("connectTitle")}</h1>
+        <div className="flex h-[var(--wipp-nav-bar-height)] items-center px-5">
+          <h1 className="min-w-0 truncate text-[24px] leading-tight font-semibold tracking-tight">{t("connectTitle")}</h1>
         </div>
       </div>
-      <div className="min-h-0 flex-1 overflow-y-auto no-scrollbar pb-32">
+      <div className="min-h-0 flex-1 overflow-y-auto no-scrollbar pb-24 pt-1">
         <button
           type="button"
           onClick={() => push({ name: "wgo-touch" })}

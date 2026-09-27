@@ -100,7 +100,7 @@ export function MeScreen() {
     <div className="flex h-full flex-col">
       <div className="sticky top-0 z-10 bg-bg/80 backdrop-blur-md">
         <StatusBar />
-        <div className="flex items-center px-4 pb-2">
+        <div className="flex h-[var(--wipp-nav-bar-height)] items-center px-4">
           <WippWordmark className="text-[26px] text-fg" />
           <div className="ml-auto flex items-center">
             <button
@@ -123,7 +123,7 @@ export function MeScreen() {
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto no-scrollbar pb-28">
+      <div className="min-h-0 flex-1 overflow-y-auto no-scrollbar pb-24">
         <div className="px-4 pt-1">
           <div className="wipp-card relative overflow-hidden rounded-2xl px-3.5 pt-3.5 pb-3 text-paper">
             <p className="font-script pointer-events-none absolute top-3 right-3 max-w-[8ch] text-right text-[22px] leading-[0.95] text-accent">

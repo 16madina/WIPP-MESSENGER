@@ -135,7 +135,7 @@ export function ExploreScreen() {
     <div className="flex h-full flex-col">
       <div className="glass sticky top-0 z-10">
         <StatusBar />
-        <div className="flex items-center px-2 pb-1">
+        <div className="flex h-[var(--wipp-nav-bar-height)] items-center px-2">
           {hub !== "home" && !searching ? (
             <IconBtn label={t("back")} onClick={() => setHub("home")}>
               <ChevronLeft className="size-6" />
@@ -154,7 +154,9 @@ export function ExploreScreen() {
             <span className="w-11" />
           )}
         </div>
-        <div className="relative px-4 pb-3">
+      </div>
+      <div className="no-scrollbar min-h-0 flex-1 overflow-y-auto pb-24">
+        <div className="relative px-4 pb-3 pt-1">
           <Search className="pointer-events-none absolute left-8 top-[14px] size-4 text-muted" />
           <SearchField
             className="h-12 rounded-2xl pl-10"
@@ -164,13 +166,13 @@ export function ExploreScreen() {
           />
         </div>
         {hub === "listings" && !searching ? <ListingFilters cat={cat} setCat={setCat} /> : null}
+        {searching ? <ExploreSearch q={query} /> : null}
+        {!searching && hub === "home" ? <ExploreHome go={setHub} /> : null}
+        {!searching && hub === "listings" ? <ListingsPane cat={cat} /> : null}
+        {!searching && hub === "utilities" ? <UtilitiesPane /> : null}
+        {!searching && hub === "shops" ? <ShopsPane /> : null}
+        {!searching && hub === "lifestyle" ? <LifestylePane /> : null}
       </div>
-      {searching ? <ExploreSearch q={query} /> : null}
-      {!searching && hub === "home" ? <ExploreHome go={setHub} /> : null}
-      {!searching && hub === "listings" ? <ListingsPane cat={cat} /> : null}
-      {!searching && hub === "utilities" ? <UtilitiesPane /> : null}
-      {!searching && hub === "shops" ? <ShopsPane /> : null}
-      {!searching && hub === "lifestyle" ? <LifestylePane /> : null}
     </div>
   );
 }
@@ -221,7 +223,7 @@ function ExploreHome({ go }: { go: (h: Hub) => void }) {
   const recShops = shops.filter((s) => s.plan === "plus");
 
   return (
-    <div className="min-h-0 flex-1 overflow-y-auto no-scrollbar px-4 pb-24">
+    <div className="px-4">
       <p className="text-[13px] leading-relaxed text-muted">{t("exploreSplit")}</p>
       <div className="mt-4 grid grid-cols-2 gap-3">
         <HubCard
@@ -481,7 +483,7 @@ function ExploreSearch({ q }: { q: string }) {
     !foundListings.length && !foundShops.length && !foundPh.length && !foundEvents.length;
 
   return (
-    <div className="min-h-0 flex-1 overflow-y-auto no-scrollbar px-4 pb-24">
+    <div className="px-4">
       {empty ? <p className="py-16 text-center text-[14px] text-muted">{t("searchNoResults")}</p> : null}
 
       {foundShops.length ? (
@@ -638,7 +640,7 @@ function ListingsPane({ cat }: { cat: (typeof CATS)[number] }) {
   const list = cat === "all" ? listings : listings.filter((l) => l.category === cat);
 
   return (
-    <div className="flex-1 overflow-y-auto no-scrollbar px-4 pb-24">
+    <div className="px-4">
       <p className="mb-3 text-[12px] text-muted">{t("phoneHiddenForever")}</p>
       {list.map((l) => (
         <button
@@ -682,7 +684,7 @@ function UtilitiesPane() {
   }, [geo, dutyOnly]);
 
   return (
-    <div className="min-h-0 flex-1 overflow-y-auto no-scrollbar px-4 pb-24">
+    <div className="px-4">
       <p className="text-[13px] leading-relaxed text-muted">{t("utilitiesHint")}</p>
 
       <button
@@ -968,7 +970,7 @@ function ShopsPane() {
   }, [shops, cat, geo, toks]);
 
   return (
-    <div className="min-h-0 flex-1 overflow-y-auto no-scrollbar px-4 pb-24">
+    <div className="px-4">
       <p className="text-[13px] leading-relaxed text-muted">{t("cardHint")}</p>
       <SearchField
         className="mt-3"
@@ -1652,7 +1654,7 @@ function LifestylePane() {
   const filters: (LifestyleKind | "all")[] = ["all", "party", "concert", "promo", "event", "spot"];
 
   return (
-    <div className="min-h-0 flex-1 overflow-y-auto no-scrollbar px-4 pb-24">
+    <div className="px-4">
       <p className="text-[13px] leading-relaxed text-muted">{t("lifestyleHint")}</p>
       <button
         type="button"

@@ -160,11 +160,11 @@ export const shadows = {
 export const blur = { glass: 24, bar: 30, menu: 40, backdrop: 14, banner: 30, saturate: 1.8 };
 
 export const layout = {
-  tabBarHeight: 64,
+  tabBarHeight: 74,
   tabBarMargin: 12,
   centerButton: 58,
   centerLift: 16,
-  navBarHeight: 44,
+  navBarHeight: 56,
   largeTitleHeight: 52,
   searchBarHeight: 52,
   edgeSwipeWidth: 24,
@@ -272,6 +272,8 @@ export function themeToCssVars(mode: ThemeMode): string {
     `--wipp-shadow-lift:${shadows.lift};`,
     `--wipp-shadow-glow:${shadows.glow};`,
     `--wipp-shimmer-duration:${motion.shimmerSeconds}s;`,
+    `--wipp-nav-bar-height:${layout.navBarHeight}px;`,
+    `--wipp-tab-bar-height:${layout.tabBarHeight}px;`,
     `--wipp-font-display:${fonts.display};`,
     `--wipp-font-body:${fonts.body};`,
   );
