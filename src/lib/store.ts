@@ -764,7 +764,7 @@ export const useWgoStore = create<WgoState>()(
                 mergeServerMessagesIntoState,
                 decryptMergedMessages,
               } = await import("@/lib/messaging/sync");
-              if (!isServerChatId(chatId)) return message.id;
+              if (!isServerChatId(chatId)) return;
               const st = get();
               const peerId = st.chats.find((c) => c.id === chatId)?.participantIds.find((id) => id !== "me");
               const peerPub = peerId
