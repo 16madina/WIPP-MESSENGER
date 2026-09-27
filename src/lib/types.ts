@@ -256,7 +256,17 @@ export type Chat = {
   sealed?: boolean;
   shopId?: string;
   disappearAfterMs?: number;
+  /** Groupes : description, rôles, permissions, départ, notifications. */
+  description?: string;
+  adminIds?: string[];
+  groupPerms?: GroupPerms;
+  left?: boolean;
+  notifMode?: "all" | "mentions" | "none";
 };
+
+export type GroupAudience = "all" | "admins";
+export type GroupPerms = { editInfo: GroupAudience; send: GroupAudience; addMembers: GroupAudience; everyone: boolean };
+export const defaultGroupPerms: GroupPerms = { editInfo: "admins", send: "all", addMembers: "all", everyone: true };
 
 export type MediaItem = { type: "image" | "video"; url: string; duration?: number };
 
@@ -312,6 +322,8 @@ export type Message = {
   enc?: EncBlob;
   encFailed?: boolean;
   translated?: string;
+  /** Ids mentionnés (@) ; "all" = @toutlemonde. Sert plus tard à la notification dédiée. */
+  mentions?: string[];
 };
 
 export type StoryViewer = { userId: string; at: number };
