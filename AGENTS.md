@@ -26,3 +26,5 @@
 - Fournisseurs remplaçables (proximité, scanner QR, protection d'écran, biométrie, partage, notifications) dans src/lib/providers ; format QR strict dans src/lib/qr-payload.ts. Pourquoi : Cursor remplace les versions web par le natif sans toucher aux écrans.
 - QR : tout scan passe par src/lib/qr-resolver.ts (profile /@, temporary /t/, group /g/, business /b/) ; lecture caméra BarcodeDetector sinon jsQR. Pourquoi : un seul point de validation, compatible iPhone.
 - WIPP Touch : machine à états pure src/lib/touch-machine.ts (10 états) pilotée par providers.proximity. Pourquoi : Cursor branche BLE/NFC sans toucher l'écran.
+- Profils : champs privés (auth_user_id, password_hash, phone_e164, firebase_uid) illisibles côté navigateur ; son propre id via rpc wipp_my_profile_id(), profil public via wipp_public_profiles (security_invoker). Pourquoi : fermer la fuite entre comptes.
+- Connexions : wipp_connection_requests/wipp_connections écrites uniquement par src/lib/connections.functions.ts → fonctions SQL service_role transactionnelles (une demande en attente par paire, dans les deux sens). Pourquoi : aucune connexion arbitraire depuis le client.
