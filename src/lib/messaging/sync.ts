@@ -122,6 +122,7 @@ function keepLocalMedia(local: Message | undefined, next: Message): Message {
     const v = (local as Record<string, unknown>)[k];
     if (v !== undefined && (out[k] === undefined || k === "type" || k === "text")) out[k] = v;
   }
+  out.encFailed = false;
   return out as Message;
 }
 
