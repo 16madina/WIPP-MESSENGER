@@ -4,7 +4,7 @@
  * BACKEND : réception réelle via wipp_touch_invites + fonction serveur respondTouch.
  * NATIVE : réception quand WIPP est fermé (notification / BLE / NFC) — non simulée ici.
  */
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { Check, Clock, ShieldOff, TriangleAlert, X } from "lucide-react";
 import { Avatar } from "@/components/avatar";
 import { WippMark } from "@/components/logo";
@@ -32,7 +32,7 @@ export function TouchIncomingScreen({ demo = "pending" }: { demo?: TouchIncoming
   };
   const decline = () => { haptic("select"); setView("declined"); };
 
-  const info: Partial<Record<View, { icon: JSX.Element; title: string; body: string }>> = {
+  const info: Partial<Record<View, { icon: ReactNode; title: string; body: string }>> = {
     expired: { icon: <Clock className="size-6" />, title: "Demande expirée", body: "Cette demande n'est plus valable. Rapprochez à nouveau vos téléphones." },
     handled: { icon: <Check className="size-6" />, title: "Demande déjà traitée", body: "Tu as déjà répondu à cette demande." },
     blocked: { icon: <ShieldOff className="size-6" />, title: "Demande indisponible", body: "Tu ne peux pas recevoir de demande de cette personne." },
