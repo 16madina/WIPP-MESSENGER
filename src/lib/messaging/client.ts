@@ -282,10 +282,12 @@ export async function postUnblock(target: { username?: string; profileId?: strin
 }
 
 export async function postDisappear(chatId: string, ms: number) {
-  return api<{ ok: boolean; disappearAfterMs: number | null }>(`/chats/${chatId}/disappear`, {
-    method: "POST",
-    body: JSON.stringify({ ms }),
-  });
+  const { error } = await supabase
+    .from("wipp_chats")
+    .update({ disappear_after_ms: ms || null } as never)
+    .eq("id", chatId);
+  if (error) throw error;
+  return { ok: true, disappearAfterMs: ms || null };
 }
 
 export async function createServerAttachment(chatId: string, input: { chunkCount: number; byteSize: number; viewOnce?: boolean }) {

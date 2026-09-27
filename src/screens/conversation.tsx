@@ -2250,8 +2250,9 @@ export function ConversationScreen({ chatId }: { chatId: string }) {
                 setMenu(false);
                 setReportOpen(true);
               }}
+              blockLabel={peer ? `Bloquer ${peer.displayName.split(" ")[0]}` : undefined}
               onBlock={
-                peerId
+                peerId && !blockedIds.includes(peerId)
                   ? () => {
                       setMenu(false);
                       setBlockOpen(true);

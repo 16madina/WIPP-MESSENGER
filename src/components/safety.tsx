@@ -6,15 +6,12 @@ import { useT, useWgoStore } from "@/lib/store";
 import type { ReportKind, ReportReason, SafetyReport } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
-const REASONS: { id: ReportReason; key: I18nKey }[] = [
-  { id: "spam", key: "reportSpam" },
-  { id: "harass", key: "reportHarass" },
-  { id: "hate", key: "reportHate" },
-  { id: "fake", key: "reportFake" },
-  { id: "scam", key: "reportScam" },
-  { id: "sexual", key: "reportSexual" },
-  { id: "underage", key: "reportUnderage" },
-  { id: "other", key: "reportOther" },
+const REASONS: { id: ReportReason; label: string }[] = [
+  { id: "spam", label: "Spam" },
+  { id: "harass", label: "Harcèlement" },
+  { id: "scam", label: "Arnaque" },
+  { id: "sexual", label: "Contenu inapproprié" },
+  { id: "other", label: "Autre" },
 ];
 
 export function flaggedIds(reports: SafetyReport[] | undefined, kind: ReportKind) {
@@ -38,6 +35,7 @@ export function ReportSheet({
   targetId,
   blockUserId,
   onSubmitted,
+  recentMessages,
 }: {
   open: boolean;
   onClose: () => void;
@@ -45,8 +43,11 @@ export function ReportSheet({
   targetId: string;
   blockUserId?: string;
   onSubmitted?: () => void;
+  /** Derniers messages de l’autre personne, sélectionnables (jamais montré à l’autre). */
+  recentMessages?: { id: string; preview: string }[];
 }) {
   const t = useT();
+  const [picked, setPicked] = useState<string[]>([]);
   const reportTarget = useWgoStore((s) => s.reportTarget);
   const blockUser = useWgoStore((s) => s.blockUser);
   const [reason, setReason] = useState<ReportReason | null>(null);
@@ -58,6 +59,7 @@ export function ReportSheet({
       setReason(null);
       setAlsoBlock(false);
       setDone(false);
+      setPicked([]);
     }
   }, [open, blockUserId]);
 
@@ -78,11 +80,28 @@ export function ReportSheet({
               )}
               onClick={() => setReason(r.id)}
             >
-              {t(r.key)}
+              {r.label}
             </button>
           ))}
-          {reason === "underage" ? (
-            <p className="px-2 pt-2 text-[12px] leading-relaxed text-muted">{t("reportUnderageHint")}</p>
+          {recentMessages?.length ? (
+            <div className="mt-2 grid gap-1">
+              <p className="px-2 text-[12px] font-semibold text-muted">Messages concernés (facultatif)</p>
+              {recentMessages.map((m) => {
+                const on = picked.includes(m.id);
+                return (
+                  <button
+                    key={m.id}
+                    type="button"
+                    aria-pressed={on}
+                    className={cn("flex min-h-11 items-center gap-2 rounded-lg px-3 text-left text-[13px]", on && "bg-accent/15")}
+                    onClick={() => setPicked((p) => (on ? p.filter((x) => x !== m.id) : [...p, m.id]))}
+                  >
+                    <span className={cn("size-4 shrink-0 rounded-full ring-1 ring-hair", on && "bg-accent ring-accent")} />
+                    <span className="line-clamp-1">{m.preview}</span>
+                  </button>
+                );
+              })}
+            </div>
           ) : null}
           {blockUserId ? (
             <label className="mt-2 flex items-center gap-3 px-2 py-2 text-[14px]">
@@ -100,7 +119,7 @@ export function ReportSheet({
             disabled={!reason}
             onClick={() => {
               if (!reason) return;
-              reportTarget({ kind, targetId, reason });
+              reportTarget({ kind, targetId, reason, note: picked.length ? `messages:${picked.join(",")}` : undefined });
               if (blockUserId && alsoBlock) blockUser(blockUserId);
               setDone(true);
               window.setTimeout(() => {
@@ -215,9 +234,11 @@ export function AppLockGate() {
 export function SafetyRow({
   onReport,
   onBlock,
+  blockLabel,
 }: {
   onReport: () => void;
   onBlock?: () => void;
+  blockLabel?: string;
 }) {
   const t = useT();
   return (
@@ -235,7 +256,7 @@ export function SafetyRow({
           className="flex h-12 items-center gap-3 rounded-lg px-2 text-[15px] text-danger"
           onClick={onBlock}
         >
-          <Ban className="size-4" /> {t("block")}
+          <Ban className="size-4" /> {blockLabel ?? t("block")}
         </button>
       ) : null}
     </div>

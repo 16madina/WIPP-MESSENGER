@@ -223,7 +223,7 @@ type WgoState = ReturnType<typeof fresh> & {
   ignoreRequest: (id: string) => void;
   blockUser: (userId: string) => void;
   unblockUser: (userId: string) => void;
-  reportTarget: (data: { kind: ReportKind; targetId: string; reason: ReportReason }) => void;
+  reportTarget: (data: { kind: ReportKind; targetId: string; reason: ReportReason; note?: string }) => void;
   signOut: () => void;
   deleteAccount: () => void;
   setBiometrics: (on: boolean) => void;
@@ -1439,7 +1439,9 @@ export const useWgoStore = create<WgoState>()(
         const lang = get().language;
         const label = !ms
           ? t(lang, "disappearOffSys")
-          : ms >= DISAPPEAR_7D
+          : ms >= 30 * 86_400_000
+            ? "Les nouveaux messages disparaîtront après 30 jours."
+            : ms >= DISAPPEAR_7D
             ? t(lang, "disappear7dSys")
             : t(lang, "disappear24hSys");
         const sys: Message = {
