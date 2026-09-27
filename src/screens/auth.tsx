@@ -17,12 +17,23 @@ import {
 import { GallerySheet } from "@/components/gallery";
 import { SmartImg } from "@/components/smart-img";
 import { StatusBar } from "@/components/ui";
+import {
+  RECAPTCHA_ID,
+  clearPending,
+  pendingMode,
+  pendingPassword,
+  pendingPhone,
+  startPhoneCode,
+  verifyPhoneCode,
+} from "@/lib/auth-flow";
+import { resetPasswordPhone, signinPhone, signupPhone } from "@/lib/auth.functions";
 import { announce, haptic } from "@/lib/haptics";
 import { yearsOld } from "@/lib/legal";
 import { TAKEN_USERNAMES } from "@/lib/seed";
 import { useT, useWgoStore } from "@/lib/store";
 import type { Lang } from "@/lib/types";
 import { cn } from "@/lib/utils";
+import { supabase } from "@/integrations/supabase/client";
 import {
   AuthCta,
   AuthField,
@@ -182,6 +193,22 @@ export function SignupScreen() {
             <Lock className="mt-0.5 size-3 shrink-0 text-accent" />
             {t("phonePrivate")}
           </p>
+        </div>
+        <div className="relative mt-3">
+          <AuthField label={t("password")} icon={<Lock className="size-4" />}>
+            <input
+              type="password"
+              className="h-full w-full bg-transparent text-[15px] outline-none"
+              value={password}
+              autoComplete="new-password"
+              onChange={(e) => {
+                setPassword(e.target.value);
+                setWeakPassword(false);
+              }}
+            />
+          </AuthField>
+          <p className="mt-1.5 text-[11px] text-muted">{t("passwordHint")}</p>
+          {weakPassword ? <p className="mt-1 text-[13px] text-danger">{t("passwordWeak")}</p> : null}
         </div>
         <div className="relative mt-3">
           <AuthField label={t("birthday")} icon={<Calendar className="size-4" />}>
