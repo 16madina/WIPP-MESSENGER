@@ -262,6 +262,17 @@ export function ConversationScreen({ chatId }: { chatId: string }) {
   const docRef = useRef<HTMLInputElement>(null);
   const [viewOnce, setViewOnce] = useState(false);
   const [viewer, setViewer] = useState<Message | null>(null);
+  useEffect(() => {
+    // Démo locale du lot 3 dans la conversation avec Alex (jamais envoyée au serveur).
+    if (chatId !== "c-alex") return;
+    const st = useWgoStore.getState();
+    if ((st.messages[chatId] ?? []).some((m) => m.id === "l3-sys")) return;
+    void import("@/lib/seed").then(({ lot3DemoMessages }) =>
+      useWgoStore.setState((s) => ({
+        messages: { ...s.messages, [chatId]: [...(s.messages[chatId] ?? []), ...lot3DemoMessages(chatId, "alex")] },
+      })),
+    );
+  }, [chatId]);
   const [nowTick, setNowTick] = useState(() => Date.now());
   useEffect(() => {
     const id = window.setInterval(() => setNowTick(Date.now()), 30_000);
