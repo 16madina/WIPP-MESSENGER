@@ -13,15 +13,6 @@ const Name = z.string().trim().min(1).max(40);
 const Username = z.string().trim().toLowerCase().regex(/^[a-z0-9_]{3,20}$/);
 const Country = z.enum(["CA", "SN", "CI", "ML", "GN", "FR", "US"]);
 
-export const usernameAvailable = createServerFn({ method: "POST" })
-  .inputValidator(parse(z.object({ username: Username }), "Pseudo invalide"))
-  .handler(async ({ data }) => {
-    const { admin } = await ctx();
-    const { data: existing, error } = await admin.from("wipp_profiles").select("id").ilike("username", data.username).limit(1);
-    if (error) throw new Error("Vérification indisponible");
-    return !existing?.length;
-  });
-
 async function ctx() {
   const { createClient } = await import("@supabase/supabase-js");
   const { supabaseAdmin: admin } = await import("@/integrations/supabase/client.server");
@@ -42,8 +33,17 @@ const parse = <T,>(schema: z.ZodType<T>, msg: string) => (d: unknown) => {
   return r.data;
 };
 
+export const usernameAvailable = createServerFn({ method: "POST" })
+  .inputValidator(parse(z.object({ username: Username }), "Pseudo invalide"))
+  .handler(async ({ data }) => {
+    const { admin } = await ctx();
+    const { data: existing, error } = await admin.from("wipp_profiles").select("id").ilike("username", data.username).limit(1);
+    if (error) throw new Error("Vérification indisponible");
+    return !existing?.length;
+  });
+
 export const signupPhone = createServerFn({ method: "POST" })
-  .inputValidator(parse(z.object({ idToken: z.string().min(20), firstName: Name, lastName: Name, username: Username, country: Country, avatar: z.string().max(60000).optional(), password: Password.optional() }), "Informations du profil invalides"))
+  .inputValidator(parse(z.object({ idToken: z.string().min(20), firstName: Name, lastName: Name, username: Username, country: Country, avatar: z.string().max(60000).refine((v) => /^\/avatars\/[a-z0-9-]+\.jpg$/.test(v) || /^data:image\/jpeg;base64,[A-Za-z0-9+/]+={0,2}$/.test(v)).optional(), password: Password.optional() }), "Informations du profil invalides"))
   .handler(async ({ data }): Promise<Result> => {
     const { verifyFirebasePhone } = await import("./firebase-verify.server");
     let v: { uid: string; phone: string };
