@@ -170,6 +170,8 @@ export function leaveGroup(chatId: string) {
 /** Groupes de démonstration du lot 4 : ajoutés une seule fois, sans écraser les données locales. */
 export function ensureGroupDemo() {
   const st = useWgoStore.getState();
+  // Never insert the demonstration team into a new account's empty inbox.
+  if (!st.chats.some((chat) => chat.id === "c-famille")) return;
   const h = (n: number) => Date.now() - n * 36e5;
   const m = (n: number) => Date.now() - n * 6e4;
   const mk = (id: string, chatId: string, fromId: string, text: string, at: number, extra: Partial<Message> = {}): Message => ({

@@ -211,7 +211,7 @@ export function ProfileReferenceScreen() {
 
   return <main className="relative size-full overflow-y-auto bg-wipp-bg text-wipp-fg" aria-label="Complète ton profil">
     <div className="relative min-h-[100%]" style={{ aspectRatio: "941 / 1672" }}>
-      <Artwork src={profileImage.url} />
+       <Artwork src={profileImage} />
       <Btn aria-label="Retour" onClick={pop} className="absolute! top-[8%] left-[4%] h-[5%]! w-[12%] bg-transparent! opacity-0" />
       <input ref={fileInput} type="file" accept="image/*" className="hidden" onChange={(e) => { void uploadPhoto(e.target.files?.[0]); e.target.value = ""; }} />
       <div className="absolute top-[38.5%] left-[10.5%] size-[19%] max-h-[9.5%] overflow-hidden rounded-full"><img src={avatar} alt="Photo de profil choisie" className="size-full object-cover" /></div>
