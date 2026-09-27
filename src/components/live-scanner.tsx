@@ -1,12 +1,16 @@
 import { useEffect, useRef, useState } from "react";
 import { Btn } from "@/components/ui";
 import { providers } from "@/lib/providers";
-import { parseWippQr, redeemTempToken } from "@/lib/qr-payload";
-import { useWgoStore } from "@/lib/store";
+import { resolveWippQr, type QrDestination } from "@/lib/qr-resolver";
 
-/** Vrai scanner caméra (quand le navigateur l'autorise). S'arrête dès le premier QR. */
-export function LiveScanner({ onResult }: { onResult: (message: string, userId?: string) => void }) {
-  const users = useWgoStore((s) => s.users);
+/** Vrai scanner caméra (Chrome/Android et Safari/iPhone). S'arrête dès le premier QR. */
+export function LiveScanner({
+  onResult,
+  onFallback,
+}: {
+  onResult: (d: QrDestination) => void;
+  onFallback?: (to: "search" | "my-qr") => void;
+}) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const ctrl = useRef<{ stop: () => void; torch?: (on: boolean) => Promise<void> } | null>(null);
   const [phase, setPhase] = useState<"ask" | "live" | "denied" | "unsupported">("ask");
@@ -18,19 +22,7 @@ export function LiveScanner({ onResult }: { onResult: (message: string, userId?:
   function handle(raw: string) {
     setPhase("ask");
     try { navigator.vibrate?.(30); } catch { /* */ }
-    const p = parseWippQr(raw);
-    if (p.kind === "invalid") return onResult("Ce QR n'est pas un QR WIPP");
-    let username = p.kind === "profile" ? p.username : undefined;
-    if (p.kind === "temp") {
-      const r = redeemTempToken(p.token);
-      if (r.state === "expired") return onResult("QR expiré");
-      if (r.state === "used") return onResult("QR déjà utilisé");
-      if (r.state === "invalid") return onResult("Impossible de vérifier le QR");
-      username = r.username;
-    }
-    const u = Object.values(users).find((x) => x.username?.toLowerCase() === username);
-    if (!u) return onResult("Utilisateur introuvable");
-    onResult("", u.id);
+    onResult(resolveWippQr(raw));
   }
 
   async function start() {
@@ -64,9 +56,12 @@ export function LiveScanner({ onResult }: { onResult: (message: string, userId?:
       {live ? null : phase === "denied" || phase === "unsupported" ? (
         <div className="text-center text-[13px] text-paper/70">
           <p className="font-semibold text-paper">
-            {phase === "denied" ? "Caméra non autorisée" : "Scanner indisponible sur ce navigateur"}
+            {phase === "denied" ? "Caméra non autorisée" : "Caméra indisponible sur ce navigateur"}
           </p>
-          <p className="mt-1">Tu peux rechercher par @username ou afficher ton QR.</p>
+          <div className="mt-2 grid grid-cols-2 gap-2">
+            <Btn variant="secondary" onClick={() => onFallback?.("search")}>Rechercher par @username</Btn>
+            <Btn variant="secondary" onClick={() => onFallback?.("my-qr")}>Afficher mon QR</Btn>
+          </div>
         </div>
       ) : (
         <div className="text-center">

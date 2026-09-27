@@ -36,30 +36,45 @@ export interface QRScannerProvider {
 
 type Detector = { detect(src: CanvasImageSource): Promise<{ rawValue: string }[]> };
 
+/** BarcodeDetector (Chrome/Android) sinon jsQR sur canvas (Safari/iPhone, Firefox). */
 export const webQrScanner: QRScannerProvider = {
   isSupported() {
-    return typeof window !== "undefined" && "BarcodeDetector" in window && !!navigator.mediaDevices?.getUserMedia;
+    return typeof window !== "undefined" && !!navigator.mediaDevices?.getUserMedia;
   },
   async start(video, onCode) {
     const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" }, audio: false });
     video.srcObject = stream;
     video.setAttribute("playsinline", "true");
+    video.muted = true;
     await video.play();
-    const Ctor = (window as unknown as { BarcodeDetector: new (o: { formats: string[] }) => Detector }).BarcodeDetector;
-    const detector = new Ctor({ formats: ["qr_code"] });
+    const Ctor = (window as unknown as { BarcodeDetector?: new (o: { formats: string[] }) => Detector }).BarcodeDetector;
+    const detector = Ctor ? new Ctor({ formats: ["qr_code"] }) : null;
+    const jsQR = detector ? null : (await import("jsqr")).default;
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d", { willReadFrequently: true });
     let alive = true;
     const stop = () => {
       alive = false;
       stream.getTracks().forEach((t) => t.stop());
       video.srcObject = null;
     };
+    const read = async (): Promise<string | null> => {
+      if (detector) return (await detector.detect(video))[0]?.rawValue ?? null;
+      if (!jsQR || !ctx || !video.videoWidth) return null;
+      const scale = Math.min(1, 640 / video.videoWidth);
+      canvas.width = Math.round(video.videoWidth * scale);
+      canvas.height = Math.round(video.videoHeight * scale);
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      const img = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      return jsQR(img.data, img.width, img.height, { inversionAttempts: "dontInvert" })?.data ?? null;
+    };
     const tick = async () => {
       if (!alive) return;
       try {
-        const hits = await detector.detect(video);
-        if (alive && hits[0]?.rawValue) {
+        const raw = await read();
+        if (alive && raw) {
           stop();
-          onCode(hits[0].rawValue);
+          onCode(raw);
           return;
         }
       } catch { /* image pas prête */ }

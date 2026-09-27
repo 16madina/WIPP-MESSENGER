@@ -36,6 +36,7 @@ import { SmartImg } from "@/components/smart-img";
 import { GallerySheet } from "@/components/gallery";
 import { WippWordmark } from "@/components/logo";
 import { Btn, Field, Header, Row, Section, StatusBar, Toggle } from "@/components/ui";
+import { ProtectionSettings } from "@/components/protection-settings";
 import { LEGAL_CONTACT } from "@/lib/legal";
 import { shortFp } from "@/lib/crypto";
 import { TAKEN_USERNAMES } from "@/lib/seed";
@@ -740,6 +741,7 @@ export function PrivacyScreen() {
           <p className="px-6 pt-3 text-[13px] leading-relaxed text-muted">{t("readReceiptsHint")}</p>
           <p className="px-6 pt-2 text-[13px] leading-relaxed text-muted">{t("ephemeralCallsHint")}</p>
         </div>
+        <ProtectionSettings />
         </>
         ) : null}
       </div>

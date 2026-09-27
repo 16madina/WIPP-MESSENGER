@@ -57,6 +57,7 @@
     "framer-motion": "^13.4.3",
     "input-otp": "^1.4.2",
     "jose": "^6.2.12",
+    "jsqr": "^1.4.0",
     "livekit-client": "^2.22.3",
     "lucide-react": "^0.575.0",
     "react": "^19.2.0",
