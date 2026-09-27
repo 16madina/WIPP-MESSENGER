@@ -510,6 +510,8 @@ export function OtpScreen() {
   const pending = useWgoStore((s) => s.pendingSignup);
   const phone = pendingPhone() ?? pending.phone ?? "";
   const mode = pendingMode() ?? "signup";
+  const isTest = phone.trim().toLowerCase() === "test";
+  const codeLen = isTest ? 4 : 6;
   const [code, setCode] = useState("");
   const [err, setErr] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -523,6 +525,12 @@ export function OtpScreen() {
     if ("error" in res) {
       setBusy(false);
       setErr(res.error);
+      return;
+    }
+    if (res.idToken === "test-mode") {
+      clearPending();
+      useWgoStore.getState().openDemo();
+      setBusy(false);
       return;
     }
     if (mode === "reset") {
@@ -589,7 +597,7 @@ export function OtpScreen() {
   function submit(next: string) {
     setCode(next);
     setErr(null);
-    if (next.length === 6) void finish(next);
+    if (next.length === codeLen) void finish(next);
   }
 
   return (
@@ -614,17 +622,19 @@ export function OtpScreen() {
         </div>
       ) : (
         <div className="mt-2 flex justify-between gap-1.5">
-          {Array.from({ length: 6 }).map((_, i) => (
+          {Array.from({ length: codeLen }).map((_, i) => (
             <input
               key={i}
-              inputMode="numeric"
+              inputMode={isTest ? "text" : "numeric"}
               maxLength={1}
               value={code[i] ?? ""}
               onChange={(e) => {
-                const v = e.target.value.replace(/\D/g, "").slice(-1);
+                const v = isTest
+                  ? e.target.value.slice(-1)
+                  : e.target.value.replace(/\D/g, "").slice(-1);
                 const chars = code.split("");
                 chars[i] = v;
-                submit(chars.join("").slice(0, 6));
+                submit(chars.join("").slice(0, codeLen));
                 const next = e.currentTarget.nextElementSibling;
                 if (v && next instanceof HTMLInputElement) next.focus();
               }}
@@ -636,7 +646,7 @@ export function OtpScreen() {
       <p className="mt-4 text-[13px] text-muted">{t("otpHint")}</p>
       {err ? <p className="mt-2 text-[13px] text-danger">{err}</p> : null}
       <AuthCta
-        disabled={busy || (verified ? newPassword.length < 8 : code.length !== 6)}
+        disabled={busy || (verified ? newPassword.length < 8 : code.length !== codeLen)}
         onClick={() => (verified ? void finishReset() : void finish(code))}
       >
         {busy ? t("sending") : t("continue")}
