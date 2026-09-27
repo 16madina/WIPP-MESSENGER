@@ -684,7 +684,7 @@ img, svg { -webkit-user-drag: none; }
 
 /* —— WIPP tab bar + Connect sheet —— */
 .device { --tab-h: var(--wipp-tab-bar-height); }
-.device[data-large-touch="1"] { --tab-h: 84px; }
+.device[data-large-touch="1"] { --tab-h: var(--wipp-tab-bar-large-touch-height); }
 
 .tab-dock {
   pointer-events: none;
