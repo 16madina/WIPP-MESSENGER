@@ -25,6 +25,7 @@ import {
   pendingPhone,
   startPhoneCode,
   startTestCode,
+  isTestPhone,
   verifyPhoneCode,
 } from "@/lib/auth-flow";
 import { resetPasswordPhone, signinPhone, signupPhone } from "@/lib/auth.functions";
@@ -94,16 +95,16 @@ export function SignupScreen() {
       return;
     }
     setNeedAccept(false);
-    if (password.length < 8) {
+    const isTest = isTestPhone(phone);
+    if (!isTest && password.length < 8) {
       setWeakPassword(true);
       return;
     }
     setWeakPassword(false);
     setBusy(true);
     setErr(null);
-    const isTest = phone.trim().toLowerCase() === "test";
     const smsErr = isTest
-      ? (startTestCode("test", "signup", password), null)
+      ? (startTestCode(phone.trim(), "signup", password), null)
       : await startPhoneCode(`${country.dial}${phone}`, "signup", password);
     setBusy(false);
     if (smsErr) {
@@ -395,8 +396,8 @@ export function LoginScreen() {
   async function tryLogin() {
     setBusy(true);
     setErr(null);
-    if (phone.trim().toLowerCase() === "test") {
-      startTestCode("test", "signup");
+    if (isTestPhone(phone)) {
+      startTestCode(phone.trim(), "signup");
       setBusy(false);
       push({ name: "otp" });
       return;
@@ -510,7 +511,7 @@ export function OtpScreen() {
   const pending = useWgoStore((s) => s.pendingSignup);
   const phone = pendingPhone() ?? pending.phone ?? "";
   const mode = pendingMode() ?? "signup";
-  const isTest = phone.trim().toLowerCase() === "test";
+  const isTest = isTestPhone(phone);
   const codeLen = isTest ? 4 : 6;
   const [code, setCode] = useState("");
   const [err, setErr] = useState<string | null>(null);

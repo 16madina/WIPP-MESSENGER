@@ -17,7 +17,12 @@ let pending: Pending | null = null;
 
 export const RECAPTCHA_ID = "wipp-recaptcha";
 
-/** Mode test en attendant Firebase : numéro « test », code « test », sans SMS. */
+/** Mode test en attendant Firebase : numéro « test » ou « 1234567 », code « test », sans SMS. */
+export function isTestPhone(phone: string): boolean {
+  const p = phone.trim().toLowerCase();
+  return p === "test" || p === "1234567";
+}
+
 export function startTestCode(phone: string, mode: AuthMode, password?: string) {
   pending = { confirmation: null, phone, mode, password };
 }
