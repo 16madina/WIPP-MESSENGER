@@ -72,6 +72,22 @@ export async function resolveWippQr(raw: string): Promise<QrDestination> {
     }
   }
   if (id.kind === "profile") {
+    // Compte réel : profil public via la vue (blocages déjà filtrés par les règles d'accès).
+    try {
+      const { supabase } = await import("@/integrations/supabase/client");
+      if ((await supabase.auth.getSession()).data.session) {
+        const { data: me } = await supabase.rpc("wipp_my_profile_id" as never);
+        const { data: p } = await (supabase as any).from("wipp_public_profiles")
+          .select("id,username,display_name,avatar_url,bio").ilike("username", id.value).maybeSingle();
+        if (p) {
+          if (p.id === me) return { ok: false, error: "C'est ton propre QR" };
+          const a = [String(me), p.id].sort();
+          const { data: c } = await (supabase as any).from("wipp_connections").select("id").eq("user_a", a[0]).eq("user_b", a[1]).maybeSingle();
+          return { ok: true, kind: "remote-profile", connected: Boolean(c),
+            profile: { id: p.id, username: p.username, displayName: p.display_name, avatarUrl: p.avatar_url, bio: p.bio ?? "" } };
+        }
+      }
+    } catch { /* repli local */ }
     const u = Object.values(st.users).find((x) => x.username?.toLowerCase() === id.value);
     return u ? { ok: true, kind: "profile", userId: u.id } : { ok: false, error: QR_ERRORS.userMissing };
   }

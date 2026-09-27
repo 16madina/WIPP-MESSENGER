@@ -92,6 +92,32 @@ export const devSignin = createServerFn({ method: "POST" }).handler(async (): Pr
   return signIn(email, password);
 });
 
+/**
+ * REMOVE BEFORE PRODUCTION — connexion DEV aux comptes de test wipp_test_a / wipp_test_b.
+ * Aucun mot de passe dans le navigateur : un mot de passe aléatoire est posé côté serveur à
+ * chaque appel puis oublié. Refusé si WIPP_DEV_LOGIN absent ou sur les domaines publiés.
+ */
+const TEST_ACCOUNTS = { a: "wipp_test_a", b: "wipp_test_b" } as const;
+export const devSigninTest = createServerFn({ method: "POST" })
+  .inputValidator(parse(z.object({ who: z.enum(["a", "b"]) }), "Compte inconnu"))
+  .handler(async ({ data }): Promise<Result> => {
+    if (!process.env["WIPP_DEV_LOGIN"]) return { ok: false, error: "Mode test désactivé" };
+    const { getRequestHeader } = await import("@tanstack/react-start/server");
+    const host = (getRequestHeader("x-forwarded-host") ?? getRequestHeader("host") ?? "").toLowerCase();
+    if (/(^|\.)wippapp\.com$|wipp-connect-chat\.lovable\.app$/.test(host.split(":")[0])) return { ok: false, error: "Indisponible" };
+    const { admin, signIn, emailOf } = await ctx();
+    const { data: p } = await admin.from("wipp_profiles").select("auth_user_id").eq("username", TEST_ACCOUNTS[data.who]).maybeSingle();
+    if (!p?.auth_user_id) return { ok: false, error: "Compte de test absent" };
+    const email = await emailOf(p.auth_user_id);
+    if (!email) return { ok: false, error: "Compte de test absent" };
+    const b = crypto.getRandomValues(new Uint8Array(24));
+    const password = btoa(String.fromCharCode(...b));
+    const { error } = await admin.auth.admin.updateUserById(p.auth_user_id, { password });
+    if (error) return { ok: false, error: "Connexion impossible" };
+    return signIn(email, password);
+  });
+
+
 /** Mot de passe oublié : le numéro est re-vérifié par SMS, puis nouveau mot de passe. */
 export const resetPasswordPhone = createServerFn({ method: "POST" })
   .inputValidator(parse(z.object({ idToken: z.string().min(20), password: Password }), "Mot de passe (8 caractères min.) invalide"))

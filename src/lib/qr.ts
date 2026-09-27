@@ -1,3 +1,4 @@
+import qrcode from "qrcode-generator";
 function hash32(input: string) {
   let h = 2166136261;
   for (let i = 0; i < input.length; i++) {
@@ -21,34 +22,16 @@ function finderModule(r: number, c: number, r0: number, c0: number) {
   return ring || core;
 }
 
-export function qrGrid(value: string, n = 29): boolean[][] {
-  const grid: boolean[][] = Array.from({ length: n }, () => Array(n).fill(false));
-  const seed = hash32(value);
-  let h = seed;
-
-  for (let r = 0; r < n; r++) {
-    for (let c = 0; c < n; c++) {
-      if (inFinder(r, c, n)) {
-        const r0 = r < 7 ? 0 : n - 7;
-        const c0 = c < 7 ? 0 : r < 7 && c >= n - 7 ? n - 7 : 0;
-        const topRight = r < 7 && c >= n - 7;
-        const bottomLeft = r >= n - 7 && c < 7;
-        const originR = topRight ? 0 : bottomLeft ? n - 7 : 0;
-        const originC = topRight ? n - 7 : 0;
-        grid[r][c] = finderModule(r, c, originR, originC);
-        continue;
-      }
-      h = Math.imul(h ^ (r * 131 + c * 17 + seed), 16777619) >>> 0;
-      grid[r][c] = ((h >>> 28) & 1) === 1;
-    }
-  }
-
-  const timing = 6;
-  for (let i = 8; i < n - 8; i++) {
-    grid[timing][i] = i % 2 === 0;
-    grid[i][timing] = i % 2 === 0;
-  }
-  return grid;
+/**
+ * Vrai QR code (norme ISO 18004, correction H pour tolérer le logo central).
+ * Le paramètre n est ignoré : la taille dépend du contenu.
+ */
+export function qrGrid(value: string, _n = 29): boolean[][] {
+  const qr = qrcode(0, "H");
+  qr.addData(value, "Byte");
+  qr.make();
+  const n = qr.getModuleCount();
+  return Array.from({ length: n }, (_, r) => Array.from({ length: n }, (_, c) => qr.isDark(r, c)));
 }
 
 export async function qrPngBlob(value: string, size = 720): Promise<Blob> {

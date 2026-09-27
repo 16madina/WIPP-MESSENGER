@@ -1191,7 +1191,7 @@ export type Database = {
           created_at?: string
           detected_at: string
           foreground?: boolean
-          id: string
+          id?: string
           invite_id: string
           median_rssi?: number | null
           platform?: string | null
@@ -1414,6 +1414,31 @@ export type Database = {
       }
       wipp_send_connection_request: {
         Args: { _me: string; _recipient: string; _via?: string }
+        Returns: Json
+      }
+      wipp_touch_cancel: { Args: { _id: string; _me: string }; Returns: Json }
+      wipp_touch_candidates_for: {
+        Args: { _id: string; _me: string }
+        Returns: Json
+      }
+      wipp_touch_create: { Args: { _hash: string; _me: string }; Returns: Json }
+      wipp_touch_report: {
+        Args: {
+          _channel: string
+          _foreground: boolean
+          _hash: string
+          _me: string
+          _platform: string
+          _rssi: Json
+        }
+        Returns: Json
+      }
+      wipp_touch_request: {
+        Args: { _id: string; _me: string; _profile: string }
+        Returns: Json
+      }
+      wipp_touch_respond: {
+        Args: { _action: string; _id: string; _me: string }
         Returns: Json
       }
     }

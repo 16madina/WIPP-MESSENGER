@@ -48,7 +48,7 @@ import {
   SecurityScreen,
 } from "./me";
 import { LegalScreen } from "./legal";
-import { RealIncomingScreen, TouchIncomingScreen } from "./touch-incoming";
+import { RealIncomingScreen, RealTouchIncomingScreen, TouchIncomingScreen } from "./touch-incoming";
 
 const loadCalls = () => import("./calls");
 const loadExplore = () => import("./explore");
@@ -245,7 +245,7 @@ function ScreenSwitch({ screen }: { screen: Screen }) {
     case "wgo-touch":
       return <WgoTouchScreen />;
     case "touch-incoming":
-      return screen.requestId ? <RealIncomingScreen requestId={screen.requestId} /> : <TouchIncomingScreen demo={screen.demo} />;
+      return screen.touchId ? <RealTouchIncomingScreen touchId={screen.touchId} /> : screen.requestId ? <RealIncomingScreen requestId={screen.requestId} /> : <TouchIncomingScreen demo={screen.demo} />;
     case "pharmacy":
       return <PharmacyScreen pharmacyId={screen.pharmacyId} />;
     case "shop":
@@ -345,8 +345,27 @@ function NativeStack() {
   );
 }
 
+/** B reçoit une demande Touch sans être sur l'écran Touch (web : sondage ; natif : notification). */
+function useIncomingTouch() {
+  useEffect(() => {
+    const seen = new Set<string>();
+    const tick = async () => {
+      if (document.hidden) return;
+      const { pendingIncomingTouch } = await import("@/lib/touch-remote");
+      for (const id of await pendingIncomingTouch().catch(() => [] as string[])) {
+        if (seen.has(id)) continue;
+        seen.add(id);
+        useWgoStore.getState().push({ name: "touch-incoming", touchId: id });
+      }
+    };
+    const iv = window.setInterval(() => void tick(), 4000);
+    return () => window.clearInterval(iv);
+  }, []);
+}
+
 export function WgoApp() {
   const liveCall = useWgoStore((s) => s.liveCall);
+  useIncomingTouch();
   useEffect(() => {
     const idle = window.requestIdleCallback ?? ((cb: () => void) => window.setTimeout(cb, 500));
     const id = idle(() => prefetchTabs());
