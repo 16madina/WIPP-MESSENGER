@@ -101,6 +101,8 @@ export type ScreenName =
   | "onboarding"
   | "welcome"
   | "phone-entry"
+  | "sms-reference"
+  | "profile-reference"
   | "signup"
   | "login"
   | "otp"
@@ -165,6 +167,8 @@ export type Screen =
   | { name: "onboarding" }
   | { name: "welcome" }
   | { name: "phone-entry" }
+  | { name: "sms-reference" }
+  | { name: "profile-reference" }
   | { name: "signup" }
   | { name: "login" }
   | { name: "otp" }

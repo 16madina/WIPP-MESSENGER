@@ -25,10 +25,11 @@ import {
   pendingPhone,
   startPhoneCode,
   startTestCode,
+  setVerifiedSignup,
   isTestPhone,
   verifyPhoneCode,
 } from "@/lib/auth-flow";
-import { resetPasswordPhone, signinPhone, signupPhone } from "@/lib/auth.functions";
+import { resetPasswordPhone, signinPhone } from "@/lib/auth.functions";
 import { announce, haptic } from "@/lib/haptics";
 import { yearsOld } from "@/lib/legal";
 import { TAKEN_USERNAMES } from "@/lib/seed";
@@ -565,23 +566,9 @@ export function OtpScreen() {
       setBusy(false);
       return;
     }
-    const password = pendingPassword() ?? "";
-    const out = await signupPhone({
-      data: {
-        idToken: res.idToken,
-        firstName: pending.firstName ?? "",
-        lastName: pending.lastName ?? "",
-        password,
-      },
-    });
+    setVerifiedSignup(res);
     setBusy(false);
-    if (!out.ok) {
-      setErr(out.error);
-      return;
-    }
-    await supabase.auth.setSession({ access_token: out.accessToken, refresh_token: out.refreshToken });
-    clearPending();
-    push({ name: "setup" });
+    push({ name: "profile-reference" });
   }
 
   async function finishReset() {
