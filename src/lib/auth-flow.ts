@@ -7,7 +7,7 @@ import { confirmSmsCode, sendSmsCode, toE164 } from "./firebase-phone";
 export type AuthMode = "signup" | "reset";
 
 type Pending = {
-  confirmation: ConfirmationResult;
+  confirmation: ConfirmationResult | null;
   phone: string;
   mode: AuthMode;
   password?: string;
@@ -16,6 +16,11 @@ type Pending = {
 let pending: Pending | null = null;
 
 export const RECAPTCHA_ID = "wipp-recaptcha";
+
+/** Mode test en attendant Firebase : numéro « test », code « test », sans SMS. */
+export function startTestCode(phone: string, mode: AuthMode, password?: string) {
+  pending = { confirmation: null, phone, mode, password };
+}
 
 /** Envoie le code SMS. Renvoie null ou un message d'erreur en français. */
 export async function startPhoneCode(
@@ -52,6 +57,10 @@ export async function verifyPhoneCode(
   code: string,
 ): Promise<{ idToken: string; phone: string } | { error: string }> {
   if (!pending) return { error: "Code expiré. Renvoie un nouveau code." };
+  if (!pending.confirmation) {
+    if (code.trim().toLowerCase() === "test") return { idToken: "test-mode", phone: pending.phone };
+    return { error: "Code incorrect ou expiré." };
+  }
   try {
     const idToken = await confirmSmsCode(pending.confirmation, code);
     return { idToken, phone: pending.phone };
