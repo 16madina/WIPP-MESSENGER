@@ -53,7 +53,7 @@ export function PhoneEntryScreen() {
         onClick={() => setMenuOpen((open) => !open)}
         className="absolute! top-[59%] left-[10%] h-[5.5%]! w-[80%] justify-between rounded-lg! bg-transparent! px-3! text-transparent!"
       >
-        {country.id !== "CA" ? <span className="rounded-md bg-wipp-share-tile px-2 text-wipp-fg">{country.fr} ({country.dial})</span> : null}
+        {country.id !== "CA" ? <span className="rounded-md bg-wipp-auth-input px-2 text-wipp-fg">{country.fr} ({country.dial})</span> : null}
       </Btn>
       {menuOpen ? (
         <div className="absolute top-[65%] left-[10%] z-20 max-h-[27%] w-[80%] overflow-y-auto rounded-lg border border-wipp-glass-border bg-wipp-share-panel shadow-lift">
