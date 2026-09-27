@@ -493,6 +493,24 @@ export function LoginScreen() {
         >
           {t("forgotPassword")}
         </button>
+        {import.meta.env.DEV ? (
+          /* REMOVE BEFORE PRODUCTION — accès DEV aux comptes de test (aucun mot de passe côté navigateur). */
+          <div className="mt-4 grid grid-cols-2 gap-2" aria-label="Comptes de test (dev)">
+            {(["a", "b"] as const).map((who) => (
+              <button key={who} type="button" disabled={busy}
+                className="h-11 rounded-xl bg-surface text-[12px] text-muted hairline"
+                onClick={async () => {
+                  setBusy(true); setErr(null);
+                  const { devSigninTest } = await import("@/lib/auth.functions");
+                  const res = await devSigninTest({ data: { who } });
+                  if (!res.ok) { setBusy(false); setErr(res.error); return; }
+                  await enterWithSession(res.accessToken, res.refreshToken);
+                }}>
+                DEV · wipp_test_{who}
+              </button>
+            ))}
+          </div>
+        ) : null}
         <button
           type="button"
           className="mx-auto mt-3 block text-[13px] text-muted"
