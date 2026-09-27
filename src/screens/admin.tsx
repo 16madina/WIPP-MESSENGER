@@ -2,11 +2,13 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { adminFlags, adminResolveFlag, adminStats, adminUsers } from "@/lib/admin.functions";
 import { Header, StatusBar } from "@/components/ui";
+import { useWgoStore } from "@/lib/store";
 
 type Tab = "stats" | "users" | "moderation";
 async function token() { return (await supabase.auth.getSession()).data.session?.access_token ?? ""; }
 
 export function AdminScreen() {
+  const pop = useWgoStore((s) => s.pop);
   const [tab, setTab] = useState<Tab>("stats");
   const [stats, setStats] = useState<Record<string, number> | null>(null);
   const [users, setUsers] = useState<Awaited<ReturnType<typeof adminUsers>>>([]);
@@ -37,7 +39,7 @@ export function AdminScreen() {
   return (
     <div className="absolute inset-0 flex flex-col bg-bg">
       <StatusBar />
-      <Header title="Admin" back />
+      <Header title="Admin" onBack={pop} />
       <div className="flex gap-2 px-4 pb-3">
         {([["stats", "Statistiques"], ["users", "Utilisateurs"], ["moderation", "Modération"]] as const).map(([k, l]) => (
           <button key={k} onClick={() => setTab(k)} className={`h-10 flex-1 rounded-full text-[13px] font-medium ${tab === k ? "bg-accent text-accent-fg" : "bg-surface text-muted"}`}>{l}</button>

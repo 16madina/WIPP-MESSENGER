@@ -51,6 +51,16 @@ export function MeScreen() {
   const t = useT();
   const me = useWgoStore((s) => s.me);
   const push = useWgoStore((s) => s.push);
+  const [isAdmin, setIsAdmin] = useState(false);
+  useEffect(() => {
+    void (async () => {
+      const { supabase } = await import("@/integrations/supabase/client");
+      const token = (await supabase.auth.getSession()).data.session?.access_token;
+      if (!token) return;
+      const { adminCheck } = await import("@/lib/admin.functions");
+      setIsAdmin(await adminCheck({ data: { token } }).catch(() => false));
+    })();
+  }, []);
   const theme = useWgoStore((s) => s.theme);
   const language = useWgoStore((s) => s.language);
   const changeAvatar = useWgoStore((s) => s.changeAvatar);
@@ -386,6 +396,7 @@ export function MeScreen() {
 
         <div className="mt-5">
           <Section title={t("myWipp")} caps={false}>
+            {isAdmin ? <Row icon={<BadgeCheck className="size-4" />} label="Admin" onClick={() => push({ name: "admin" })} /> : null}
             <Row icon={<User className="size-4" />} label={t("account")} onClick={() => push({ name: "account" })} />
             <Row icon={<Shield className="size-4" />} label={t("privacy")} onClick={() => push({ name: "privacy" })} />
             <Row icon={<Lock className="size-4" />} label={t("security")} onClick={() => push({ name: "security" })} />

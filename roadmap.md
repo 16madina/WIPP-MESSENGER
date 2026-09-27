@@ -17,3 +17,5 @@
 - Plan backend : docs/backend-migration-plan.md — en attente d'autorisation, rien exécuté.
 
 - [ ] Production : wipp_touch_config calibrationLog = false avant publication
+
+- [x] Compte admin Deena (+1 819 580 3940, code temporaire) + espace Admin dans Moi

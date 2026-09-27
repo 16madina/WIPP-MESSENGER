@@ -130,6 +130,7 @@ export type ScreenName =
   | "notifications"
   | "appearance"
   | "business-card"
+  | "admin"
   | "devices"
   | "language"
   | "accessibility"
@@ -197,6 +198,7 @@ export type Screen =
   | { name: "notifications" }
   | { name: "appearance" }
   | { name: "business-card" }
+  | { name: "admin" }
   | { name: "devices" }
   | { name: "language" }
   | { name: "accessibility" }
