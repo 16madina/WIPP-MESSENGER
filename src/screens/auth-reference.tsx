@@ -8,7 +8,7 @@ import { COUNTRIES } from "./auth-chrome";
 
 /** The supplied artwork includes the logo, photograph and copy; live controls sit over it. */
 function Artwork({ src }: { src: string }) {
-  return <img src={src} alt="" draggable={false} className="pointer-events-none absolute inset-0 size-full object-cover object-center" />;
+  return <img src={src} alt="" draggable={false} className="pointer-events-none absolute inset-0 size-full object-fill" />;
 }
 
 export function WelcomeScreen() {
@@ -72,7 +72,7 @@ export function PhoneEntryScreen() {
         maxLength={25}
         value={phone}
         onChange={(event) => { setPhone(event.target.value); setError(""); }}
-        className="absolute top-[69.6%] left-[13%] h-[4.8%] w-[74%] rounded-sm bg-wipp-auth-input px-1 text-[18px] text-wipp-fg outline-none placeholder:text-wipp-muted"
+        className="absolute top-[69.1%] left-[10.6%] h-[6%] w-[78.8%] rounded-lg bg-wipp-auth-input px-4 text-[18px] text-wipp-fg outline-none placeholder:text-wipp-muted"
         placeholder="(514) 123-4567"
       />
       {error ? <p role="alert" className="absolute top-[83%] left-[10%] rounded bg-wipp-share-panel px-2 text-[12px] text-wipp-danger">{error}</p> : null}
