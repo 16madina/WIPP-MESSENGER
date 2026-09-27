@@ -119,6 +119,7 @@ export function SignupScreen() {
 
   return (
     <div className="absolute inset-0 flex flex-col bg-bg">
+      <div id={RECAPTCHA_ID} className="pointer-events-none absolute bottom-0 left-0" />
       <SignupBanner />
       <div className="relative z-10 min-h-0 flex-1 overflow-y-auto no-scrollbar px-5 pb-8">
         <AuthSteps step={1} />
@@ -258,8 +259,9 @@ export function SignupScreen() {
         </label>
         {needAccept ? <p className="mt-2 text-[13px] text-danger">{t("legalNeedAccept")}</p> : null}
         {tooYoung ? <p className="mt-2 text-[13px] text-danger">{t("legalTooYoung")}</p> : null}
-        <AuthCta onClick={tryContinue}>
-          {t("continue")}
+        {err ? <p className="mt-2 text-[13px] text-danger">{err}</p> : null}
+        <AuthCta disabled={busy} onClick={() => void tryContinue()}>
+          {busy ? t("sending") : t("continue")}
           <ArrowRight className="size-4" />
         </AuthCta>
         <div className="my-4 flex items-center gap-3">
