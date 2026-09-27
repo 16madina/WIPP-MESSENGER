@@ -2130,9 +2130,6 @@ export function ConversationScreen({ chatId }: { chatId: string }) {
       {composerFiles ? (
         <MediaComposer files={composerFiles} onClose={() => setComposerFiles(null)} onSend={sendMediaItems} />
       ) : null}
-          </div>
-        </div>
-      ) : null}
     </div>
   );
 }
