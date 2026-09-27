@@ -704,7 +704,7 @@ function GroupVideoGrid({ onTap }: { onTap: () => void }) {
   const cols = n <= 2 ? 1 : 2;
   const rows = n <= 2 ? n : n <= 4 ? 2 : Math.ceil(n / 2);
   return (
-    <div className="absolute inset-0 bg-ink pt-24 pb-44" onClick={onTap}>
+    <div className="absolute inset-0 bg-ink pt-24 pb-[240px]" onClick={onTap}>
       <div
         className="no-scrollbar grid size-full gap-1.5 overflow-y-auto px-1.5"
         style={{ gridTemplateColumns: `repeat(${cols}, 1fr)`, gridAutoRows: n > 4 ? "minmax(180px, 1fr)" : `${100 / rows}%` }}
