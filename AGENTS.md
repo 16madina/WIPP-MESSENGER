@@ -28,3 +28,5 @@
 - WIPP Touch : machine à états pure src/lib/touch-machine.ts (10 états) pilotée par providers.proximity. Pourquoi : Cursor branche BLE/NFC sans toucher l'écran.
 - Profils : champs privés (auth_user_id, password_hash, phone_e164, firebase_uid) illisibles côté navigateur ; son propre id via rpc wipp_my_profile_id(), profil public via wipp_public_profiles (security_invoker). Pourquoi : fermer la fuite entre comptes.
 - Connexions : wipp_connection_requests/wipp_connections écrites uniquement par src/lib/connections.functions.ts → fonctions SQL service_role transactionnelles (une demande en attente par paire, dans les deux sens). Pourquoi : aucune connexion arbitraire depuis le client.
+
+- QR temporaires et invitations de groupe : src/lib/qr.functions.ts → fonctions SQL service_role (wipp_issue/redeem_qr_token, wipp_group_invite_check) ; seul le SHA-256 du jeton est stocké, scan = résolution puis demande normale. Pourquoi : usage unique atomique, aucun ajout automatique.
