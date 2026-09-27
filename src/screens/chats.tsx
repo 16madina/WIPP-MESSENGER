@@ -185,6 +185,11 @@ export function ChatsScreen() {
           </div>
         </div>
       </div>
+      {pushMsg ? (
+        <div className="mx-4 mb-1 rounded-2xl glass px-4 py-2.5 text-center text-[13px] text-fg">
+          {pushMsg}
+        </div>
+      ) : null}
       <div className="flex gap-4 overflow-x-auto no-scrollbar px-4 py-3">
         <div className="flex w-16 shrink-0 flex-col items-center gap-1.5">
           <span className="relative">
