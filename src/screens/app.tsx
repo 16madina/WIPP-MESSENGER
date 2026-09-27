@@ -47,7 +47,7 @@ import {
   SecurityScreen,
 } from "./me";
 import { LegalScreen } from "./legal";
-import { TouchIncomingScreen } from "./touch-incoming";
+import { RealIncomingScreen, TouchIncomingScreen } from "./touch-incoming";
 
 const loadCalls = () => import("./calls");
 const loadExplore = () => import("./explore");
