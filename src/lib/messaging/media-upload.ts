@@ -97,7 +97,7 @@ export async function downloadCipherFile(input: {
   for (let n = 0; n < sorted.length; n++) {
     const meta = sorted[n];
     const row = await fetchServerChunk(input.attachmentId, meta.i);
-    const plain = decryptChunk(key, input.attachmentId, { index: meta.i, iv: meta.iv, ciphertext: unb64(row.ciphertext) } as never);
+    const plain = decryptChunk(key, input.attachmentId, { index: meta.i, iv: meta.iv, sha256: meta.sha256, ciphertext: unb64(row.ciphertext) });
     parts.push(plain);
     input.onProgress?.((n + 1) / sorted.length);
   }
