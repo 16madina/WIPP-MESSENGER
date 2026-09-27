@@ -271,8 +271,10 @@ export function mergeServerMessagesIntoState(
       const optimistic = byId.get(sm.clientId);
       if (optimistic) {
         byId.delete(sm.clientId);
-        byId.set(sm.id, keepLocalMedia(optimistic, mapped));
-        continue;
+        if (optimistic.type !== "text" && optimistic.type !== "system") {
+          byId.set(sm.id, keepLocalMedia(optimistic, mapped));
+          continue;
+        }
         if (optimistic.text && mapped.enc && !mapped.text) {
           mapped.text = optimistic.text;
           mapped.replyPreview = mapped.replyPreview ?? optimistic.replyPreview;
