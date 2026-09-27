@@ -57,6 +57,7 @@ const loadTouch = () => import("./touch");
 const CallsScreen = lazy(() => loadCalls().then((m) => ({ default: m.CallsScreen })));
 const ActiveCallScreen = lazy(() => loadCalls().then((m) => ({ default: m.ActiveCallScreen })));
 const CallLinkScreen = lazy(() => loadCalls().then((m) => ({ default: m.CallLinkScreen })));
+const CallOverlay = lazy(() => import("@/components/call/CallOverlay").then((m) => ({ default: m.CallOverlay })));
 const CallLayer = lazy(() => loadCalls().then((m) => ({ default: m.CallLayer })));
 
 const ExploreScreen = lazy(() => loadExplore().then((m) => ({ default: m.ExploreScreen })));
@@ -355,6 +356,9 @@ export function WgoApp() {
             <CallLayer />
           </Suspense>
         ) : null}
+        <Suspense fallback={null}>
+          <CallOverlay />
+        </Suspense>
         <AppLockGate />
       </div>
     </PhoneShell>

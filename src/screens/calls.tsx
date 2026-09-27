@@ -8,14 +8,17 @@ import {
   PhoneMissed,
   PhoneOff,
   PhoneOutgoing,
-  Lock,
+  Search,
+  Users,
   SwitchCamera,
   Timer,
   Video,
   VideoOff,
   Volume2,
 } from "lucide-react";
-import { Avatar } from "@/components/avatar";
+import { Avatar, GroupAvatar } from "@/components/avatar";
+import { callEngine } from "@/lib/calls/engine";
+import type { CallOutcome } from "@/lib/calls/types";
 import { QrCard } from "@/components/qr-card";
 import { BlockSheet, ReportSheet, SafetyRow } from "@/components/safety";
 import { Btn, Chip, Empty, Header, IconBtn, Sheet, StatusBar } from "@/components/ui";
@@ -33,6 +36,8 @@ function groupCallLogs(calls: CallLog[]) {
     if (
       head &&
       head.userId === c.userId &&
+      head.chatId === c.chatId &&
+      head.outcome === c.outcome &&
       head.kind === c.kind &&
       head.direction === c.direction &&
       head.missed === c.missed
@@ -115,11 +120,22 @@ export function CallsScreen() {
   const blockedIds = useWgoStore((s) => s.blockedIds);
   const [filter, setFilter] = useState<"all" | "missed">("all");
   const [picker, setPicker] = useState(false);
+  const [q, setQ] = useState("");
+  const [groupPick, setGroupPick] = useState<string[] | null>(null);
+  const chats = useWgoStore((s) => s.chats);
   const [menu, setMenu] = useState<{ ids: string[]; userId: string; kind: "audio" | "video" } | null>(null);
   const [reportUser, setReportUser] = useState<string | null>(null);
   const [blockUserId, setBlockUserId] = useState<string | null>(null);
   const [now, setNow] = useState(Date.now());
-  const list = filter === "missed" ? calls.filter((c) => c.missed) : calls;
+  const needle = q.trim().replace(/^@/, "").toLowerCase();
+  const list = (filter === "missed" ? calls.filter((c) => c.missed) : calls).filter((c) => {
+    if (!needle) return true;
+    const title = c.group ? chats.find((x) => x.id === c.chatId)?.name ?? "" : "";
+    const u = users[c.userId];
+    return [title, u?.displayName, u?.username].some((v) => v?.toLowerCase().includes(needle));
+  });
+  const redial = (c: CallLog, kind = c.kind) =>
+    c.group && c.chatId ? void callEngine.startGroup(c.chatId, kind) : startCall(c.userId, kind);
   const contacts = Object.values(users).filter((u) => u.connected && !blockedIds.includes(u.id));
   const groups = groupCallLogs(list);
 
@@ -147,11 +163,26 @@ export function CallsScreen() {
             >
               {t("createCallLink")}
             </button>
-            <IconBtn label={t("newCall")} onClick={() => setPicker(true)}>
-              <Phone className="size-5" />
-            </IconBtn>
+            <button
+              type="button"
+              className="press flex min-h-9 items-center gap-1.5 rounded-full bg-accent px-3 text-[13px] font-semibold text-accent-fg"
+              onClick={() => setPicker(true)}
+            >
+              <Phone className="size-4" />
+              {t("newCall")}
+            </button>
           </div>
         </div>
+        <label className="mx-4 mb-2 flex min-h-10 items-center gap-2 rounded-xl bg-surface-2 px-3">
+          <Search className="size-4 text-muted" />
+          <input
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            placeholder="Nom ou @username"
+            aria-label="Rechercher un appel"
+            className="min-w-0 flex-1 bg-transparent text-[15px] outline-none"
+          />
+        </label>
         <div className="flex gap-2 px-4 pb-2">
           <Chip active={filter === "all"} onClick={() => setFilter("all")}>
             {t("all")}
@@ -204,23 +235,38 @@ export function CallsScreen() {
             </span>
           </button>
         ) : null}
+        {!live ? <DemoScenarios /> : null}
         {groups.length === 0 ? (
           <Empty title={t("noResults")} body={t("createCallLink")} />
         ) : (
           groups.map((g) => {
             const c = g.items[0];
             const u = users[c.userId];
+            const gchat = c.group ? chats.find((x) => x.id === c.chatId) : undefined;
             const Icon = c.missed ? PhoneMissed : c.direction === "in" ? PhoneIncoming : PhoneOutgoing;
             const ids = g.items.map((x) => x.id);
             return (
               <div key={c.id} className="flex items-center gap-3 px-4 py-2.5">
-                <button type="button" onClick={() => push({ name: "found-profile", userId: c.userId })}>
-                  <Avatar user={u} size={48} />
+                <button
+                  type="button"
+                  onClick={() =>
+                    gchat ? push({ name: "conversation", chatId: gchat.id }) : push({ name: "found-profile", userId: c.userId })
+                  }
+                >
+                  {gchat ? (
+                    <GroupAvatar
+                      users={gchat.participantIds.filter((id) => id !== "me").map((id) => users[id])}
+                      size={48}
+                      photo={gchat.avatar}
+                    />
+                  ) : (
+                    <Avatar user={u} size={48} />
+                  )}
                 </button>
                 <button
                   type="button"
                   className="min-w-0 flex-1 text-left"
-                  onClick={() => startCall(c.userId, c.kind)}
+                  onClick={() => redial(c)}
                   onContextMenu={(e) => {
                     e.preventDefault();
                     setMenu({ ids, userId: c.userId, kind: c.kind });
@@ -233,17 +279,22 @@ export function CallsScreen() {
                   }}
                 >
                   <p className={cn("truncate font-medium", c.missed && "text-danger")}>
-                    {u?.displayName}
+                    {gchat?.name ?? u?.displayName}
                     {g.items.length > 1 ? ` (${g.items.length})` : ""}
                   </p>
                   <p className="flex items-center gap-1 text-[13px] text-muted">
-                    <Icon className="size-3.5" />
-                    {c.kind === "video" ? t("videoCall") : t("audioCall")}
+                    {c.group ? <Users className="size-3.5" /> : <Icon className="size-3.5" />}
+                    {c.missed
+                      ? "Appel manqué"
+                      : c.group
+                        ? "Appel de groupe"
+                        : `${c.direction === "in" ? "↙" : "↗"} ${c.kind === "video" ? t("videoCall") : t("audioCall")}`}
+                    {c.outcome === "declined" ? " · refusé" : c.outcome === "busy" ? " · occupé" : c.outcome === "noAnswer" ? " · sans réponse" : c.outcome === "failed" ? " · échec" : ""}
                     {c.duration ? ` · ${formatDuration(c.duration)}` : ""}
                   </p>
                 </button>
                 <span className="text-[12px] text-muted">{formatChatTime(c.at, lang)}</span>
-                <IconBtn label={t("callAgain")} onClick={() => startCall(c.userId, c.kind)}>
+                <IconBtn label={t("callAgain")} onClick={() => redial(c)}>
                   {c.kind === "video" ? <Video className="size-5" /> : <Phone className="size-5" />}
                 </IconBtn>
               </div>
@@ -251,9 +302,64 @@ export function CallsScreen() {
           })
         )}
       </div>
-      <Sheet open={picker} onClose={() => setPicker(false)} title={t("newCall")}>
+      <Sheet
+        open={picker}
+        onClose={() => {
+          setPicker(false);
+          setGroupPick(null);
+        }}
+        title={groupPick ? "Nouvel appel de groupe" : t("newCall")}
+      >
+        {groupPick ? (
+          <div>
+            <div className="no-scrollbar max-h-[46vh] overflow-y-auto">
+              {contacts.map((u) => {
+                const on = groupPick.includes(u.id);
+                return (
+                  <button
+                    key={u.id}
+                    type="button"
+                    className="flex min-h-12 w-full items-center gap-3 py-1.5 text-left"
+                    onClick={() => setGroupPick(on ? groupPick.filter((x) => x !== u.id) : [...groupPick, u.id])}
+                  >
+                    <Avatar user={u} size={40} />
+                    <span className="min-w-0 flex-1 text-[15px] font-medium">{u.displayName}</span>
+                    <span className={cn("size-5 rounded-full border-2", on ? "border-accent bg-accent" : "border-muted/50")} />
+                  </button>
+                );
+              })}
+            </div>
+            <div className="mt-3 grid grid-cols-2 gap-2">
+              {(["audio", "video"] as const).map((k) => (
+                <Btn
+                  key={k}
+                  variant={k === "audio" ? "primary" : "secondary"}
+                  disabled={groupPick.length < 2}
+                  onClick={() => {
+                    const ids = groupPick;
+                    setPicker(false);
+                    setGroupPick(null);
+                    void callEngine.start({ targets: ids, media: k, group: true });
+                  }}
+                >
+                  {k === "audio" ? "Audio" : "Vidéo"} ({groupPick.length})
+                </Btn>
+              ))}
+            </div>
+          </div>
+        ) : (
         <div className="no-scrollbar max-h-[50vh] overflow-y-auto">
-          {contacts.map((u) => (
+          <button
+            type="button"
+            className="flex min-h-12 w-full items-center gap-3 py-2 text-left"
+            onClick={() => setGroupPick([])}
+          >
+            <span className="flex size-10 items-center justify-center rounded-full bg-accent/15 text-accent">
+              <Users className="size-5" />
+            </span>
+            <span className="text-[15px] font-semibold">Nouvel appel de groupe</span>
+          </button>
+          {contacts.filter((u) => !needle || u.displayName.toLowerCase().includes(needle) || u.username.toLowerCase().includes(needle)).map((u) => (
             <div key={u.id} className="flex items-center gap-3 py-2">
               <Avatar user={u} size={40} />
               <span className="min-w-0 flex-1 text-[15px] font-medium">{u.displayName}</span>
@@ -278,6 +384,7 @@ export function CallsScreen() {
             </div>
           ))}
         </div>
+        )}
       </Sheet>
       <Sheet
         open={Boolean(menu)}
@@ -339,6 +446,59 @@ export function CallsScreen() {
   );
 }
 
+
+const SCENARIOS: { label: string; run: () => void }[] = [
+  { label: "Alex · audio", run: () => void callEngine.start({ targets: ["alex"], media: "audio" }) },
+  { label: "Maya · vidéo", run: () => void callEngine.start({ targets: ["maya"], media: "video" }) },
+  { label: "Famille Diallo", run: () => void callEngine.startGroup("c-famille", "audio") },
+  { label: "Famille · vidéo", run: () => void callEngine.startGroup("c-famille", "video") },
+  { label: "Alex t’appelle", run: () => callEngine.simulateIncoming("alex", "audio") },
+  { label: "Maya t’appelle en vidéo", run: () => callEngine.simulateIncoming("maya", "video") },
+];
+const OUTCOMES: { label: string; o: CallOutcome }[] = [
+  { label: "Refusé", o: "declined" },
+  { label: "Occupé", o: "busy" },
+  { label: "Pas de réponse", o: "noAnswer" },
+  { label: "Connexion impossible", o: "failed" },
+];
+
+/** Scénarios de démonstration du lot 5 (simulation, aucune donnée envoyée). */
+function DemoScenarios() {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="glass-card mx-4 mt-2 rounded-2xl px-3 py-2">
+      <button type="button" className="flex min-h-10 w-full items-center justify-between text-left" onClick={() => setOpen((v) => !v)}>
+        <span className="text-[13px] font-semibold">Tester un appel (démo)</span>
+        <ChevronDown className={cn("size-4 text-muted transition-transform", open && "rotate-180")} />
+      </button>
+      {open ? (
+        <div className="pb-2">
+          <div className="flex flex-wrap gap-2">
+            {SCENARIOS.map((s) => (
+              <Chip key={s.label} onClick={s.run}>
+                {s.label}
+              </Chip>
+            ))}
+          </div>
+          <p className="mt-3 mb-1.5 text-[11px] text-muted">Appel vers Alex qui aboutit à :</p>
+          <div className="flex flex-wrap gap-2">
+            {OUTCOMES.map((x) => (
+              <Chip
+                key={x.o}
+                onClick={() => {
+                  callEngine.setNextOutcome(x.o);
+                  void callEngine.start({ targets: ["alex"], media: "audio" });
+                }}
+              >
+                {x.label}
+              </Chip>
+            ))}
+          </div>
+        </div>
+      ) : null}
+    </div>
+  );
+}
 
 export function CallLinkScreen() {
   const t = useT();
@@ -1123,10 +1283,7 @@ function CallSession() {
           ) : (
             <span className="size-11" />
           )}
-          <p className="flex items-center justify-center gap-1 text-center text-[11px] font-medium tracking-wide text-paper/50 uppercase">
-            <Lock className="size-3" />
-            {t("e2eCall")}
-          </p>
+          <span />
           <span className="size-11" />
         </div>
         {liveVideo ? (

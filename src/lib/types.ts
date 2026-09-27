@@ -297,6 +297,8 @@ export type Message = {
   /** 0..1 pendant l’envoi ou le téléchargement. */
   progress?: number;
   stickerId?: string;
+  /** Événement d'appel inscrit dans la conversation (lot 5). */
+  call?: { media: "audio" | "video"; missed: boolean; duration?: number; dir: "in" | "out"; group?: boolean };
   /** Foil design for a scratch surprise. The secret itself stays in `text`. */
   scratchDesign?: "gold" | "love" | "birthday" | "fun" | "secret" | "heart" | "spark" | "crown" | "duo";
   /** Official card catalog id (e.g. wipp_gold). When set, asset + scratch_zone are used. */
@@ -352,6 +354,12 @@ export type CallLog = {
   missed: boolean;
   at: number;
   duration?: number;
+  /** Appel de groupe (lot 5) : conversation et participants. */
+  group?: boolean;
+  chatId?: string;
+  participantIds?: string[];
+  /** Issue d'un appel sortant non abouti. */
+  outcome?: "declined" | "busy" | "noAnswer" | "failed";
 };
 
 export type LiveCall = {
