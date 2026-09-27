@@ -1002,9 +1002,12 @@ export function ConversationScreen({ chatId }: { chatId: string }) {
                                 id: m.id,
                                 message: m.text || "···",
                                 surpriseType: "gift",
+                                designId: null,
+                                animationId: null,
+                                surpriseOptions: {},
                                 time: formatClock(m.createdAt),
                                 mine: m.fromId === "me",
-                              } as Surprise);
+                              });
                             }}
                           >
                             <Gift className="size-8 text-[#ffd84d]" />

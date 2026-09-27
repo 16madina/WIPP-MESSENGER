@@ -47,7 +47,7 @@ export function SurpriseReveal({ surprise, demo = false }: { surprise: Surprise;
 
 function Mechanism({ surprise, demo, onRevealComplete }: { surprise: Surprise; demo: boolean; onRevealComplete: () => void }) {
   const reduced = useReducedMotion();
-  const total = surprise.surpriseOptions.countdown?.seconds ?? 10;
+  const total = surprise.surpriseOptions?.countdown?.seconds ?? 10;
   const [revealed, setRevealed] = useState(false);
   const [left, setLeft] = useState(total);
   useEffect(() => { if (!demo && localStorage.getItem(revealedKey(surprise.id)) === "1") setRevealed(true); }, [surprise.id, demo]);
