@@ -22,6 +22,7 @@ import { Avatar, GroupAvatar } from "@/components/avatar";
 import { SmartImg } from "@/components/smart-img";
 import { GallerySheet } from "@/components/gallery";
 import { BlockSheet, ReportSheet } from "@/components/safety";
+import { RealRequestsSection } from "@/components/real-requests";
 import { WgoWordmark } from "@/components/logo";
 import { Badge, Btn, Chip, Empty, Header, IconBtn, SearchField, StatusBar } from "@/components/ui";
 import { formatChatTime, formatRemainShort } from "@/lib/format";
@@ -519,6 +520,7 @@ export function RequestsScreen() {
       <StatusBar />
       <Header title={t("requests")} onBack={pop} />
       <div className="flex-1 overflow-y-auto no-scrollbar px-4">
+        <RealRequestsSection />
         <button type="button" onClick={() => push({ name: "touch-incoming" })}
           className="mb-3 flex min-h-12 w-full items-center justify-between rounded-xl bg-surface px-4 text-left text-[14px] hairline">
           <span>Demande WIPP Touch reçue</span>
