@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { ArrowLeft, ChevronDown } from "lucide-react";
 import { Btn } from "@/components/ui";
 import { useWgoStore } from "@/lib/store";
 import { toE164 } from "@/lib/firebase-phone";
@@ -28,7 +27,6 @@ export function WelcomeScreen() {
 
 export function PhoneEntryScreen() {
   const pop = useWgoStore((s) => s.pop);
-  const saveSignup = useWgoStore((s) => s.saveSignup);
   const [country, setCountry] = useState<(typeof COUNTRIES)[number]>(COUNTRIES[0]);
   const [phone, setPhone] = useState("");
   const [menuOpen, setMenuOpen] = useState(false);
@@ -40,7 +38,7 @@ export function PhoneEntryScreen() {
       setError("Entre un numéro de téléphone valide.");
       return;
     }
-    saveSignup({ phone: normalized, country: country.id });
+    useWgoStore.setState((state) => ({ pendingSignup: { ...state.pendingSignup, phone: normalized, country: country.id } }));
     setError("");
     // The next step will be added when the rest of the flow is supplied.
   }

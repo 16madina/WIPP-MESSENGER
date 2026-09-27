@@ -1,4 +1,5 @@
 # Roadmap
+- [x] Accueil après présentation et saisie du téléphone selon les deux images fournies ; « Continuer » conserve le numéro sans lancer le SMS. Suite du parcours en attente des prochaines indications de l'utilisateur.
 - [x] Lot 1 : messages synchronisés, réactions, modifier/supprimer/épingler, livré/lu réels, écrit… temps réel, file hors ligne
 - [x] Lot 2 : épingler, archiver, sourdine (Toujours explicite), non lu manuel, brouillons locaux, recherche, infos
 - [ ] Lot 1 : notifications push (doit vérifier wipp_is_muted) — bloqué : clé de compte de service Firebase

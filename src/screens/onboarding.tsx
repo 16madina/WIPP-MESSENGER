@@ -127,7 +127,7 @@ export function OnboardingScreen() {
   }
   function finish() {
     haptic("success");
-    replace({ name: "signup" });
+    replace({ name: "welcome" });
   }
 
   useEffect(() => {

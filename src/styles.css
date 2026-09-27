@@ -182,6 +182,7 @@
   --color-wipp-surprise-choice-raised: var(--wipp-surprise-choice-raised);
   --color-wipp-surprise-choice-border: var(--wipp-surprise-choice-border);
   --color-wipp-share-panel: var(--wipp-share-panel);
+  --color-wipp-auth-input: var(--wipp-auth-input);
   --color-wipp-share-tile: var(--wipp-share-tile);
   --color-wipp-share-tile-highlight: var(--wipp-share-tile-highlight);
   --color-wipp-share-tile-border: var(--wipp-share-tile-border);

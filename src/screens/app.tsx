@@ -48,6 +48,7 @@ import {
   SecurityScreen,
 } from "./me";
 import { LegalScreen } from "./legal";
+import { PhoneEntryScreen, WelcomeScreen } from "./auth-reference";
 import { BusinessCardScreen, DevicesScreen, LanguageScreen } from "./me-extras";
 import { RealIncomingScreen, RealTouchIncomingScreen, TouchIncomingScreen } from "./touch-incoming";
 
@@ -147,6 +148,10 @@ function ScreenSwitch({ screen }: { screen: Screen }) {
       return <SplashScreen />;
     case "onboarding":
       return <OnboardingScreen />;
+    case "welcome":
+      return <WelcomeScreen />;
+    case "phone-entry":
+      return <PhoneEntryScreen />;
     case "signup":
       return <SignupScreen />;
     case "login":
