@@ -203,7 +203,7 @@ export type Screen =
   | { name: "qr-profile"; key: string }
   | { name: "qr-group"; key: string }
   | { name: "wgo-touch" }
-  | { name: "touch-incoming"; demo?: TouchIncomingCase; requestId?: string }
+  | { name: "touch-incoming"; demo?: TouchIncomingCase; requestId?: string; touchId?: string }
   | { name: "pharmacy"; pharmacyId: string }
   | { name: "shop"; shopId: string }
   | { name: "create-shop" }

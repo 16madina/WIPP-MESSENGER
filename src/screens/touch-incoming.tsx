@@ -6,6 +6,7 @@
  */
 import { useEffect, useState, type ReactNode } from "react";
 import { getRequest, respondRequest, type RealRequest } from "@/lib/connections";
+import { getIncomingTouch, respondTouch } from "@/lib/touch-remote";
 import { Check, Clock, ShieldOff, TriangleAlert, X } from "lucide-react";
 import { Avatar } from "@/components/avatar";
 import { WippMark } from "@/components/logo";
@@ -93,25 +94,32 @@ export function TouchIncomingScreen({ demo = "pending" }: { demo?: TouchIncoming
 }
 
 /** Téléphone B relié à une VRAIE demande backend (wipp_connection_requests). */
-export function RealIncomingScreen({ requestId }: { requestId: string }) {
+export function RealTouchIncomingScreen({ touchId }: { touchId: string }) {
+  return <RealIncomingScreen requestId={touchId} touch />;
+}
+
+export function RealIncomingScreen({ requestId, touch = false }: { requestId: string; touch?: boolean }) {
   const pop = useWgoStore((s) => s.pop);
   const [req, setReq] = useState<RealRequest | null>(null);
   const [view, setView] = useState<View | "loading">("loading");
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
-    void getRequest(requestId).then((r) => {
+    const load: Promise<RealRequest | "not_found"> = touch
+      ? getIncomingTouch(requestId).then((t) => t === "not_found" || !t.sender ? "not_found" : { id: t.id, status: t.status, createdAt: "", expiresAt: t.expiresAt, sender: t.sender })
+      : getRequest(requestId);
+    void load.then((r) => {
       if (r === "not_found") return setView("blocked");
       setReq(r);
       if (r.status !== "pending") setView(r.status === "expired" ? "expired" : "handled");
       else if (new Date(r.expiresAt) <= new Date()) setView("expired");
       else setView("pending");
     }).catch(() => setView("error"));
-  }, [requestId]);
+  }, [requestId, touch]);
 
   const respond = async (action: "accept" | "decline") => {
     setBusy(true);
-    const s = await respondRequest(requestId, action).catch(() => "error");
+    const s = touch ? (await respondTouch(requestId, action)).status : await respondRequest(requestId, action).catch(() => "error");
     setBusy(false);
     const map: Record<string, View> = { accepted: "accepted", declined: "declined", already_handled: "handled", expired: "expired", blocked: "blocked", not_found: "blocked" };
     setView(map[s] ?? "error");
@@ -131,7 +139,7 @@ export function RealIncomingScreen({ requestId }: { requestId: string }) {
   return (
     <div className="flex h-full flex-col bg-navy text-paper">
       <StatusBar />
-      <Header title="Demande WIPP" onBack={pop} className="text-paper [&_button]:text-paper" />
+      <Header title={touch ? "WIPP Touch" : "Demande WIPP"} onBack={pop} className="text-paper [&_button]:text-paper" />
       <div className="flex flex-1 flex-col items-center justify-center px-8 text-center">
         {view === "pending" && req ? (
           <>
@@ -140,7 +148,7 @@ export function RealIncomingScreen({ requestId }: { requestId: string }) {
               <span className="absolute -right-1 -bottom-1 rounded-full bg-navy p-1"><WippMark size={28} invert /></span>
             </div>
             <h1 className="mt-5 max-w-[22ch] text-[22px] font-semibold leading-tight">
-              {req.sender.username} veut se connecter avec toi sur WIPP
+              {req.sender.displayName.split(" ")[0] || req.sender.username} veut se connecter avec toi sur WIPP
             </h1>
             <p className="mt-2 text-[15px] font-medium">{req.sender.displayName}</p>
             <p className="text-[13px] text-paper/55">@{req.sender.username}</p>
