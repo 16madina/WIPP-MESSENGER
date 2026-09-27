@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import {
+  Bell,
   BellOff,
   Camera,
   Clock,
@@ -16,6 +17,7 @@ import {
   Music,
   Play,
 } from "lucide-react";
+import { enablePush, pushAvailable } from "@/lib/push";
 import { Avatar, GroupAvatar } from "@/components/avatar";
 import { SmartImg } from "@/components/smart-img";
 import { GallerySheet } from "@/components/gallery";
@@ -71,6 +73,27 @@ export function ChatsScreen() {
   const [filter, setFilter] = useState<"all" | "personal" | "shops" | "groups">("all");
   const [menuChatId, setMenuChatId] = useState<string | null>(null);
   const [, setVaultTick] = useState(0);
+  const [pushMsg, setPushMsg] = useState<string | null>(null);
+  const [pushOn, setPushOn] = useState(
+    () => typeof window !== "undefined" && "Notification" in window && Notification.permission === "granted",
+  );
+
+  const onEnablePush = async () => {
+    const status = await enablePush();
+    if (status === "registered") {
+      setPushOn(true);
+      setPushMsg("Notifications activées sur cet appareil.");
+    } else if (status === "open-in-new-tab") {
+      setPushMsg("Ouvre l'app dans son propre onglet pour activer les notifications.");
+    } else if (status === "denied") {
+      setPushMsg("Notifications refusées. Autorise-les dans les réglages du navigateur.");
+    } else if (status === "unsupported") {
+      setPushMsg("Ce navigateur ne prend pas en charge les notifications.");
+    } else {
+      setPushMsg("Impossible d'activer les notifications pour le moment.");
+    }
+    window.setTimeout(() => setPushMsg(null), 5000);
+  };
 
   useEffect(() => { const un = subscribePrivateVault(() => setVaultTick((n) => n + 1)); return () => { un(); }; }, []);
 
@@ -145,6 +168,11 @@ export function ChatsScreen() {
             <WgoWordmark className="text-[22px]" />
           </span>
           <div className="ml-auto flex items-center">
+            {pushAvailable() && !pushOn ? (
+              <IconBtn label="Activer les notifications" onClick={() => void onEnablePush()}>
+                <Bell className="size-5" />
+              </IconBtn>
+            ) : null}
             <IconBtn label={t("search")} onClick={() => push({ name: "global-search" })}>
               <Search className="size-5" />
             </IconBtn>
@@ -157,6 +185,11 @@ export function ChatsScreen() {
           </div>
         </div>
       </div>
+      {pushMsg ? (
+        <div className="mx-4 mb-1 rounded-2xl glass px-4 py-2.5 text-center text-[13px] text-fg">
+          {pushMsg}
+        </div>
+      ) : null}
       <div className="flex gap-4 overflow-x-auto no-scrollbar px-4 py-3">
         <div className="flex w-16 shrink-0 flex-col items-center gap-1.5">
           <span className="relative">
