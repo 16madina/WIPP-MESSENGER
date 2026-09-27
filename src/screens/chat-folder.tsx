@@ -51,11 +51,13 @@ export function ChatInfoScreen({ chatId }: { chatId: string }) {
   const pinChat = useWgoStore((s) => s.pinChat);
   const archiveChat = useWgoStore((s) => s.archiveChat);
   if (!chat) return null;
-  const peerId = chat.participantIds.find((id) => id !== "me");
+  const isGroup = chat.type === "group";
+  const peerId = isGroup ? undefined : chat.participantIds.find((id) => id !== "me");
   const peer = peerId ? users[peerId] : undefined;
-  const media = messages.filter((m) => m.type === "image" || m.type === "video" || m.type === "voice");
-  const docs = messages.filter((m) => m.type === "listing");
-  const links = messages.flatMap((m) => (m.text ? linksIn(m.text).map((url) => ({ id: m.id, url })) : []));
+  const live = messages.filter((m) => !m.deletedAt);
+  const media = live.filter((m) => m.type === "image" || m.type === "video" || m.type === "voice" || m.type === "gif");
+  const docs = live.filter((m) => m.type === "file" || m.type === "listing");
+  const links = live.flatMap((m) => (m.text ? linksIn(m.text).map((url) => ({ id: m.id, url })) : []));
 
   return (
     <div className="flex h-full flex-col">
@@ -64,7 +66,9 @@ export function ChatInfoScreen({ chatId }: { chatId: string }) {
       <div className="flex-1 overflow-y-auto px-4 py-4">
         <p className="text-[20px] font-semibold">{peer?.displayName || chat.name || "Conversation"}</p>
         {peer ? <p className="text-[14px] text-muted">@{peer.username}</p> : null}
-        <p className="mt-2 text-[13px] text-muted">Chiffré de bout en bout</p>
+        <p className="mt-2 text-[13px] text-muted">
+          {isGroup ? `Groupe · ${chat.participantIds.length} participants` : "Chiffré de bout en bout"}
+        </p>
         <div className="mt-4 grid gap-2">
           <button type="button" className="h-11 rounded-xl bg-surface-2 text-left px-3" onClick={() => pinChat(chatId, !chat.pinned)}>
             {chat.pinned ? "Désépingler" : "Épingler"}
@@ -80,7 +84,7 @@ export function ChatInfoScreen({ chatId }: { chatId: string }) {
         </div>
         <Section title="Médias" empty="Aucun média dans ce fil." items={media.map((m) => labelOf(m))} />
         <Section title="Liens" empty="Aucun lien dans ce fil." items={links.map((l) => l.url)} />
-        <Section title="Documents" empty="Aucun document dans ce fil." items={docs.map((m) => m.text || "Document")} />
+        <Section title="Documents" empty="Aucun document dans ce fil." items={docs.map((m) => m.file?.name || m.text || "Document")} />
       </div>
     </div>
   );
@@ -90,6 +94,7 @@ function labelOf(m: Message) {
   if (m.type === "image") return "Image";
   if (m.type === "video") return "Vidéo";
   if (m.type === "voice") return "Message vocal";
+  if (m.type === "gif") return "GIF";
   return m.text || m.type;
 }
 

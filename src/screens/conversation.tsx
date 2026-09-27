@@ -1276,7 +1276,7 @@ export function ConversationScreen({ chatId }: { chatId: string }) {
                             mine ? "text-paper/50" : "text-muted",
                           )}
                         >
-                          {m.enc ? <Lock className="size-2.5 opacity-70" /> : null}
+                          {m.enc && !isGroup ? <Lock className="size-2.5 opacity-70" /> : null}
                           {m.expiresAt ? <Timer className="size-2.5 opacity-70" /> : null}
                           {formatClock(m.createdAt)}
                           {mine ? <ReceiptMark status={m.status} /> : null}
