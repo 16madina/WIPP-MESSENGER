@@ -99,6 +99,8 @@ export type GeoFix = {
 export type ScreenName =
   | "splash"
   | "onboarding"
+  | "welcome"
+  | "phone-entry"
   | "signup"
   | "login"
   | "otp"
@@ -161,6 +163,8 @@ export type ScreenName =
 export type Screen =
   | { name: "splash" }
   | { name: "onboarding" }
+  | { name: "welcome" }
+  | { name: "phone-entry" }
   | { name: "signup" }
   | { name: "login" }
   | { name: "otp" }
