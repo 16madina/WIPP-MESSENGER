@@ -1,6 +1,6 @@
-import { useEffect, useRef, useState } from "react";
-import { issueTempToken, parseWippQr, profileQr, redeemTempToken, tempQr } from "@/lib/qr-payload";
-import { providers } from "@/lib/providers";
+import { useEffect, useState } from "react";
+import { issueTempToken, profileQr, tempQr } from "@/lib/qr-payload";
+import { LiveScanner } from "@/components/live-scanner";
 import { BadgeCheck, Lock, MapPin, Phone, QrCode, ScanLine, Search, Share2, Smartphone, Store, Video } from "lucide-react";
 import { Avatar } from "@/components/avatar";
 import { SmartImg } from "@/components/smart-img";
