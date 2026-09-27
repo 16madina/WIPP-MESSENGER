@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { AppShell } from "@/components/native/AppShell";
+import { BootedApp } from "@/screens/boot";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -12,5 +12,5 @@ export const Route = createFileRoute("/")({
       { name: "twitter:card", content: "summary" },
     ],
   }),
-  component: AppShell,
+  component: BootedApp,
 });
