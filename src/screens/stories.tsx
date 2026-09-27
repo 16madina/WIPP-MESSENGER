@@ -427,6 +427,7 @@ export function NewStoryScreen() {
           <div className="p-4 pb-8">
             <StoryMusicButton track={music} onClick={() => setMusicOpen(true)} />
             <StoryTtlPicker value={ttlMs} onChange={setTtlMs} />
+            <StoryAudiencePicker compact value={audience} onChange={setAudience} />
             <Btn
               className="w-full"
               disabled={!text.trim()}

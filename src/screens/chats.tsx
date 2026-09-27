@@ -519,6 +519,11 @@ export function RequestsScreen() {
       <StatusBar />
       <Header title={t("requests")} onBack={pop} />
       <div className="flex-1 overflow-y-auto no-scrollbar px-4">
+        <button type="button" onClick={() => push({ name: "touch-incoming" })}
+          className="mb-3 flex min-h-12 w-full items-center justify-between rounded-xl bg-surface px-4 text-left text-[14px] hairline">
+          <span>Demande WIPP Touch reçue</span>
+          <span className="rounded-full bg-fg/10 px-2 py-0.5 text-[11px] text-muted">Démo</span>
+        </button>
         {pendingIntros.length === 0 && pending.length === 0 ? (
           <Empty title={t("noResults")} />
         ) : (
