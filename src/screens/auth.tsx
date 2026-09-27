@@ -496,24 +496,90 @@ export function OtpScreen() {
   const t = useT();
   const pop = useWgoStore((s) => s.pop);
   const push = useWgoStore((s) => s.push);
-  const openDemo = useWgoStore((s) => s.openDemo);
+  const completeSetup = useWgoStore((s) => s.completeSetup);
   const pending = useWgoStore((s) => s.pendingSignup);
-  const phone = useWgoStore((s) => s.pendingSignup.phone ?? s.me.phone);
-  const isLogin = !pending.firstName;
+  const phone = pendingPhone() ?? pending.phone ?? "";
+  const mode = pendingMode() ?? "signup";
   const [code, setCode] = useState("");
-  const [err, setErr] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [newPassword, setNewPassword] = useState("");
+  const [verified, setVerified] = useState<{ idToken: string; phone: string } | null>(null);
 
-  function pass() {
-    if (isLogin) openDemo();
-    else push({ name: "setup" });
+  async function finish(next: string) {
+    setBusy(true);
+    setErr(null);
+    const res = await verifyPhoneCode(next);
+    if ("error" in res) {
+      setBusy(false);
+      setErr(res.error);
+      return;
+    }
+    if (mode === "reset") {
+      setVerified(res);
+      setBusy(false);
+      return;
+    }
+    const password = pendingPassword() ?? "";
+    const out = await signupPhone({
+      data: {
+        idToken: res.idToken,
+        firstName: pending.firstName ?? "",
+        lastName: pending.lastName ?? "",
+        password,
+      },
+    });
+    setBusy(false);
+    if (!out.ok) {
+      setErr(out.error);
+      return;
+    }
+    await supabase.auth.setSession({ access_token: out.accessToken, refresh_token: out.refreshToken });
+    clearPending();
+    push({ name: "setup" });
   }
+
+  async function finishReset() {
+    if (!verified) return;
+    if (newPassword.length < 8) {
+      setErr(t("passwordWeak"));
+      return;
+    }
+    setBusy(true);
+    setErr(null);
+    const out = await resetPasswordPhone({ data: { idToken: verified.idToken, password: newPassword } });
+    setBusy(false);
+    if (!out.ok) {
+      setErr(out.error);
+      return;
+    }
+    await supabase.auth.setSession({ access_token: out.accessToken, refresh_token: out.refreshToken });
+    const { data: u } = await supabase.auth.getUser();
+    let displayName = "";
+    if (u.user) {
+      const { data: p } = await supabase
+        .from("wipp_profiles")
+        .select("display_name")
+        .eq("auth_user_id", u.user.id)
+        .maybeSingle();
+      displayName = p?.display_name ?? "";
+    }
+    const [firstName, ...rest] = displayName.split(" ");
+    clearPending();
+    completeSetup({ firstName: firstName ?? "", lastName: rest.join(" "), displayName, phone: verified.phone });
+  }
+
+  async function resend() {
+    setErr(null);
+    setCode("");
+    const smsErr = await startPhoneCode(phone, mode, pendingPassword());
+    if (smsErr) setErr(smsErr);
+  }
+
   function submit(next: string) {
     setCode(next);
-    setErr(false);
-    if (next.length === 4) {
-      if (next === "1234") pass();
-      else setErr(true);
-    }
+    setErr(null);
+    if (next.length === 6) void finish(next);
   }
 
   return (
@@ -523,37 +589,58 @@ export function OtpScreen() {
         {t("otpBody")} {phone}
       </p>
       <AuthSteps step={1} />
-      <div className="mt-2 flex justify-between gap-2">
-        {Array.from({ length: 4 }).map((_, i) => (
-          <input
-            key={i}
-            inputMode="numeric"
-            maxLength={1}
-            value={code[i] ?? ""}
-            onChange={(e) => {
-              const v = e.target.value.replace(/\D/g, "").slice(-1);
-              const chars = code.split("");
-              chars[i] = v;
-              submit(chars.join("").slice(0, 4));
-              const next = e.currentTarget.nextElementSibling;
-              if (v && next instanceof HTMLInputElement) next.focus();
-            }}
-            className="h-16 w-16 rounded-2xl bg-surface text-center text-[22px] font-semibold ring-1 ring-hair outline-none focus:ring-2 focus:ring-accent"
-          />
-        ))}
-      </div>
+      {verified ? (
+        <div className="mt-4">
+          <AuthField label={t("newPassword")} icon={<Lock className="size-4" />}>
+            <input
+              type="password"
+              className="h-full w-full bg-transparent text-[15px] outline-none"
+              value={newPassword}
+              autoComplete="new-password"
+              onChange={(e) => setNewPassword(e.target.value)}
+            />
+          </AuthField>
+          <p className="mt-1.5 text-[11px] text-muted">{t("passwordHint")}</p>
+        </div>
+      ) : (
+        <div className="mt-2 flex justify-between gap-1.5">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <input
+              key={i}
+              inputMode="numeric"
+              maxLength={1}
+              value={code[i] ?? ""}
+              onChange={(e) => {
+                const v = e.target.value.replace(/\D/g, "").slice(-1);
+                const chars = code.split("");
+                chars[i] = v;
+                submit(chars.join("").slice(0, 6));
+                const next = e.currentTarget.nextElementSibling;
+                if (v && next instanceof HTMLInputElement) next.focus();
+              }}
+              className="h-16 w-12 rounded-2xl bg-surface text-center text-[22px] font-semibold ring-1 ring-hair outline-none focus:ring-2 focus:ring-accent"
+            />
+          ))}
+        </div>
+      )}
       <p className="mt-4 text-[13px] text-muted">{t("otpHint")}</p>
-      {err ? <p className="mt-2 text-[13px] text-danger">{t("otpError")}</p> : null}
+      {err ? <p className="mt-2 text-[13px] text-danger">{err}</p> : null}
       <AuthCta
-        disabled={code.length !== 4}
-        onClick={() => {
-          if (code === "1234") pass();
-          else setErr(true);
-        }}
+        disabled={busy || (verified ? newPassword.length < 8 : code.length !== 6)}
+        onClick={() => (verified ? void finishReset() : void finish(code))}
       >
-        {t("continue")}
+        {busy ? t("sending") : t("continue")}
         <ArrowRight className="size-4" />
       </AuthCta>
+      {!verified ? (
+        <button
+          type="button"
+          className="mx-auto mt-4 block text-[13px] font-medium text-accent"
+          onClick={() => void resend()}
+        >
+          {t("resendCode")}
+        </button>
+      ) : null}
     </AuthShell>
   );
 }
