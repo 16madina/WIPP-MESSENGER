@@ -30,35 +30,5 @@ export function parseWippQr(raw: string): QrParse {
   return { kind: "invalid" };
 }
 
-/* ---- QR temporaire (SIMULATED : registre local tant que le serveur n'a pas l'endpoint) ---- */
-export type TempState = "active" | "used" | "expired" | "invalid";
+/* QR temporaire : émis et consommé uniquement par le serveur (src/lib/qr.functions.ts). */
 export const TEMP_QR_MS = 75_000;
-const KEY = "wipp-temp-qr";
-type Rec = { token: string; username: string; expiresAt: number; used: boolean };
-
-function load(): Rec[] {
-  try { return JSON.parse(localStorage.getItem(KEY) || "[]") as Rec[]; } catch { return []; }
-}
-function save(r: Rec[]) {
-  localStorage.setItem(KEY, JSON.stringify(r.filter((x) => x.expiresAt > Date.now() - 600_000)));
-}
-
-export function issueTempToken(username: string): Rec {
-  const bytes = crypto.getRandomValues(new Uint8Array(18));
-  const token = btoa(String.fromCharCode(...bytes)).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
-  const rec = { token, username, expiresAt: Date.now() + TEMP_QR_MS, used: false };
-  // L'ancien jeton du même profil est invalidé.
-  save([...load().filter((x) => x.username !== username), rec]);
-  return rec;
-}
-
-export function redeemTempToken(token: string): { state: TempState; username?: string } {
-  const all = load();
-  const rec = all.find((x) => x.token === token);
-  if (!rec) return { state: "invalid" };
-  if (rec.used) return { state: "used" };
-  if (rec.expiresAt < Date.now()) return { state: "expired" };
-  rec.used = true;
-  save(all);
-  return { state: "active", username: rec.username };
-}
