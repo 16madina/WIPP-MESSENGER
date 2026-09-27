@@ -2,11 +2,15 @@
 // Le numéro ne sert qu'à vérifier l'identité ; il reste privé.
 import type { ConfirmationResult } from "firebase/auth";
 
+// Configuration publique du projet Firebase « wipp-61124 » (application Web « Wipp Web »).
+// Ces valeurs sont publiques par conception ; la sécurité repose sur les règles Firebase.
 const config = {
-  apiKey: import.meta.env["VITE_FIREBASE_API_KEY"] as string | undefined,
-  authDomain: import.meta.env["VITE_FIREBASE_AUTH_DOMAIN"] as string | undefined,
-  projectId: import.meta.env["VITE_FIREBASE_PROJECT_ID"] as string | undefined,
-  appId: import.meta.env["VITE_FIREBASE_APP_ID"] as string | undefined,
+  apiKey: (import.meta.env["VITE_FIREBASE_API_KEY"] as string | undefined) ?? "AIzaSyC0shdKNw1FiaL0D_F0xwN9lHt3j6H--CY",
+  authDomain: (import.meta.env["VITE_FIREBASE_AUTH_DOMAIN"] as string | undefined) ?? "wipp-61124.firebaseapp.com",
+  projectId: (import.meta.env["VITE_FIREBASE_PROJECT_ID"] as string | undefined) ?? "wipp-61124",
+  appId: (import.meta.env["VITE_FIREBASE_APP_ID"] as string | undefined) ?? "1:385207231117:web:a3feda22b6868358e238c4",
+  storageBucket: (import.meta.env["VITE_FIREBASE_STORAGE_BUCKET"] as string | undefined) ?? "wipp-61124.firebasestorage.app",
+  messagingSenderId: (import.meta.env["VITE_FIREBASE_MESSAGING_SENDER_ID"] as string | undefined) ?? "385207231117",
 };
 
 export const firebaseConfigured = Boolean(config.apiKey && config.authDomain && config.projectId && config.appId);
