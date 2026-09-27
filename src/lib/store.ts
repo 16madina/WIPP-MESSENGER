@@ -92,7 +92,10 @@ function previewOf(message: Message, lang: Lang = "fr") {
   if (message.encFailed) return lang === "fr" ? "Message chiffré" : "Encrypted message";
   if (message.type === "scratch") return lang === "fr" ? "Surprise ✨" : "Surprise ✨";
   if (message.type === "voice") return `Vocal · ${formatDur(message.duration ?? 0)}`;
+  if (message.album && message.album.length > 1) return lang === "fr" ? `${message.album.length} médias` : `${message.album.length} media`;
   if (message.type === "image") return "Photo";
+  if (message.type === "file") return `📄 ${message.file?.name ?? "Document"}`;
+  if (message.type === "gif") return "GIF";
   if (message.type === "video") return lang === "fr" ? "Vidéo" : "Video";
   if (message.type === "sticker") return stickerLabel(message.stickerId, lang);
   if (message.type === "listing") return message.text ?? "Annonce";
@@ -684,6 +687,9 @@ export const useWgoStore = create<WgoState>()(
           imageUrl: data.imageUrl,
           videoUrl: data.videoUrl,
           viewOnce: data.viewOnce || undefined,
+          album: data.album,
+          file: data.file,
+          gifUrl: data.gifUrl,
           stickerId: data.stickerId,
           scratchDesign: data.scratchDesign,
           scratchCardId: data.scratchCardId,

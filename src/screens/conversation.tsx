@@ -30,12 +30,18 @@ import {
 } from "lucide-react";
 import { Avatar, GroupAvatar } from "@/components/avatar";
 import { SmartImg } from "@/components/smart-img";
-import { StoryMediaGrid, readImageFile, readVideoFile, type StoryMediaPick } from "@/components/gallery";
+import { StoryMediaGrid, type StoryMediaPick } from "@/components/gallery";
 import { BlockSheet, ReportSheet, SafetyRow } from "@/components/safety";
 import { SurpriseFlow } from "@/components/native/SurpriseFlow";
 import { SurpriseReveal } from "@/components/native/SurpriseReveal";
 import type { Surprise } from "@/lib/surprise";
 import { WippSticker } from "@/components/wipp-sticker";
+import { MediaComposer } from "@/components/chat/MediaComposer";
+import { MediaViewer } from "@/components/chat/MediaViewer";
+import { FileCard, GifMessage, MediaCard, mediaItemsOf } from "@/components/chat/MessageMedia";
+import { HoldMic } from "@/components/chat/HoldMic";
+import { addGif, loadGifs, type LocalGif } from "@/lib/gifs";
+import { triggerWippPop } from "@/lib/wippmoji";
 import { Header, IconBtn, Sheet, StatusBar } from "@/components/ui";
 import { formatClock, formatDuration, formatLastSeen, formatRemain } from "@/lib/format";
 import { haptic } from "@/lib/haptics";
@@ -45,7 +51,7 @@ import { isStickerId, stickerById, stickerLabel, stickersInPack, WIPP_STICKERS }
 import { createVoiceRecorder, type VoiceRecorder } from "@/lib/voice-recorder";
 import { isChatSealed, useT, useWgoStore } from "@/lib/store";
 import { DISAPPEAR_24H, DISAPPEAR_7D } from "@/lib/types";
-import type { Message } from "@/lib/types";
+import type { MediaItem, Message } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 const REACTS = ["❤️", "😂", "👍", "😮", "😢", "🔥"];
@@ -218,6 +224,18 @@ export function ConversationScreen({ chatId }: { chatId: string }) {
   const docRef = useRef<HTMLInputElement>(null);
   const [viewOnce, setViewOnce] = useState(false);
   const [viewer, setViewer] = useState<Message | null>(null);
+  const [composerFiles, setComposerFiles] = useState<File[] | null>(null);
+  const [mediaView, setMediaView] = useState<{ items: MediaItem[]; start: number } | null>(null);
+  const [voiceLocked, setVoiceLocked] = useState(false);
+  const [voiceDragX, setVoiceDragX] = useState(0);
+  const [gifs, setGifs] = useState<LocalGif[]>([]);
+  const gifRef = useRef<HTMLInputElement>(null);
+  useEffect(() => {
+    if (!voice) setVoiceLocked(false);
+  }, [voice]);
+  useEffect(() => {
+    setGifs(loadGifs());
+  }, []);
   const [pickStickers, setPickStickers] = useState(false);
   const [stickerTab, setStickerTab] = useState<StickerTab>("scene");
   const [burst, setBurst] = useState<string | null>(null);
@@ -584,6 +602,7 @@ export function ConversationScreen({ chatId }: { chatId: string }) {
   function sendSticker(id: string, label: string) {
     haptic("send");
     sendMessage(chatId, { type: "sticker", stickerId: id, text: label });
+    triggerWippPop(id, id, "send");
     setStickerTab("recent");
     setPickStickers(false);
     setEmojiBar(false);
@@ -607,6 +626,32 @@ export function ConversationScreen({ chatId }: { chatId: string }) {
     }
   }
 
+  function sendMediaItems(items: MediaItem[], caption: string, once: boolean) {
+    haptic("send");
+    const first = items[0];
+    if (!first) return;
+    if (items.length === 1) {
+      sendMessage(chatId, {
+        type: first.type,
+        imageUrl: first.type === "image" ? first.url : undefined,
+        videoUrl: first.type === "video" ? first.url : undefined,
+        duration: first.duration,
+        text: caption,
+        viewOnce: once || undefined,
+      });
+    } else {
+      sendMessage(chatId, { type: "image", imageUrl: first.url, album: items, text: caption, viewOnce: once || undefined });
+    }
+    setComposerFiles(null);
+    setPickPhoto(false);
+  }
+
+  function sendGif(url: string) {
+    haptic("send");
+    sendMessage(chatId, { type: "gif", gifUrl: url, text: "" });
+    setPickStickers(false);
+  }
+
   function closeViewer() {
     if (viewer?.viewOnce && !viewer.viewed) burnViewOnce(chatId, viewer.id);
     setViewer(null);
@@ -620,24 +665,9 @@ export function ConversationScreen({ chatId }: { chatId: string }) {
 
   async function onDeviceFile(file: File | undefined, close: () => void) {
     if (!file) return;
-    if (file.type.startsWith("video/")) {
-      try {
-        const clip = await readVideoFile(file);
-        sendMedia({ type: "video", url: clip.url, durationMs: clip.durationMs });
-        close();
-      } catch {
-        /* too long or unreadable */
-      }
-      return;
-    }
-    if (file.type.startsWith("image/")) {
-      try {
-        const url = await readImageFile(file);
-        sendMedia({ type: "image", url });
-        close();
-      } catch {
-        /* ignore */
-      }
+    if (file.type.startsWith("video/") || file.type.startsWith("image/")) {
+      setComposerFiles([file]);
+      close();
       return;
     }
     if (chatId.startsWith("srv:")) {
@@ -664,7 +694,11 @@ export function ConversationScreen({ chatId }: { chatId: string }) {
         });
       });
     } else {
-      sendMessage(chatId, { text: `📄 ${file.name}` });
+      sendMessage(chatId, {
+        type: "file",
+        text: "",
+        file: { name: file.name, size: file.size, mime: file.type, url: URL.createObjectURL(file) },
+      });
     }
     close();
   }
@@ -701,13 +735,14 @@ export function ConversationScreen({ chatId }: { chatId: string }) {
   const unreadCount = chat.unread;
   const trayTabs: { id: StickerTab; label: string }[] = [
     { id: "recent", label: t("recents") },
-    { id: "emoji", label: t("stickerEmoji") },
+    { id: "emoji", label: "Wippmojis" },
     { id: "expressions", label: t("stickerTabExpressions") },
     { id: "love", label: t("stickerTabLove") },
     { id: "fun", label: "Fun" },
     { id: "famille", label: t("stickerTabFamille") },
     { id: "scene", label: t("stickerTabScenes") },
     { id: "wipp", label: "WIPP" },
+    { id: "gif", label: "GIF" },
   ];
   const stickerPool =
     stickerTab === "expressions"
@@ -880,6 +915,12 @@ export function ConversationScreen({ chatId }: { chatId: string }) {
               .filter((m) => !threadQuery.trim() || (m.text ?? "").toLowerCase().includes(threadQuery.trim().toLowerCase()))
               .map((m, i, list) => {
                 const mine = m.fromId === "me";
+                const bare =
+                  m.type === "sticker" ||
+                  m.type === "scratch" ||
+                  m.type === "gif" ||
+                  m.type === "file" ||
+                  ((m.type === "image" || m.type === "video") && !m.viewOnce);
                 const prev = list[i - 1];
                 const showName = chat.type === "group" && !mine && prev?.fromId !== m.fromId;
                 const sender = !mine && shop && m.fromId === shop.ownerId ? shopFace : users[m.fromId];
@@ -954,11 +995,11 @@ export function ConversationScreen({ chatId }: { chatId: string }) {
                       ) : null}
                       <div
                         className={cn(
-                          m.type === "sticker" || m.type === "scratch" ? "relative bg-transparent px-0 py-0" : "rounded-2xl px-3 py-2",
+                          bare ? "relative bg-transparent px-0 py-0" : "rounded-2xl px-3 py-2",
                           m.type === "sticker" && stickerById(m.stickerId)?.bubble
                             ? `moji-bubble moji-bubble-${stickerById(m.stickerId)?.bubble}`
                             : null,
-                          m.type !== "sticker" &&
+                          !bare &&
                             (mine ? "rounded-br-sm bg-bubble-me text-bubble-me-fg" : "rounded-bl-sm bg-bubble-them text-fg"),
                         )}
                       >
@@ -974,19 +1015,17 @@ export function ConversationScreen({ chatId }: { chatId: string }) {
                             <Eye className="size-4" />
                             <span className="text-[14px]">{t("viewOnceOpened")}</span>
                           </span>
-                        ) : m.type === "image" && m.imageUrl ? (
-                          <SmartImg src={m.imageUrl} alt="" className="mb-1 max-h-52 w-full rounded-lg object-cover" />
-                        ) : m.type === "video" && m.videoUrl ? (
-                          <span className="mb-1 block overflow-hidden rounded-lg">
-                            <video
-                              src={m.videoUrl}
-                              controls
-                              playsInline
-                              preload="metadata"
-                              className="max-h-52 w-full bg-black object-cover"
-                              onClick={(e) => e.stopPropagation()}
-                            />
-                          </span>
+                        ) : (m.type === "image" || m.type === "video") && mediaItemsOf(m).length ? (
+                          <MediaCard
+                            message={m}
+                            mine={mine}
+                            onOpen={(i) => setMediaView({ items: mediaItemsOf(m), start: i })}
+                            onRetry={() => retryMessage(chatId, m.id)}
+                          />
+                        ) : m.type === "file" ? (
+                          <FileCard message={m} mine={mine} onRetry={() => retryMessage(chatId, m.id)} />
+                        ) : m.type === "gif" && m.gifUrl ? (
+                          <GifMessage url={m.gifUrl} />
                         ) : null}
                         {m.type === "sticker" && isStickerId(m.stickerId) ? (
                           <WippSticker
@@ -1024,7 +1063,7 @@ export function ConversationScreen({ chatId }: { chatId: string }) {
 
                         {m.type === "voice" ? (
                           <VoicePlayButton url={m.audioUrl} duration={m.duration} mine={mine} />
-                        ) : m.type === "sticker" || m.type === "image" || m.type === "video" || m.type === "scratch" || m.viewOnce ? null : m.encFailed ? (
+                        ) : m.type === "sticker" || m.type === "image" || m.type === "video" || m.type === "file" || m.type === "gif" || m.type === "scratch" || m.viewOnce ? null : m.encFailed ? (
                           <p className={cn("flex items-center gap-1.5 text-[13px] italic", mine ? "text-paper/70" : "text-muted")}>
                             <Lock className="size-3.5 shrink-0" />
                             {t("e2eFailed")}
@@ -1097,7 +1136,7 @@ export function ConversationScreen({ chatId }: { chatId: string }) {
               </div>
             ) : null}
           </div>
-          {voice ? (
+          {voice && voiceLocked ? (
             <div className="glass flex flex-col gap-2 px-3 py-3">
               {voice.micDenied ? (
                 <p className="px-1 text-[12px] text-muted">{t("voiceMicDenied")}</p>
@@ -1264,6 +1303,30 @@ export function ConversationScreen({ chatId }: { chatId: string }) {
                 >
                   <Plus className="size-5" />
                 </button>
+                {voice && !voiceLocked ? (
+                  <div
+                    className="flex min-h-11 min-w-0 flex-1 items-center gap-2 rounded-full bg-surface-2 px-3 ring-1 ring-hair"
+                    aria-live="polite"
+                  >
+                    <span className="size-2.5 shrink-0 animate-pulse rounded-full bg-danger" />
+                    <span className="shrink-0 text-[13px] tabular-nums">{formatDuration(Math.max(0, Math.round(voice.elapsed)))}</span>
+                    <span className="flex h-5 flex-1 items-end gap-0.5 overflow-hidden" aria-hidden>
+                      {Array.from({ length: 14 }).map((_, b) => (
+                        <span
+                          key={b}
+                          className="w-0.5 animate-pulse rounded-full bg-accent/70"
+                          style={{ height: 5 + ((b * 5 + Math.floor(voice.elapsed * 3)) % 14), animationDelay: `${b * 40}ms` }}
+                        />
+                      ))}
+                    </span>
+                    <span
+                      className="shrink-0 text-[12px] text-muted transition-transform"
+                      style={{ transform: `translateX(${voiceDragX}px)`, opacity: 1 + voiceDragX / 120 }}
+                    >
+                      ‹ Glisser pour annuler
+                    </span>
+                  </div>
+                ) : (
                 <div className="flex min-h-11 min-w-0 flex-1 items-end rounded-full bg-surface-2 ring-1 ring-hair">
                   <textarea
                     rows={1}
@@ -1306,6 +1369,7 @@ export function ConversationScreen({ chatId }: { chatId: string }) {
                     <Smile className="size-5" />
                   </button>
                 </div>
+                )}
                 <button
                   type="button"
                   aria-label={t("stickers")}
@@ -1336,14 +1400,17 @@ export function ConversationScreen({ chatId }: { chatId: string }) {
                     <Send className="size-5" />
                   </button>
                 ) : (
-                  <button
-                    type="button"
-                    className="press mb-0.5 flex size-9 shrink-0 items-center justify-center text-fg"
-                    aria-label={t("voice")}
-                    onClick={() => void startVoice()}
-                  >
-                    <Mic className="size-5" />
-                  </button>
+                  <HoldMic
+                    label={t("voice")}
+                    onStart={() => void startVoice()}
+                    onCancel={cancelVoice}
+                    onLock={() => setVoiceLocked(true)}
+                    onDrag={(dx) => setVoiceDragX(dx)}
+                    onRelease={() => {
+                      if ((voice?.elapsed ?? 0) < 0.8) cancelVoice();
+                      else sendVoice();
+                    }}
+                  />
                 )}
               </div>
               {pickStickers ? (
@@ -1351,7 +1418,7 @@ export function ConversationScreen({ chatId }: { chatId: string }) {
                   <div className="mx-auto mb-2 h-1 w-10 rounded-full bg-muted/40" />
                   <div className="relative mb-2 flex items-center justify-center">
                     <h2 className="text-[17px] font-semibold">
-                      Stickers <span className="text-accent">WIPP</span>
+                      Wippmojis <span className="text-accent">&amp; Wippies</span>
                     </h2>
                     <button
                       type="button"
@@ -1410,6 +1477,33 @@ export function ConversationScreen({ chatId }: { chatId: string }) {
                       ) : (
                         <p className="px-2 py-8 text-center text-[13px] text-muted">{t("stickerRecentEmpty")}</p>
                       )
+                    ) : stickerTab === "gif" && !stickerQuery ? (
+                      <div className="grid grid-cols-3 gap-1.5">
+                        <button
+                          type="button"
+                          className="press flex aspect-square flex-col items-center justify-center gap-1 rounded-2xl bg-navy/40 text-[12px] font-semibold ring-1 ring-dashed ring-hair"
+                          onClick={() => gifRef.current?.click()}
+                        >
+                          <Plus className="size-5" />
+                          Importer un GIF
+                        </button>
+                        {gifs.map((g) => (
+                          <button
+                            key={g.id}
+                            type="button"
+                            aria-label="Envoyer ce GIF"
+                            className="press aspect-square overflow-hidden rounded-2xl bg-navy/40"
+                            onClick={() => sendGif(g.url)}
+                          >
+                            <img src={g.url} alt="GIF" className="size-full object-cover" draggable={false} />
+                          </button>
+                        ))}
+                        {!gifs.length ? (
+                          <p className="col-span-2 self-center px-2 text-[12px] leading-snug text-muted">
+                            Tes GIF restent sur ton téléphone. Importe-en un pour commencer.
+                          </p>
+                        ) : null}
+                      </div>
                     ) : stickerTab === "emoji" && !stickerQuery ? (
                       <div className="grid grid-cols-4 gap-1.5">
                         {stickersInPack("moji").map((s) => (
@@ -1678,6 +1772,23 @@ export function ConversationScreen({ chatId }: { chatId: string }) {
         }}
       />
       <input
+        ref={gifRef}
+        type="file"
+        accept="image/gif"
+        className="hidden"
+        onChange={(e) => {
+          const file = e.target.files?.[0];
+          e.target.value = "";
+          if (!file) return;
+          void addGif(file)
+            .then((g) => {
+              setGifs((prev) => [g, ...prev.filter((x) => x.id !== g.id)]);
+              sendGif(g.url);
+            })
+            .catch(() => {});
+        }}
+      />
+      <input
         ref={docRef}
         type="file"
         className="hidden"
@@ -1750,6 +1861,11 @@ export function ConversationScreen({ chatId }: { chatId: string }) {
             setPickStickers(true);
           }}
           onUnavailable={() => setSurprise(false)}
+          onPickFiles={(files, source) => {
+            setSurprise(false);
+            if (source === "document") void onDeviceFile(files[0], () => {});
+            else setComposerFiles(files);
+          }}
         />
       ) : null}
       {revealSurprise ? (
@@ -2006,21 +2122,13 @@ export function ConversationScreen({ chatId }: { chatId: string }) {
         />
       ) : null}
       {viewer ? (
-        <div className="absolute inset-0 z-40 flex flex-col bg-ink text-paper">
-          <div className="flex items-center justify-between px-3 pt-12">
-            <p className="text-[13px] font-medium text-paper/70">{t("viewOnce")}</p>
-            <button type="button" className="press rounded-full px-3 py-2 text-[14px] font-semibold" onClick={closeViewer}>
-              {t("done")}
-            </button>
-          </div>
-          <div className="flex flex-1 items-center justify-center p-4">
-            {viewer.type === "video" && viewer.videoUrl ? (
-              <video src={viewer.videoUrl} controls autoPlay playsInline className="max-h-full w-full rounded-xl bg-black" />
-            ) : viewer.imageUrl ? (
-              <SmartImg src={viewer.imageUrl} alt="" className="max-h-full w-full rounded-xl object-contain" />
-            ) : null}
-          </div>
-        </div>
+        <MediaViewer items={mediaItemsOf(viewer)} title={t("viewOnce")} onClose={closeViewer} />
+      ) : null}
+      {mediaView ? (
+        <MediaViewer items={mediaView.items} start={mediaView.start} onClose={() => setMediaView(null)} />
+      ) : null}
+      {composerFiles ? (
+        <MediaComposer files={composerFiles} onClose={() => setComposerFiles(null)} onSend={sendMediaItems} />
       ) : null}
     </div>
   );

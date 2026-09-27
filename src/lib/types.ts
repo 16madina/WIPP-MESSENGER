@@ -258,11 +258,13 @@ export type Chat = {
   disappearAfterMs?: number;
 };
 
+export type MediaItem = { type: "image" | "video"; url: string; duration?: number };
+
 export type Message = {
   id: string;
   chatId: string;
   fromId: string;
-  type: "text" | "voice" | "image" | "video" | "listing" | "shop" | "system" | "sticker" | "scratch";
+  type: "text" | "voice" | "image" | "video" | "listing" | "shop" | "system" | "sticker" | "scratch" | "file" | "gif";
   text?: string;
   createdAt: number;
   status: "sending" | "sent" | "delivered" | "read" | "failed";
@@ -274,6 +276,11 @@ export type Message = {
   videoUrl?: string;
   viewOnce?: boolean;
   viewed?: boolean;
+  /** Several photos/videos sent together (mosaic). */
+  album?: MediaItem[];
+  /** Document attachment (local blob URL until encrypted upload lands). */
+  file?: { name: string; size: number; mime: string; url: string };
+  gifUrl?: string;
   stickerId?: string;
   /** Foil design for a scratch surprise. The secret itself stays in `text`. */
   scratchDesign?: "gold" | "love" | "birthday" | "fun" | "secret" | "heart" | "spark" | "crown" | "duo";

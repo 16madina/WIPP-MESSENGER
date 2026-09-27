@@ -30,7 +30,7 @@ const options = [
 ] as const;
 
 /** Parcours local de composition ; seuls les messages à gratter sont simulés dans la conversation. */
-export function SurpriseFlow({ onSend, onShareContent, onOpenStickers, onUnavailable, autoOpen = false }: { onSend: (surprise: Surprise) => void; onShareContent: (text: string) => void; onOpenStickers: () => void; onUnavailable: (label: string) => void; autoOpen?: boolean }) {
+export function SurpriseFlow({ onSend, onShareContent, onOpenStickers, onUnavailable, onPickFiles, autoOpen = false }: { onSend: (surprise: Surprise) => void; onShareContent: (text: string) => void; onOpenStickers: () => void; onUnavailable: (label: string) => void; onPickFiles?: (files: File[], source: "gallery" | "camera" | "document") => void; autoOpen?: boolean }) {
   const reducedMotion = useReducedMotion();
   const galleryRef = useRef<HTMLInputElement>(null);
   const cameraRef = useRef<HTMLInputElement>(null);
@@ -69,8 +69,10 @@ export function SurpriseFlow({ onSend, onShareContent, onOpenStickers, onUnavail
     }
   };
   const fileChosen = (label: string) => (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) { onShareContent(`${label === "Document" ? "📎" : "🖼️"} ${file.name}`); close(); }
+    const files = Array.from(event.target.files ?? []);
+    const file = files[0];
+    if (file && onPickFiles) { onPickFiles(files, label === "Document" ? "document" : label === "Caméra" ? "camera" : "gallery"); close(); }
+    else if (file) { onShareContent(`${label === "Document" ? "📎" : "🖼️"} ${file.name}`); close(); }
     event.target.value = "";
   };
   const send = () => {
@@ -82,8 +84,8 @@ export function SurpriseFlow({ onSend, onShareContent, onOpenStickers, onUnavail
   };
   return <>
     {!autoOpen && <Pressable aria-label="Ouvrir le menu Partager" onClick={() => { haptic("light"); setStage("share"); }} className="text-wipp-muted"><span className="flex h-8 w-8 items-center justify-center rounded-full border border-wipp-muted/60 text-[25px] font-light leading-none">+</span></Pressable>}
-    <input ref={galleryRef} type="file" accept="image/*,video/*" className="hidden" aria-label="Choisir dans la galerie" onChange={fileChosen("Galerie")} />
-    <input ref={cameraRef} type="file" accept="image/*" capture="environment" className="hidden" aria-label="Prendre une photo" onChange={fileChosen("Caméra")} />
+    <input ref={galleryRef} type="file" multiple accept="image/*,video/*" className="hidden" aria-label="Choisir dans la galerie" onChange={fileChosen("Galerie")} />
+    <input ref={cameraRef} type="file" accept="image/*,video/*" capture="environment" className="hidden" aria-label="Prendre une photo" onChange={fileChosen("Caméra")} />
     <input ref={documentRef} type="file" className="hidden" aria-label="Choisir un document" onChange={fileChosen("Document")} />
     <Sheet open={stage !== "closed"} onClose={close} detent={stage === "share" ? "share" : "full"} appearance={stage === "compose" ? "surprise" : "default"}>
       {stage === "share" && (
