@@ -159,17 +159,21 @@ export function ProfileReferenceScreen() {
   const [passwordOn, setPasswordOn] = useState(false);
   const [password, setPassword] = useState("");
   const [availability, setAvailability] = useState<"available" | "taken" | "checking" | null>(null);
+  const [checkedUsername, setCheckedUsername] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const fileInput = useRef<HTMLInputElement>(null);
   const countryLabel = COUNTRIES.find((item) => item.id === country);
   useEffect(() => {
-    if (!/^[a-z0-9_]{3,20}$/.test(username)) { setAvailability(null); return; }
+    if (!/^[a-z0-9_]{3,20}$/.test(username)) { return; }
+    let cancelled = false;
     setAvailability("checking");
     const timer = window.setTimeout(() => {
-      void usernameAvailable({ data: { username } }).then((available) => setAvailability(available ? "available" : "taken")).catch(() => setAvailability(null));
+      void usernameAvailable({ data: { username } }).then((available) => {
+        if (!cancelled) { setCheckedUsername(username); setAvailability(available ? "available" : "taken"); }
+      }).catch(() => { if (!cancelled) setAvailability(null); });
     }, 450);
-    return () => window.clearTimeout(timer);
+    return () => { cancelled = true; window.clearTimeout(timer); };
   }, [username]);
 
   async function uploadPhoto(file?: File) {
@@ -193,7 +197,7 @@ export function ProfileReferenceScreen() {
     const verified = getVerifiedSignup();
     if (!verified || verified.phone !== phone) { setError("Code SMS expiré. Recommence la vérification."); return; }
     if (!firstName.trim() || !lastName.trim() || !/^[a-z0-9_]{3,20}$/.test(username)) { setError("Renseigne ton prénom, ton nom et un pseudo valide."); return; }
-    if (availability !== "available") { setError("Vérifie la disponibilité du pseudo."); return; }
+    if (availability !== "available" || checkedUsername !== username) { setError("Vérifie la disponibilité du pseudo."); return; }
     if (passwordOn && password.length < 8) { setError("Le mot de passe doit contenir au moins 8 caractères."); return; }
     setBusy(true); setError("");
     try {
@@ -219,7 +223,7 @@ export function ProfileReferenceScreen() {
       <input aria-label="Prénom" autoComplete="given-name" maxLength={40} value={firstName} onChange={(e) => setFirstName(e.target.value)} placeholder="Prénom" className="absolute top-[53.8%] left-[10.5%] h-[4.4%] w-[37%] bg-wipp-auth-input px-2 text-[15px] text-wipp-fg outline-none placeholder:text-wipp-muted" />
       <input aria-label="Nom" autoComplete="family-name" maxLength={40} value={lastName} onChange={(e) => setLastName(e.target.value)} placeholder="Nom" className="absolute top-[53.8%] left-[52%] h-[4.4%] w-[37%] bg-wipp-auth-input px-2 text-[15px] text-wipp-fg outline-none placeholder:text-wipp-muted" />
       <input aria-label="Ton WIPP" autoComplete="username" maxLength={20} value={username} onChange={(e) => { setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, "")); setAvailability(null); }} placeholder="@pseudo" className="absolute top-[61.6%] left-[10%] h-[4.3%] w-[60%] bg-wipp-auth-input px-2 text-[15px] text-wipp-fg outline-none placeholder:text-wipp-muted" />
-      <span aria-live="polite" className={`absolute top-[62.7%] right-[10%] text-[11px] ${availability === "taken" ? "text-wipp-danger" : "text-wipp-success"}`}>{availability === "available" ? "✓ Disponible" : availability === "taken" ? "Déjà utilisé" : ""}</span>
+      <span aria-live="polite" className={`absolute top-[62.7%] right-[10%] text-[11px] ${availability === "taken" ? "text-wipp-danger" : "text-wipp-success"}`}>{checkedUsername === username && availability === "available" ? "✓ Disponible" : checkedUsername === username && availability === "taken" ? "Déjà utilisé" : ""}</span>
       <div className="absolute top-[72.1%] left-[11%] w-[78%] truncate bg-wipp-auth-input text-[14px] text-wipp-fg">{countryLabel?.fr ?? country} ({countryLabel?.dial ?? ""})</div>
       <Btn role="switch" aria-checked={passwordOn} aria-label="Ajouter un mot de passe" onClick={() => setPasswordOn((v) => !v)} className="absolute! top-[80%] right-[8%] h-[5%]! w-[13%] bg-transparent! opacity-0" />
       {passwordOn ? <input type="password" aria-label="Mot de passe" autoComplete="new-password" maxLength={128} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="8 caractères minimum" className="absolute top-[85%] left-[10%] h-[4%] w-[80%] rounded-md bg-wipp-auth-input px-3 text-[14px] text-wipp-fg" /> : null}

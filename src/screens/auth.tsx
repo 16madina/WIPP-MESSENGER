@@ -29,7 +29,7 @@ import {
   isTestPhone,
   verifyPhoneCode,
 } from "@/lib/auth-flow";
-import { resetPasswordPhone, signinPhone, signupPhone } from "@/lib/auth.functions";
+import { resetPasswordPhone, signinPhone } from "@/lib/auth.functions";
 import { announce, haptic } from "@/lib/haptics";
 import { yearsOld } from "@/lib/legal";
 import { TAKEN_USERNAMES } from "@/lib/seed";
