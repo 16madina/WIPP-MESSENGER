@@ -49,6 +49,7 @@ import {
 } from "./me";
 import { LegalScreen } from "./legal";
 import { PhoneEntryScreen, ProfileReferenceScreen, SmsReferenceScreen, WelcomeScreen } from "./auth-reference";
+import { SignupCelebrationScreen } from "./signup-celebration";
 import { BusinessCardScreen, DevicesScreen, LanguageScreen } from "./me-extras";
 import { RealIncomingScreen, RealTouchIncomingScreen, TouchIncomingScreen } from "./touch-incoming";
 
@@ -156,6 +157,8 @@ function ScreenSwitch({ screen }: { screen: Screen }) {
       return <SmsReferenceScreen />;
     case "profile-reference":
       return <ProfileReferenceScreen />;
+    case "signup-celebration":
+      return <SignupCelebrationScreen username={screen.username} />;
     case "signup":
       return <SignupScreen />;
     case "login":
