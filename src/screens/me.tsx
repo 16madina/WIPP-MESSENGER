@@ -69,6 +69,7 @@ export function MeScreen() {
   const [peerUser, setPeerUser] = useState("lea");
   const [linkCode, setLinkCode] = useState("");
   const [linkOk, setLinkOk] = useState("");
+  const [aboutOpen, setAboutOpen] = useState(false);
 
   useEffect(() => {
     if (!hint) return;
@@ -84,7 +85,7 @@ export function MeScreen() {
   const country = me.country === "CA" ? "Canada" : me.country;
 
   async function shareProfile() {
-    const link = `https://${APP_HOST}/${me.username}`;
+    const link = `https://${APP_HOST}/@${me.username}`;
     try {
       if (navigator.share) {
         await navigator.share({ title: "Wipp", text: `@${me.username}`, url: link });
@@ -442,8 +443,21 @@ export function MeScreen() {
                   <ChevronRight className="size-4 text-muted" />
                 </span>
               }
-              onClick={() => push({ name: "my-qr" })}
+              onClick={() => void shareProfile()}
             />
+            <Row
+              icon={<Sparkles className="size-4" />}
+              label="À propos"
+              value={aboutOpen ? undefined : t("appVersion")}
+              onClick={() => setAboutOpen((v) => !v)}
+            />
+            {aboutOpen ? (
+              <div className="px-4 pb-3 text-[13px] leading-relaxed text-muted">
+                WIPP — messagerie et appels, 18+, sans publicité. {t("appVersion")}.
+                <br />
+                Contact : {LEGAL_CONTACT}
+              </div>
+            ) : null}
           </Section>
         </div>
 
