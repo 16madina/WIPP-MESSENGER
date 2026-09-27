@@ -88,9 +88,9 @@ export async function listChats(): Promise<WippChatSummary[]> {
   const me = await meId();
   const { data: mine } = await db
     .from("wipp_chat_members")
-    .select("chat_id, pinned_at, archived_at, muted_until, manually_unread_at")
+    .select("chat_id, pinned_at, archived_at, muted_until, muted_forever, manually_unread_at")
     .eq("profile_id", me);
-  const rows = (mine ?? []) as Array<Record<string, string | null>>;
+  const rows = (mine ?? []) as Array<Record<string, any>>;
   if (!rows.length) return [];
   const ids = rows.map((r) => r.chat_id!);
   const { data: others } = await db
@@ -129,7 +129,7 @@ export async function listChats(): Promise<WippChatSummary[]> {
       unread,
       pinnedAt: ms(r.pinned_at),
       archivedAt: ms(r.archived_at),
-      mutedUntil: muted ? (muted.startsWith("9999") ? "always" : ms(muted)) : null,
+      mutedUntil: r.muted_forever ? "always" : muted && Date.parse(muted) > Date.now() ? ms(muted) : null,
       manuallyUnreadAt: ms(r.manually_unread_at),
     });
   }
@@ -285,19 +285,18 @@ export async function updatePrefs(
 ) {
   const me = await meId();
   const now = Date.now();
-  const row: Record<string, string | null> = {};
+  const row: Record<string, string | boolean | null> = {};
   if (patch.pinned !== undefined) row.pinned_at = patch.pinned ? new Date().toISOString() : null;
   if (patch.archived !== undefined) row.archived_at = patch.archived ? new Date().toISOString() : null;
   if (patch.manuallyUnread !== undefined)
     row.manually_unread_at = patch.manuallyUnread ? new Date().toISOString() : null;
   if (patch.mute !== undefined) {
     const add = { "1h": 36e5, "8h": 288e5, "1w": 6048e5 } as Record<string, number>;
+    row.muted_forever = patch.mute === "always";
     row.muted_until =
-      patch.mute === "off"
+      patch.mute === "off" || patch.mute === "always"
         ? null
-        : patch.mute === "always"
-          ? "9999-12-31T00:00:00Z"
-          : new Date(now + (add[patch.mute] ?? 0)).toISOString();
+        : new Date(now + (add[patch.mute] ?? 0)).toISOString();
   }
   await db.from("wipp_chat_members").update(row).eq("chat_id", chatId).eq("profile_id", me);
 }

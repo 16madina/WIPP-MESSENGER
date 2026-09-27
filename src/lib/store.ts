@@ -1009,6 +1009,10 @@ export const useWgoStore = create<WgoState>()(
             : st.messages,
         }));
         if (chatId.startsWith("srv:")) {
+          // Reopening the chat clears the manual reminder; read receipts are untouched here.
+          void import("@/lib/messaging/client").then(({ postChatPrefs }) =>
+            postChatPrefs(chatId.slice(4), { manuallyUnread: false }).catch(() => {}),
+          );
           void (async () => {
             try {
               const { syncChatMessages, mergeServerMessagesIntoState, toServerChatId } =
