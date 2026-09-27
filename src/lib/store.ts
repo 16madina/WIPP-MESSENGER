@@ -764,7 +764,7 @@ export const useWgoStore = create<WgoState>()(
                 mergeServerMessagesIntoState,
                 decryptMergedMessages,
               } = await import("@/lib/messaging/sync");
-              if (!isServerChatId(chatId)) return;
+              if (!isServerChatId(chatId)) return message.id;
               const st = get();
               const peerId = st.chats.find((c) => c.id === chatId)?.participantIds.find((id) => id !== "me");
               const peerPub = peerId
@@ -832,9 +832,9 @@ export const useWgoStore = create<WgoState>()(
         const chat = get().chats.find((c) => c.id === chatId);
         const other = chat?.participantIds.find((id) => id !== "me");
         if (!chat || chat.type !== "dm" || !other || get().blockedIds.includes(other)) {
-          return;
+          return message.id;
         }
-        if (chatId.startsWith("srv:")) return;
+        if (chatId.startsWith("srv:")) return message.id;
         const shop = chat.shopId
           ? get().shops.find((s) => s.id === chat.shopId)
           : undefined;
@@ -843,11 +843,11 @@ export const useWgoStore = create<WgoState>()(
             ? SHOP_CLIENT_REPLIES
             : SHOP_OWNER_REPLIES
           : REPLIES[other];
-        if (!lines?.length) return;
+        if (!lines?.length) return message.id;
 
         window.setTimeout(() => {
           const current = get().chats.find((c) => c.id === chatId);
-          if (!current || isChatSealed(current)) return;
+          if (!current || isChatSealed(current)) return message.id;
           const reply: Message = {
             id: uid("m"),
             chatId,
@@ -895,6 +895,7 @@ export const useWgoStore = create<WgoState>()(
           });
           void get().sealMessage(chatId, reply.id);
         }, 1600 + Math.random() * 900);
+        return message.id;
       },
 
       retryMessage: (chatId, messageId) => {
