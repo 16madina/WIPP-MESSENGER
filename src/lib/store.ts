@@ -204,7 +204,7 @@ type WgoState = ReturnType<typeof fresh> & {
   setEphemeralCalls: (on: boolean) => void;
   setNotif: (key: keyof NotifSettings, value: boolean) => void;
   setNearby: (mode: NearbyMode) => void;
-  sendMessage: (chatId: string, data: Partial<Message> & { text?: string }) => void;
+  sendMessage: (chatId: string, data: Partial<Message> & { text?: string }) => string;
   retryMessage: (chatId: string, messageId: string) => void;
   markScratch: (chatId: string, messageId: string) => void;
   addReaction: (chatId: string, messageId: string, emoji: string) => void;
@@ -223,7 +223,7 @@ type WgoState = ReturnType<typeof fresh> & {
   ignoreRequest: (id: string) => void;
   blockUser: (userId: string) => void;
   unblockUser: (userId: string) => void;
-  reportTarget: (data: { kind: ReportKind; targetId: string; reason: ReportReason }) => void;
+  reportTarget: (data: { kind: ReportKind; targetId: string; reason: ReportReason; note?: string }) => void;
   signOut: () => void;
   deleteAccount: () => void;
   setBiometrics: (on: boolean) => void;
@@ -669,7 +669,7 @@ export const useWgoStore = create<WgoState>()(
 
       sendMessage: (chatId, data) => {
         const existingChat = get().chats.find((c) => c.id === chatId);
-        if (existingChat && isChatSealed(existingChat)) return;
+        if (existingChat && isChatSealed(existingChat)) return "";
         const cited = data.replyTo
           ? (get().messages[chatId] ?? []).find((m) => m.id === data.replyTo)
           : undefined;
@@ -687,6 +687,7 @@ export const useWgoStore = create<WgoState>()(
           imageUrl: data.imageUrl,
           videoUrl: data.videoUrl,
           viewOnce: data.viewOnce || undefined,
+          mediaState: data.mediaState,
           album: data.album,
           file: data.file,
           gifUrl: data.gifUrl,
@@ -831,9 +832,9 @@ export const useWgoStore = create<WgoState>()(
         const chat = get().chats.find((c) => c.id === chatId);
         const other = chat?.participantIds.find((id) => id !== "me");
         if (!chat || chat.type !== "dm" || !other || get().blockedIds.includes(other)) {
-          return;
+          return message.id;
         }
-        if (chatId.startsWith("srv:")) return;
+        if (chatId.startsWith("srv:")) return message.id;
         const shop = chat.shopId
           ? get().shops.find((s) => s.id === chat.shopId)
           : undefined;
@@ -842,7 +843,7 @@ export const useWgoStore = create<WgoState>()(
             ? SHOP_CLIENT_REPLIES
             : SHOP_OWNER_REPLIES
           : REPLIES[other];
-        if (!lines?.length) return;
+        if (!lines?.length) return message.id;
 
         window.setTimeout(() => {
           const current = get().chats.find((c) => c.id === chatId);
@@ -894,11 +895,16 @@ export const useWgoStore = create<WgoState>()(
           });
           void get().sealMessage(chatId, reply.id);
         }, 1600 + Math.random() * 900);
+        return message.id;
       },
 
       retryMessage: (chatId, messageId) => {
         const msg = (get().messages[chatId] ?? []).find((m) => m.id === messageId);
         if (!msg || msg.status !== "failed") return;
+        if (chatId.startsWith("srv:") && msg.type !== "text") {
+          void import("@/lib/messaging/send-media").then(({ retryMedia }) => retryMedia(messageId));
+          return;
+        }
         if (chatId.startsWith("srv:") && msg.text) {
           set((st) => ({
             messages: {
@@ -1239,10 +1245,10 @@ export const useWgoStore = create<WgoState>()(
         }));
       },
 
-      reportTarget: ({ kind, targetId, reason }) =>
+      reportTarget: ({ kind, targetId, reason, note }) =>
         set((st) => ({
           reports: [
-            { id: `r-${Date.now()}`, kind, targetId, reason, at: Date.now() },
+            { id: `r-${Date.now()}`, kind, targetId, reason, note, at: Date.now() },
             ...(st.reports ?? []),
           ],
         })),
@@ -1433,7 +1439,9 @@ export const useWgoStore = create<WgoState>()(
         const lang = get().language;
         const label = !ms
           ? t(lang, "disappearOffSys")
-          : ms >= DISAPPEAR_7D
+          : ms >= 30 * 86_400_000
+            ? "Les nouveaux messages disparaîtront après 30 jours."
+            : ms >= DISAPPEAR_7D
             ? t(lang, "disappear7dSys")
             : t(lang, "disappear24hSys");
         const sys: Message = {

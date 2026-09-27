@@ -112,6 +112,50 @@ export async function mapServerMessageAsync(
   }
 }
 
+const MEDIA_FIELDS = ["type", "imageUrl", "videoUrl", "audioUrl", "gifUrl", "file", "album", "duration", "viewOnce", "viewed", "mediaState", "progress", "attachmentId", "mediaKey", "mediaChunks", "text"] as const;
+
+/** Keeps the sender's local preview (blob URLs, progress) when the server copy lands. */
+function keepLocalMedia(local: Message | undefined, next: Message): Message {
+  if (!local || local.type === "text" || local.type === "system") return next;
+  const out = { ...next } as Record<string, unknown>;
+  for (const k of MEDIA_FIELDS) {
+    const v = (local as Record<string, unknown>)[k];
+    if (v !== undefined && (out[k] === undefined || k === "type" || k === "text")) out[k] = v;
+  }
+  out.encFailed = false;
+  return out as Message;
+}
+
+type ParsedMedia = NonNullable<ReturnType<typeof import("./media-crypto").parseMedia>>;
+
+/** Maps a decoded media envelope onto a chat message (receiver side). */
+export function applyMediaEnvelope(m: Message, media: ParsedMedia, label: string): Message {
+  const kind = media.kind;
+  const type: Message["type"] =
+    kind === "voice" || kind === "image" || kind === "video" || kind === "file" || kind === "gif"
+      ? kind
+      : kind === "sticker"
+        ? "sticker"
+        : m.type;
+  const withBlob = kind === "voice" || kind === "image" || kind === "video" || kind === "file" || kind === "gif";
+  return {
+    ...m,
+    type,
+    text: withBlob ? (media.caption ?? "") : label,
+    stickerId: media.stickerId ?? m.stickerId,
+    viewOnce: media.viewOnce ?? m.viewOnce,
+    attachmentId: media.id ?? m.attachmentId,
+    mediaKey: media.fileKey ?? m.mediaKey,
+    mediaChunks: media.chunks ?? m.mediaChunks,
+    mediaMime: media.mime ?? m.mediaMime,
+    file: kind === "file" ? (m.file ?? { name: media.name ?? "Document", size: media.size ?? 0, mime: media.mime ?? "", url: "" }) : m.file,
+    contactCard: media.contact ?? m.contactCard,
+    geo: media.location ?? m.geo,
+    linkCard: media.link ?? m.linkCard,
+    duration: media.durationMs ? Math.round(media.durationMs / 1000) : m.duration,
+  };
+}
+
 function mapServerMessageSync(m: WippMessage, meServerId: string | undefined): Message {
   const fromMe = meServerId && m.senderId === meServerId;
   const parsed = parseMessageBody(m.body);
@@ -228,6 +272,10 @@ export function mergeServerMessagesIntoState(
       const optimistic = byId.get(sm.clientId);
       if (optimistic) {
         byId.delete(sm.clientId);
+        if (optimistic.type !== "text" && optimistic.type !== "system") {
+          byId.set(sm.id, keepLocalMedia(optimistic, mapped));
+          continue;
+        }
         if (optimistic.text && mapped.enc && !mapped.text) {
           mapped.text = optimistic.text;
           mapped.replyPreview = mapped.replyPreview ?? optimistic.replyPreview;
@@ -249,7 +297,7 @@ export function mergeServerMessagesIntoState(
     } else if (ctChanged) {
       byId.set(sm.id, { ...mapped, text: undefined, encFailed: true });
     } else {
-      byId.set(sm.id, mapped);
+      byId.set(sm.id, prev && prev.type !== "text" && !mapped.deletedForAll ? keepLocalMedia(prev, mapped) : mapped);
     }
   }
   const merged = Array.from(byId.values()).sort((a, b) => a.createdAt - b.createdAt);
@@ -302,20 +350,10 @@ export async function decryptMergedMessages(
       });
       const plain = decodePlain(text);
       const { parseMedia, mediaLabel } = await import("./media-crypto");
-      const media = parseMedia(plain.text);
+      const media = m.deletedForAll ? null : parseMedia(plain.text);
+      const base: Message = media ? applyMediaEnvelope(m, media, mediaLabel(media.kind)) : { ...m, text: m.deletedForAll ? "Message supprimé" : plain.text };
       next.push({
-        ...m,
-        type: media ? (media.kind === "voice" || media.kind === "image" || media.kind === "video" ? media.kind : media.kind === "sticker" ? "sticker" : m.type) : m.type,
-        text: m.deletedForAll ? "Message supprimé" : media ? mediaLabel(media.kind) : plain.text,
-        stickerId: media?.stickerId ?? m.stickerId,
-        viewOnce: media?.viewOnce ?? m.viewOnce,
-        attachmentId: media?.id ?? m.attachmentId,
-        mediaKey: media?.fileKey ?? m.mediaKey,
-        mediaChunks: media?.chunks ?? m.mediaChunks,
-        contactCard: media?.contact ?? m.contactCard,
-        geo: media?.location ?? m.geo,
-        linkCard: media?.link ?? m.linkCard,
-        duration: media?.durationMs ? Math.round(media.durationMs / 1000) : m.duration,
+        ...base,
         replyTo: plain.reply?.id ?? m.replyTo,
         replyPreview: plain.reply?.preview ?? m.replyPreview,
         forwarded: plain.forwarded,

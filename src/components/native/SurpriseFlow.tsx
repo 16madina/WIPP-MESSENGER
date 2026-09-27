@@ -30,7 +30,7 @@ const options = [
 ] as const;
 
 /** Parcours local de composition ; seuls les messages à gratter sont simulés dans la conversation. */
-export function SurpriseFlow({ onSend, onShareContent, onOpenStickers, onUnavailable, onPickFiles, autoOpen = false }: { onSend: (surprise: Surprise) => void; onShareContent: (text: string) => void; onOpenStickers: () => void; onUnavailable: (label: string) => void; onPickFiles?: (files: File[], source: "gallery" | "camera" | "document") => void; autoOpen?: boolean }) {
+export function SurpriseFlow({ onSend, onShareContent, onOpenStickers, onUnavailable, onPickFiles, onPickLocation, autoOpen = false }: { onSend: (surprise: Surprise) => void; onShareContent: (text: string) => void; onOpenStickers: () => void; onUnavailable: (label: string) => void; onPickFiles?: (files: File[], source: "gallery" | "camera" | "document") => void; onPickLocation?: () => void; autoOpen?: boolean }) {
   const reducedMotion = useReducedMotion();
   const galleryRef = useRef<HTMLInputElement>(null);
   const cameraRef = useRef<HTMLInputElement>(null);
@@ -59,6 +59,7 @@ export function SurpriseFlow({ onSend, onShareContent, onOpenStickers, onUnavail
     else if (label === "Document") documentRef.current?.click();
     else if (label === "Stickers") { close(); window.setTimeout(onOpenStickers, 0); }
     else if (label === "Contact") setStage("contacts");
+    else if (label === "Localisation" && onPickLocation) { close(); window.setTimeout(onPickLocation, 0); }
     else if (label === "Localisation") {
       if (!navigator.geolocation) { onUnavailable("Localisation"); return; }
       navigator.geolocation.getCurrentPosition(

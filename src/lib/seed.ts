@@ -1304,3 +1304,51 @@ export function withGroupMeta(chats: Chat[]): Chat[] {
     };
   });
 }
+
+/** Démo du lot 3 : un exemple de chaque contenu, dont les états d'envoi. */
+export function lot3DemoMessages(chatId: string, peer: string): Message[] {
+	const t0 = Date.now() - 50 * 60_000;
+	const at = (min: number) => t0 + min * 60_000;
+	return [
+		msg("l3-sys", chatId, "system", "Démo : tous les contenus WIPP", at(0), { type: "system" }),
+		msg("l3-photo", chatId, peer, "Le café d’hier ☕", at(1), { type: "image", imageUrl: "/media/coffee.jpg" }),
+		msg("l3-album", chatId, "me", "Notre week-end", at(2), {
+			type: "image",
+			imageUrl: "/media/river.jpg",
+			album: [
+				{ type: "image", url: "/media/river.jpg" },
+				{ type: "image", url: "/media/food.jpg" },
+				{ type: "image", url: "/media/apt.jpg" },
+				{ type: "image", url: "/media/chair.jpg" },
+				{ type: "image", url: "/media/civic.jpg" },
+			],
+		}),
+		msg("l3-video", chatId, peer, "", at(3), { type: "video", videoUrl: "/stickers/bravo.mp4", duration: 3 }),
+		msg("l3-once", chatId, peer, "", at(4), { type: "image", imageUrl: "/media/shop-nails-art.jpg", viewOnce: true }),
+		msg("l3-voice", chatId, peer, "Vocal", at(5), { type: "voice", audioUrl: "/music/afterglow.mp3", duration: 18 }),
+		msg("l3-doc", chatId, "me", "", at(6), {
+			type: "file",
+			file: { name: "Programme-soiree.pdf", size: 2_516_582, mime: "application/pdf", url: "/demo/Programme-soiree.pdf" },
+		}),
+		msg("l3-moji", chatId, peer, "Bravo !", at(7), { type: "sticker", stickerId: "bravo" }),
+		msg("l3-gif", chatId, "me", "", at(8), { type: "gif", gifUrl: "/demo/wipp.gif" }),
+		msg("l3-contact", chatId, peer, "Contact", at(9), {
+			contactCard: { userId: "maya", username: "maya", displayName: "Maya" },
+		}),
+		msg("l3-geo", chatId, "me", "Ma position", at(10), { geo: { lat: 45.5017, lon: -73.5673 } }),
+		msg("l3-link", chatId, peer, "Regarde ça : https://www.wikipedia.org", at(11)),
+		msg("l3-sending", chatId, "me", "Photo en cours d’envoi", at(12), {
+			type: "image",
+			imageUrl: "/media/shop-chen-latte.jpg",
+			status: "sending",
+			mediaState: "uploading",
+			progress: 0.42,
+		}),
+		msg("l3-failed", chatId, "me", "", at(13), {
+			type: "file",
+			status: "failed",
+			mediaState: "failed",
+			file: { name: "Budget-voyage.xlsx", size: 184_320, mime: "", url: "/demo/Programme-soiree.pdf" },
+		}),
+	];
+}
