@@ -392,10 +392,10 @@ export function LoginScreen() {
       firstName: firstName ?? "",
       lastName: rest.join(" "),
       displayName,
+      // Le QR permanent et le lien public doivent refléter le vrai @pseudo du compte.
+      ...(username ? { username } : {}),
       phone: `${country.dial} ${phone}`,
     });
-    // Le QR permanent et le lien public doivent refléter le vrai @pseudo du compte.
-    if (username) useWgoStore.setState((st) => ({ me: { ...st.me, username } }));
   }
 
   async function tryLogin() {
