@@ -36,6 +36,12 @@ import { SurpriseFlow } from "@/components/native/SurpriseFlow";
 import { SurpriseReveal } from "@/components/native/SurpriseReveal";
 import type { Surprise } from "@/lib/surprise";
 import { WippSticker } from "@/components/wipp-sticker";
+import { MediaComposer } from "@/components/chat/MediaComposer";
+import { MediaViewer } from "@/components/chat/MediaViewer";
+import { FileCard, GifMessage, MediaCard, mediaItemsOf } from "@/components/chat/MessageMedia";
+import { HoldMic } from "@/components/chat/HoldMic";
+import { addGif, loadGifs, type LocalGif } from "@/lib/gifs";
+import { triggerWippPop } from "@/lib/wippmoji";
 import { Header, IconBtn, Sheet, StatusBar } from "@/components/ui";
 import { formatClock, formatDuration, formatLastSeen, formatRemain } from "@/lib/format";
 import { haptic } from "@/lib/haptics";
@@ -45,7 +51,7 @@ import { isStickerId, stickerById, stickerLabel, stickersInPack, WIPP_STICKERS }
 import { createVoiceRecorder, type VoiceRecorder } from "@/lib/voice-recorder";
 import { isChatSealed, useT, useWgoStore } from "@/lib/store";
 import { DISAPPEAR_24H, DISAPPEAR_7D } from "@/lib/types";
-import type { Message } from "@/lib/types";
+import type { MediaItem, Message } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 const REACTS = ["❤️", "😂", "👍", "😮", "😢", "🔥"];
@@ -218,6 +224,18 @@ export function ConversationScreen({ chatId }: { chatId: string }) {
   const docRef = useRef<HTMLInputElement>(null);
   const [viewOnce, setViewOnce] = useState(false);
   const [viewer, setViewer] = useState<Message | null>(null);
+  const [composerFiles, setComposerFiles] = useState<File[] | null>(null);
+  const [mediaView, setMediaView] = useState<{ items: MediaItem[]; start: number } | null>(null);
+  const [voiceLocked, setVoiceLocked] = useState(false);
+  const [voiceDragX, setVoiceDragX] = useState(0);
+  const [gifs, setGifs] = useState<LocalGif[]>([]);
+  const gifRef = useRef<HTMLInputElement>(null);
+  useEffect(() => {
+    if (!voice) setVoiceLocked(false);
+  }, [voice]);
+  useEffect(() => {
+    setGifs(loadGifs());
+  }, []);
   const [pickStickers, setPickStickers] = useState(false);
   const [stickerTab, setStickerTab] = useState<StickerTab>("scene");
   const [burst, setBurst] = useState<string | null>(null);
@@ -584,6 +602,7 @@ export function ConversationScreen({ chatId }: { chatId: string }) {
   function sendSticker(id: string, label: string) {
     haptic("send");
     sendMessage(chatId, { type: "sticker", stickerId: id, text: label });
+    triggerWippPop(id, id, "send");
     setStickerTab("recent");
     setPickStickers(false);
     setEmojiBar(false);
@@ -607,6 +626,32 @@ export function ConversationScreen({ chatId }: { chatId: string }) {
     }
   }
 
+  function sendMediaItems(items: MediaItem[], caption: string, once: boolean) {
+    haptic("send");
+    const first = items[0];
+    if (!first) return;
+    if (items.length === 1) {
+      sendMessage(chatId, {
+        type: first.type,
+        imageUrl: first.type === "image" ? first.url : undefined,
+        videoUrl: first.type === "video" ? first.url : undefined,
+        duration: first.duration,
+        text: caption,
+        viewOnce: once || undefined,
+      });
+    } else {
+      sendMessage(chatId, { type: "image", imageUrl: first.url, album: items, text: caption, viewOnce: once || undefined });
+    }
+    setComposerFiles(null);
+    setPickPhoto(false);
+  }
+
+  function sendGif(url: string) {
+    haptic("send");
+    sendMessage(chatId, { type: "gif", gifUrl: url, text: "" });
+    setPickStickers(false);
+  }
+
   function closeViewer() {
     if (viewer?.viewOnce && !viewer.viewed) burnViewOnce(chatId, viewer.id);
     setViewer(null);
@@ -620,24 +665,9 @@ export function ConversationScreen({ chatId }: { chatId: string }) {
 
   async function onDeviceFile(file: File | undefined, close: () => void) {
     if (!file) return;
-    if (file.type.startsWith("video/")) {
-      try {
-        const clip = await readVideoFile(file);
-        sendMedia({ type: "video", url: clip.url, durationMs: clip.durationMs });
-        close();
-      } catch {
-        /* too long or unreadable */
-      }
-      return;
-    }
-    if (file.type.startsWith("image/")) {
-      try {
-        const url = await readImageFile(file);
-        sendMedia({ type: "image", url });
-        close();
-      } catch {
-        /* ignore */
-      }
+    if (file.type.startsWith("video/") || file.type.startsWith("image/")) {
+      setComposerFiles([file]);
+      close();
       return;
     }
     if (chatId.startsWith("srv:")) {
@@ -664,7 +694,11 @@ export function ConversationScreen({ chatId }: { chatId: string }) {
         });
       });
     } else {
-      sendMessage(chatId, { text: `📄 ${file.name}` });
+      sendMessage(chatId, {
+        type: "file",
+        text: "",
+        file: { name: file.name, size: file.size, mime: file.type, url: URL.createObjectURL(file) },
+      });
     }
     close();
   }
@@ -949,16 +983,17 @@ export function ConversationScreen({ chatId }: { chatId: string }) {
                     className={cn("mb-1 flex w-full", mine ? "justify-end" : "justify-start")}
                   >
                     <div className={cn("max-w-[78%] text-left", mine ? "items-end" : "items-start")}>
+                      {(() => null)()}
                       {showName ? (
                         <p className="mb-0.5 px-1 text-[11px] text-muted">{sender?.displayName}</p>
                       ) : null}
                       <div
                         className={cn(
-                          m.type === "sticker" || m.type === "scratch" ? "relative bg-transparent px-0 py-0" : "rounded-2xl px-3 py-2",
+                          bare ? "relative bg-transparent px-0 py-0" : "rounded-2xl px-3 py-2",
                           m.type === "sticker" && stickerById(m.stickerId)?.bubble
                             ? `moji-bubble moji-bubble-${stickerById(m.stickerId)?.bubble}`
                             : null,
-                          m.type !== "sticker" &&
+                          !bare &&
                             (mine ? "rounded-br-sm bg-bubble-me text-bubble-me-fg" : "rounded-bl-sm bg-bubble-them text-fg"),
                         )}
                       >
@@ -974,19 +1009,17 @@ export function ConversationScreen({ chatId }: { chatId: string }) {
                             <Eye className="size-4" />
                             <span className="text-[14px]">{t("viewOnceOpened")}</span>
                           </span>
-                        ) : m.type === "image" && m.imageUrl ? (
-                          <SmartImg src={m.imageUrl} alt="" className="mb-1 max-h-52 w-full rounded-lg object-cover" />
-                        ) : m.type === "video" && m.videoUrl ? (
-                          <span className="mb-1 block overflow-hidden rounded-lg">
-                            <video
-                              src={m.videoUrl}
-                              controls
-                              playsInline
-                              preload="metadata"
-                              className="max-h-52 w-full bg-black object-cover"
-                              onClick={(e) => e.stopPropagation()}
-                            />
-                          </span>
+                        ) : (m.type === "image" || m.type === "video") && mediaItemsOf(m).length ? (
+                          <MediaCard
+                            message={m}
+                            mine={mine}
+                            onOpen={(i) => setMediaView({ items: mediaItemsOf(m), start: i })}
+                            onRetry={() => retryMessage(chatId, m.id)}
+                          />
+                        ) : m.type === "file" ? (
+                          <FileCard message={m} mine={mine} onRetry={() => retryMessage(chatId, m.id)} />
+                        ) : m.type === "gif" && m.gifUrl ? (
+                          <GifMessage url={m.gifUrl} />
                         ) : null}
                         {m.type === "sticker" && isStickerId(m.stickerId) ? (
                           <WippSticker
@@ -1024,7 +1057,7 @@ export function ConversationScreen({ chatId }: { chatId: string }) {
 
                         {m.type === "voice" ? (
                           <VoicePlayButton url={m.audioUrl} duration={m.duration} mine={mine} />
-                        ) : m.type === "sticker" || m.type === "image" || m.type === "video" || m.type === "scratch" || m.viewOnce ? null : m.encFailed ? (
+                        ) : m.type === "sticker" || m.type === "image" || m.type === "video" || m.type === "file" || m.type === "gif" || m.type === "scratch" || m.viewOnce ? null : m.encFailed ? (
                           <p className={cn("flex items-center gap-1.5 text-[13px] italic", mine ? "text-paper/70" : "text-muted")}>
                             <Lock className="size-3.5 shrink-0" />
                             {t("e2eFailed")}
