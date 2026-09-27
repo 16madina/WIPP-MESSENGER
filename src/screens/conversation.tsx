@@ -68,7 +68,7 @@ const REACTS = ["❤️", "😂", "👍", "😮", "😢", "🔥"];
 const EMPTY_MSGS: Message[] = [];
 const seenFx = new Set<string>();
 
-type StickerTab = "recent" | "emoji" | "expressions" | "love" | "fun" | "famille" | "scene" | "wipp" | "gif";
+type StickerTab = "recent" | "emoji" | "expressions" | "love" | "fun" | "famille" | "scene" | "wipp" | "ani" | "gif";
 
 type VoicePhase = "recording" | "paused" | "preview";
 
@@ -894,6 +894,7 @@ export function ConversationScreen({ chatId }: { chatId: string }) {
     { id: "famille", label: t("stickerTabFamille") },
     { id: "scene", label: t("stickerTabScenes") },
     { id: "wipp", label: "WIPP" },
+    { id: "ani", label: "AniWipp" },
     { id: "gif", label: "GIF" },
   ];
   const stickerPool =
@@ -907,8 +908,10 @@ export function ConversationScreen({ chatId }: { chatId: string }) {
             ? stickersInPack("sig")
             : stickerTab === "scene"
               ? stickersInPack("scene")
-              : stickerTab === "love"
+      : stickerTab === "love"
               ? WIPP_STICKERS.filter((s) => /bisou|merci|bravo|matin|nuit/.test(s.id))
+              : stickerTab === "ani"
+                ? stickersInPack("ani")
               : stickerTab === "gif"
                 ? WIPP_STICKERS.filter((s) => s.anim)
                 : [];
