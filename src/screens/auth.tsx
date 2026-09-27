@@ -358,12 +358,70 @@ export function LoginScreen() {
   const t = useT();
   const lang = useWgoStore((s) => s.language);
   const replace = useWgoStore((s) => s.replace);
-  const saveSignup = useWgoStore((s) => s.saveSignup);
+  const push = useWgoStore((s) => s.push);
+  const completeSetup = useWgoStore((s) => s.completeSetup);
   const [country, setCountry] = useState<(typeof COUNTRIES)[number]>(COUNTRIES[0]);
-  const [phone, setPhone] = useState("514 555 0148");
+  const [phone, setPhone] = useState("");
+  const [password, setPassword] = useState("");
   const [dialOpen, setDialOpen] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+
+  async function enterWithSession(accessToken: string, refreshToken: string) {
+    await supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken });
+    const { data: u } = await supabase.auth.getUser();
+    let displayName = "";
+    if (u.user) {
+      const { data: p } = await supabase
+        .from("wipp_profiles")
+        .select("display_name, phone_e164")
+        .eq("auth_user_id", u.user.id)
+        .maybeSingle();
+      displayName = p?.display_name ?? "";
+    }
+    const [firstName, ...rest] = displayName.split(" ");
+    completeSetup({
+      firstName: firstName ?? "",
+      lastName: rest.join(" "),
+      displayName,
+      phone: `${country.dial} ${phone}`,
+    });
+  }
+
+  async function tryLogin() {
+    setBusy(true);
+    setErr(null);
+    const { toE164 } = await import("@/lib/firebase-phone");
+    const e164 = toE164(`${country.dial}${phone}`);
+    if (!e164) {
+      setBusy(false);
+      setErr(t("loginError"));
+      return;
+    }
+    const res = await signinPhone({ data: { phone: e164, password } });
+    if (!res.ok) {
+      setBusy(false);
+      setErr(res.error);
+      return;
+    }
+    await enterWithSession(res.accessToken, res.refreshToken);
+  }
+
+  async function forgot() {
+    setBusy(true);
+    setErr(null);
+    const smsErr = await startPhoneCode(`${country.dial}${phone}`, "reset");
+    setBusy(false);
+    if (smsErr) {
+      setErr(smsErr);
+      return;
+    }
+    push({ name: "otp" });
+  }
+
   return (
     <div className="absolute inset-0 flex flex-col bg-bg">
+      <div id={RECAPTCHA_ID} className="pointer-events-none absolute bottom-0 left-0" />
       <SignupBanner />
       <div className="relative z-10 min-h-0 flex-1 overflow-y-auto no-scrollbar px-5 pb-8">
         <h2 className="text-[22px] font-semibold tracking-tight">{t("loginHero")}</h2>
@@ -399,21 +457,32 @@ export function LoginScreen() {
             />
           ) : null}
         </div>
-        <AuthCta
-          onClick={() =>
-            saveSignup({
-              phone: `${country.dial} ${phone}`,
-              country: country.id,
-              firstName: "",
-            })
-          }
-        >
-          {t("continue")}
+        <div className="relative mt-3">
+          <AuthField label={t("password")} icon={<Lock className="size-4" />}>
+            <input
+              type="password"
+              className="h-full w-full bg-transparent text-[15px] outline-none"
+              value={password}
+              autoComplete="current-password"
+              onChange={(e) => setPassword(e.target.value)}
+            />
+          </AuthField>
+        </div>
+        {err ? <p className="mt-2 text-[13px] text-danger">{err}</p> : null}
+        <AuthCta disabled={busy} onClick={() => void tryLogin()}>
+          {busy ? t("sending") : t("continue")}
           <ArrowRight className="size-4" />
         </AuthCta>
         <button
           type="button"
-          className="mx-auto mt-4 block text-[13px] text-muted"
+          className="mx-auto mt-4 block text-[13px] font-medium text-accent"
+          onClick={() => void forgot()}
+        >
+          {t("forgotPassword")}
+        </button>
+        <button
+          type="button"
+          className="mx-auto mt-3 block text-[13px] text-muted"
           onClick={() => replace({ name: "signup" })}
         >
           {t("back")}
