@@ -10,36 +10,9 @@ import { cn } from "@/lib/utils";
 import { haptic } from "@/lib/haptics";
 import { useT } from "@/lib/store";
 
+/** Reserves only the system safe area; the phone draws its own time, battery and network. */
 export function StatusBar({ className }: { className?: string }) {
-  const [time, setTime] = useState(() =>
-    new Date().toLocaleTimeString("en-GB", {
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: false,
-    }),
-  );
-  useEffect(() => {
-    const tick = () =>
-      setTime(
-        new Date().toLocaleTimeString("en-GB", {
-          hour: "2-digit",
-          minute: "2-digit",
-          hour12: false,
-        }),
-      );
-    tick();
-    const id = window.setInterval(tick, 30_000);
-    return () => window.clearInterval(id);
-  }, []);
-  return (
-    <div className={cn("flex h-12 shrink-0 items-end justify-between px-6 pb-1 text-[12px] font-medium text-fg tabular-nums", className)}>
-      <span suppressHydrationWarning>{time}</span>
-      <span className="flex items-center gap-1.5 opacity-80">
-        <span className="inline-block h-2 w-4 rounded-[2px] bg-fg/80" />
-        <span className="inline-block h-2.5 w-1.5 rounded-[1px] bg-fg" />
-      </span>
-    </div>
-  );
+  return <div aria-hidden className={cn("shrink-0", className)} style={{ height: "env(safe-area-inset-top, 0px)" }} />;
 }
 
 export function Btn({
