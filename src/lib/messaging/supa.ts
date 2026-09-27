@@ -51,7 +51,7 @@ export async function loadMe(): Promise<WippProfile> {
   const { data, error } = await db
     .from("wipp_profiles")
     .select(PROFILE_COLS)
-    .eq("auth_user_id", u.user.id)
+    .eq("id", (await db.rpc("wipp_my_profile_id")).data ?? "")
     .maybeSingle();
   if (error || !data) throw new Error("Profil introuvable");
   const p = mapProfile(data);
