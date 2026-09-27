@@ -262,6 +262,18 @@ export function ConversationScreen({ chatId }: { chatId: string }) {
   const docRef = useRef<HTMLInputElement>(null);
   const [viewOnce, setViewOnce] = useState(false);
   const [viewer, setViewer] = useState<Message | null>(null);
+  const [nowTick, setNowTick] = useState(() => Date.now());
+  useEffect(() => {
+    const id = window.setInterval(() => setNowTick(Date.now()), 30_000);
+    return () => window.clearInterval(id);
+  }, []);
+  const blockedIds = useWgoStore((s) => s.blockedIds);
+  const unblockUser = useWgoStore((s) => s.unblockUser);
+  const [locationOpen, setLocationOpen] = useState(false);
+  const liveWatch = useRef<number | null>(null);
+  useEffect(() => () => {
+    if (liveWatch.current != null) navigator.geolocation?.clearWatch(liveWatch.current);
+  }, []);
   const [composerFiles, setComposerFiles] = useState<File[] | null>(null);
   const [mediaView, setMediaView] = useState<{ items: MediaItem[]; start: number } | null>(null);
   const [voiceLocked, setVoiceLocked] = useState(false);
@@ -750,6 +762,50 @@ export function ConversationScreen({ chatId }: { chatId: string }) {
     close();
   }
 
+  function sendMyPosition(live: boolean) {
+    setLocationOpen(false);
+    if (!navigator.geolocation) return;
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const geo = { lat: pos.coords.latitude, lon: pos.coords.longitude };
+        haptic("send");
+        const id = sendMessage(chatId, { type: "text", text: live ? "Position en direct" : "Ma position", geo, geoLive: live || undefined });
+        if (chatId.startsWith("srv:")) {
+          void import("@/lib/messaging/media-crypto").then(async ({ describeMedia }) => {
+            const { sendViaServer } = await import("@/lib/messaging/sync");
+            const { isPrivateChat } = await import("@/lib/private-vault");
+            const st = useWgoStore.getState();
+            const pid = chat?.participantIds.find((x) => x !== "me");
+            const peerPub = pid ? st.peerPublicKeys[pid] || (pid.startsWith("srvuser:") ? st.peerPublicKeys[pid.slice(8)] : undefined) : undefined;
+            await sendViaServer(chatId, describeMedia({ kind: "location", location: geo }), id, {
+              identity: st.identity,
+              peerPublicJwk: peerPub ?? null,
+              vault: isPrivateChat(chatId),
+            });
+          });
+        }
+        if (live) {
+          // Prototype : la carte se met à jour sur ce téléphone pendant 15 minutes.
+          if (liveWatch.current != null) navigator.geolocation.clearWatch(liveWatch.current);
+          liveWatch.current = navigator.geolocation.watchPosition((p) => {
+            useWgoStore.setState((st) => ({
+              messages: {
+                ...st.messages,
+                [chatId]: (st.messages[chatId] ?? []).map((x) =>
+                  x.id === id ? { ...x, geo: { lat: p.coords.latitude, lon: p.coords.longitude } } : x,
+                ),
+              },
+            }));
+          });
+          const w = liveWatch.current;
+          window.setTimeout(() => navigator.geolocation.clearWatch(w), 15 * 60_000);
+        }
+      },
+      () => undefined,
+      { timeout: 10000 },
+    );
+  }
+
   function sharePlace() {
     if (!chatId.startsWith("srv:") || !navigator.geolocation) {
       setAttach(false);
@@ -959,6 +1015,7 @@ export function ConversationScreen({ chatId }: { chatId: string }) {
             ) : null}
             {messages
               .filter((m) => !m.expiresAt || m.expiresAt > now)
+              .filter((m) => !m.expiresAt || m.expiresAt > nowTick)
               .filter((m) => !threadQuery.trim() || (m.text ?? "").toLowerCase().includes(threadQuery.trim().toLowerCase()))
               .map((m, i, list) => {
                 const mine = m.fromId === "me";
@@ -1083,7 +1140,7 @@ export function ConversationScreen({ chatId }: { chatId: string }) {
                           <LocationCard message={m} mine={mine} />
                         ) : m.contactCard ? (
                           <span className="flex items-center gap-3 py-1">
-                            <Avatar user={users[m.contactCard.userId] ?? { id: m.contactCard.userId, displayName: m.contactCard.displayName }} size={40} />
+                            <Avatar user={users[m.contactCard.userId] ?? { displayName: m.contactCard.displayName }} size={40} />
                             <span>
                               <span className="block text-[14px] font-semibold">{m.contactCard.displayName}</span>
                               <span className="block text-[12px] opacity-70">Contact WIPP</span>
@@ -1200,7 +1257,18 @@ export function ConversationScreen({ chatId }: { chatId: string }) {
               </div>
             ) : null}
           </div>
-          {voice && voiceLocked ? (
+          {peerId && blockedIds.includes(peerId) ? (
+            <div className="glass flex flex-col items-center gap-2 px-4 py-4 text-center">
+              <p className="text-[13px] text-muted">Tu as bloqué {peer?.displayName?.split(" ")[0] ?? "ce contact"}. Vous ne pouvez plus échanger de messages.</p>
+              <button
+                type="button"
+                className="press h-11 rounded-full bg-accent px-5 text-[14px] font-semibold text-accent-fg"
+                onClick={() => unblockUser(peerId)}
+              >
+                Débloquer
+              </button>
+            </div>
+          ) : voice && voiceLocked ? (
             <div className="glass flex flex-col gap-2 px-3 py-3">
               {voice.micDenied ? (
                 <p className="px-1 text-[12px] text-muted">{t("voiceMicDenied")}</p>
@@ -1925,6 +1993,10 @@ export function ConversationScreen({ chatId }: { chatId: string }) {
             setPickStickers(true);
           }}
           onUnavailable={() => setSurprise(false)}
+          onPickLocation={() => {
+            setSurprise(false);
+            setLocationOpen(true);
+          }}
           onPickFiles={(files, source) => {
             setSurprise(false);
             if (source === "document") void onDeviceFile(files[0], () => {});
@@ -1963,6 +2035,32 @@ export function ConversationScreen({ chatId }: { chatId: string }) {
         </div>
         <div className="max-h-[52vh] overflow-y-auto no-scrollbar">
           <StoryMediaGrid kind={galleryKind} onPick={sendMedia} />
+        </div>
+      </Sheet>
+      <Sheet open={locationOpen} onClose={() => setLocationOpen(false)} title={t("location") ?? "Localisation"}>
+        <div className="grid gap-2">
+          <button
+            type="button"
+            className="press flex min-h-14 items-center gap-3 rounded-2xl bg-surface-2 px-3 text-left"
+            onClick={() => sendMyPosition(false)}
+          >
+            <MapPin className="size-5 text-accent" />
+            <span className="text-[15px] font-semibold">Envoyer ma position actuelle</span>
+          </button>
+          <button
+            type="button"
+            className="press flex min-h-14 items-center gap-3 rounded-2xl bg-surface-2 px-3 text-left"
+            onClick={() => sendMyPosition(true)}
+          >
+            <span className="relative flex size-5 items-center justify-center">
+              <span className="absolute size-5 animate-ping rounded-full bg-accent/40" />
+              <span className="size-2.5 rounded-full bg-accent" />
+            </span>
+            <span>
+              <span className="block text-[15px] font-semibold">Partager ma position en direct</span>
+              <span className="block text-[12px] text-muted">15 minutes, pendant que l’app est ouverte</span>
+            </span>
+          </button>
         </div>
       </Sheet>
       <Sheet open={pickContact} onClose={() => setPickContact(false)} title={t("contact")}>
@@ -2170,6 +2268,10 @@ export function ConversationScreen({ chatId }: { chatId: string }) {
         kind={chat.type === "group" ? "group" : "user"}
         targetId={chat.type === "group" ? chatId : (peerId ?? chatId)}
         blockUserId={peerId}
+        recentMessages={messages
+          .filter((m) => m.fromId !== "me" && m.type !== "system")
+          .slice(-6)
+          .map((m) => ({ id: m.id, preview: m.text || (m.type === "image" ? "Photo" : m.type) }))}
       />
       <ReportSheet
         open={Boolean(reportMsgId)}
@@ -2183,7 +2285,7 @@ export function ConversationScreen({ chatId }: { chatId: string }) {
           open={blockOpen}
           onClose={() => setBlockOpen(false)}
           userId={peerId}
-          onBlocked={pop}
+          onBlocked={() => setBlockOpen(false)}
         />
       ) : null}
       {viewer ? (
