@@ -217,6 +217,7 @@ export type Database = {
           chat_id: string
           joined_at: string
           manually_unread_at: string | null
+          muted_forever: boolean
           muted_until: string | null
           pinned_at: string | null
           profile_id: string
@@ -226,6 +227,7 @@ export type Database = {
           chat_id: string
           joined_at?: string
           manually_unread_at?: string | null
+          muted_forever?: boolean
           muted_until?: string | null
           pinned_at?: string | null
           profile_id: string
@@ -235,6 +237,7 @@ export type Database = {
           chat_id?: string
           joined_at?: string
           manually_unread_at?: string | null
+          muted_forever?: boolean
           muted_until?: string | null
           pinned_at?: string | null
           profile_id?: string
@@ -890,7 +893,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      wipp_is_muted: {
+        Args: { _chat_id: string; _profile_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
       [_ in never]: never
