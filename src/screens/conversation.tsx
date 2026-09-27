@@ -1,3 +1,4 @@
+import { CallEvent } from "@/components/call/CallEvent";
 import { useEffect, useRef, useState } from "react";
 import {
   Camera,
@@ -979,7 +980,17 @@ export function ConversationScreen({ chatId }: { chatId: string }) {
           subtitle={subtitle}
           right={
             <>
-              {peerId && !ephemeral && !sealed ? (
+              {isGroup && chat && !chat.left && !sealed ? (
+                <>
+                  <IconBtn label="Appel audio de groupe" onClick={() => void import("@/lib/calls/engine").then(({ callEngine }) => callEngine.startGroup(chat.id, "audio"))}>
+                    <Phone className="size-5" />
+                  </IconBtn>
+                  <IconBtn label="Appel vidéo de groupe" onClick={() => void import("@/lib/calls/engine").then(({ callEngine }) => callEngine.startGroup(chat.id, "video"))}>
+                    <Video className="size-5" />
+                  </IconBtn>
+                </>
+              ) : null}
+              {peerId && !ephemeral && !sealed && !blockedIds.includes(peerId) ? (
                 <>
                   <IconBtn label={t("audioCall")} onClick={() => startCall(peerId, "audio")}>
                     <Phone className="size-5" />
@@ -1085,6 +1096,9 @@ export function ConversationScreen({ chatId }: { chatId: string }) {
                 const showName = chat.type === "group" && !mine && (prev?.fromId !== m.fromId || prev?.type === "system");
                 const hit = isGroup && findHits[findIdx] === m.id;
                 const sender = !mine && shop && m.fromId === shop.ownerId ? shopFace : users[m.fromId];
+                if (m.type === "system" && m.call) {
+                  return <div key={m.id} id={`msg-${m.id}`}><CallEvent call={m.call} at={m.createdAt} onCall={() => (isGroup && chat ? void import("@/lib/calls/engine").then(({ callEngine }) => callEngine.startGroup(chat.id, m.call!.media)) : peerId ? startCall(peerId, m.call!.media) : undefined)} /></div>;
+                }
                 if (m.type === "system") {
                   return <div key={m.id} id={`msg-${m.id}`}><SystemEvent text={m.text} /></div>;
                 }
