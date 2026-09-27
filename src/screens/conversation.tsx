@@ -38,7 +38,8 @@ import type { Surprise } from "@/lib/surprise";
 import { WippSticker } from "@/components/wipp-sticker";
 import { MediaComposer } from "@/components/chat/MediaComposer";
 import { MediaViewer } from "@/components/chat/MediaViewer";
-import { FileCard, GifMessage, MediaCard, mediaItemsOf } from "@/components/chat/MessageMedia";
+import { AutoLinkPreview, FileCard, GifMessage, LocationCard, MediaCard, ProgressRing, mediaItemsOf } from "@/components/chat/MessageMedia";
+import { fetchMediaUrl, useMediaUrl } from "@/components/chat/useMediaUrl";
 import { HoldMic } from "@/components/chat/HoldMic";
 import { addGif, loadGifs, type LocalGif } from "@/lib/gifs";
 import { triggerWippPop } from "@/lib/wippmoji";
@@ -51,6 +52,13 @@ import { isStickerId, stickerById, stickerLabel, stickersInPack, WIPP_STICKERS }
 import { createVoiceRecorder, type VoiceRecorder } from "@/lib/voice-recorder";
 import { isChatSealed, useT, useWgoStore } from "@/lib/store";
 import { DISAPPEAR_24H, DISAPPEAR_7D } from "@/lib/types";
+
+const DISAPPEAR_30D = 30 * 86_400_000;
+
+function startUpload(job: Parameters<typeof import("@/lib/messaging/send-media").uploadMedia>[0]) {
+  if (!job.messageId || !job.chatId.startsWith("srv:")) return;
+  void import("@/lib/messaging/send-media").then(({ uploadMedia }) => uploadMedia(job));
+}
 import type { MediaItem, Message } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
@@ -69,6 +77,36 @@ type VoiceUi = {
   durationSec?: number;
   micDenied?: boolean;
 };
+
+function VoiceBubble({ message, mine }: { message: Message; mine: boolean }) {
+  const dl = useMediaUrl(message);
+  const uploading = mine && message.status === "sending";
+  if (uploading || dl.state === "downloading") {
+    const p = uploading ? (message.progress ?? 0.05) : dl.progress;
+    return (
+      <div className="flex min-w-[160px] items-center gap-2" aria-label={uploading ? "Envoi du vocal" : "Téléchargement du vocal"}>
+        <span className="relative flex size-8 items-center justify-center">
+          <ProgressRing value={p} size={32} />
+        </span>
+        <span className="flex-1 text-[12px] opacity-80">{uploading ? "Envoi…" : "Téléchargement…"} {Math.round(p * 100)} %</span>
+        <span className="text-[12px] tabular-nums opacity-80">{formatDuration(message.duration ?? 0)}</span>
+      </div>
+    );
+  }
+  if ((mine && message.status === "failed") || (!mine && dl.state === "failed")) {
+    return (
+      <div className="flex min-w-[160px] items-center gap-2">
+        <span className="receipt-fail">!</span>
+        <span className="flex-1 text-[12px] text-danger">{mine ? "Échec de l’envoi" : "Impossible de charger"}</span>
+        <span className="text-[12px] font-semibold text-accent">Réessayer</span>
+        {!mine ? (
+          <button type="button" className="absolute inset-0" aria-label="Réessayer" onClick={(e) => { e.stopPropagation(); void dl.start(); }} />
+        ) : null}
+      </div>
+    );
+  }
+  return <VoicePlayButton url={dl.url} duration={message.duration} mine={mine} />;
+}
 
 function VoicePlayButton({
   url,
@@ -534,12 +572,13 @@ export function ConversationScreen({ chatId }: { chatId: string }) {
         }
       }
       haptic("send");
-      sendMessage(chatId, {
+      const vid = sendMessage(chatId, {
         type: "voice",
         duration,
         audioUrl: url,
         text: t("voice"),
       });
+      if (url) startUpload({ chatId, messageId: vid, blobUrl: url, kind: "voice", mime: "audio/webm", durationMs: duration * 1000 });
       previewAudio.current?.pause();
       previewAudio.current = null;
       setPreviewPlaying(false);
@@ -630,7 +669,30 @@ export function ConversationScreen({ chatId }: { chatId: string }) {
     haptic("send");
     const first = items[0];
     if (!first) return;
-    if (items.length === 1) {
+    if (chatId.startsWith("srv:")) {
+      // Conversations réelles : un message chiffré par média, légende sur le premier.
+      items.forEach((it, i) => {
+        const id = sendMessage(chatId, {
+          type: it.type,
+          imageUrl: it.type === "image" ? it.url : undefined,
+          videoUrl: it.type === "video" ? it.url : undefined,
+          duration: it.duration,
+          text: i === 0 ? caption : "",
+          viewOnce: once || undefined,
+          mediaState: "preparing",
+        });
+        startUpload({
+          chatId,
+          messageId: id,
+          blobUrl: it.url,
+          kind: it.type,
+          mime: it.type === "video" ? "video/mp4" : "image/jpeg",
+          viewOnce: once,
+          durationMs: it.duration ? it.duration * 1000 : undefined,
+          caption: i === 0 ? caption : undefined,
+        });
+      });
+    } else if (items.length === 1) {
       sendMessage(chatId, {
         type: first.type,
         imageUrl: first.type === "image" ? first.url : undefined,
@@ -648,12 +710,19 @@ export function ConversationScreen({ chatId }: { chatId: string }) {
 
   function sendGif(url: string) {
     haptic("send");
-    sendMessage(chatId, { type: "gif", gifUrl: url, text: "" });
+    const gid = sendMessage(chatId, { type: "gif", gifUrl: url, text: "" });
+    startUpload({ chatId, messageId: gid, blobUrl: url, kind: "gif", mime: "image/gif" });
     setPickStickers(false);
   }
 
   function closeViewer() {
-    if (viewer?.viewOnce && !viewer.viewed) burnViewOnce(chatId, viewer.id);
+    if (viewer?.viewOnce && !viewer.viewed) {
+      burnViewOnce(chatId, viewer.id);
+      if (viewer.attachmentId && viewer.fromId !== "me") {
+        const att = viewer.attachmentId;
+        void import("@/lib/messaging/client").then(({ consumeServerAttachment }) => consumeServerAttachment(att).catch(() => undefined));
+      }
+    }
     setViewer(null);
   }
 
@@ -670,36 +739,14 @@ export function ConversationScreen({ chatId }: { chatId: string }) {
       close();
       return;
     }
-    if (chatId.startsWith("srv:")) {
-      void file.arrayBuffer().then((buf) => {
-        void import("@/lib/messaging/media-upload").then(async (mod) => {
-          const st = useWgoStore.getState();
-          const peerId = chat?.participantIds.find((id) => id !== "me");
-          const peerPub = peerId
-            ? st.peerPublicKeys[peerId] ||
-              (peerId.startsWith("srvuser:") ? st.peerPublicKeys[peerId.slice("srvuser:".length)] : undefined)
-            : undefined;
-          const { isPrivateChat } = await import("@/lib/private-vault");
-          await mod.uploadCipherFile({
-            chatId,
-            bytes: new Uint8Array(buf),
-            kind: "file",
-            name: file.name,
-            mime: file.type || undefined,
-            identity: st.identity,
-            peerPublicJwk: peerPub ?? null,
-            clientId: `file-${Date.now()}`,
-            vault: isPrivateChat(chatId),
-          });
-        });
-      });
-    } else {
-      sendMessage(chatId, {
-        type: "file",
-        text: "",
-        file: { name: file.name, size: file.size, mime: file.type, url: URL.createObjectURL(file) },
-      });
-    }
+    const fileUrl = URL.createObjectURL(file);
+    const fid = sendMessage(chatId, {
+      type: "file",
+      text: "",
+      file: { name: file.name, size: file.size, mime: file.type, url: fileUrl },
+      mediaState: "preparing",
+    });
+    startUpload({ chatId, messageId: fid, blobUrl: fileUrl, kind: "file", name: file.name, mime: file.type || undefined });
     close();
   }
 
@@ -920,6 +967,7 @@ export function ConversationScreen({ chatId }: { chatId: string }) {
                   m.type === "scratch" ||
                   m.type === "gif" ||
                   m.type === "file" ||
+                  Boolean(m.geo) ||
                   ((m.type === "image" || m.type === "video") && !m.viewOnce);
                 const prev = list[i - 1];
                 const showName = chat.type === "group" && !mine && prev?.fromId !== m.fromId;
@@ -974,7 +1022,12 @@ export function ConversationScreen({ chatId }: { chatId: string }) {
                         return;
                       }
                       if (m.viewOnce) {
-                        if (!m.viewed) setViewer(m);
+                        if (m.viewed) return;
+                        if (mediaItemsOf(m).length) setViewer(m);
+                        else
+                          void fetchMediaUrl(m)
+                            .then((url) => setViewer(m.type === "video" ? { ...m, videoUrl: url } : { ...m, imageUrl: url }))
+                            .catch(() => undefined);
                         return;
                       }
                       if (m.type === "sticker" || m.type === "video") return;
@@ -1019,13 +1072,23 @@ export function ConversationScreen({ chatId }: { chatId: string }) {
                           <MediaCard
                             message={m}
                             mine={mine}
-                            onOpen={(i) => setMediaView({ items: mediaItemsOf(m), start: i })}
+                            onOpen={(i, items) => setMediaView({ items, start: i })}
                             onRetry={() => retryMessage(chatId, m.id)}
                           />
                         ) : m.type === "file" ? (
                           <FileCard message={m} mine={mine} onRetry={() => retryMessage(chatId, m.id)} />
-                        ) : m.type === "gif" && m.gifUrl ? (
-                          <GifMessage url={m.gifUrl} />
+                        ) : m.type === "gif" ? (
+                          <GifMessage message={m} />
+                        ) : m.geo ? (
+                          <LocationCard message={m} mine={mine} />
+                        ) : m.contactCard ? (
+                          <span className="flex items-center gap-3 py-1">
+                            <Avatar user={users[m.contactCard.userId] ?? { id: m.contactCard.userId, displayName: m.contactCard.displayName }} size={40} />
+                            <span>
+                              <span className="block text-[14px] font-semibold">{m.contactCard.displayName}</span>
+                              <span className="block text-[12px] opacity-70">Contact WIPP</span>
+                            </span>
+                          </span>
                         ) : null}
                         {m.type === "sticker" && isStickerId(m.stickerId) ? (
                           <WippSticker
@@ -1062,8 +1125,8 @@ export function ConversationScreen({ chatId }: { chatId: string }) {
                         ) : null}
 
                         {m.type === "voice" ? (
-                          <VoicePlayButton url={m.audioUrl} duration={m.duration} mine={mine} />
-                        ) : m.type === "sticker" || m.type === "image" || m.type === "video" || m.type === "file" || m.type === "gif" || m.type === "scratch" || m.viewOnce ? null : m.encFailed ? (
+                          <VoiceBubble message={m} mine={mine} />
+                        ) : m.type === "sticker" || m.type === "image" || m.type === "video" || m.type === "file" || m.type === "gif" || m.type === "scratch" || m.viewOnce || m.geo || m.contactCard ? null : m.encFailed ? (
                           <p className={cn("flex items-center gap-1.5 text-[13px] italic", mine ? "text-paper/70" : "text-muted")}>
                             <Lock className="size-3.5 shrink-0" />
                             {t("e2eFailed")}
@@ -1087,7 +1150,8 @@ export function ConversationScreen({ chatId }: { chatId: string }) {
                               </button>
                             ) : null}
                             {m.forwarded ? <p className="mb-0.5 text-[11px] opacity-70">Transféré</p> : null}
-                            <p className="text-[15px] leading-snug">{m.deletedForAll ? "Message supprimé" : (m.text ?? t("e2eLocked"))}</p>
+                            <p className="whitespace-pre-wrap break-words text-[15px] leading-snug">{m.deletedForAll ? "Message supprimé" : (m.text ?? t("e2eLocked"))}</p>
+                            {!m.deletedForAll ? <AutoLinkPreview text={m.text} preset={m.linkCard} /> : null}
                             {m.editedAt ? <p className="mt-0.5 text-[11px] opacity-70">Modifié</p> : null}
                             {m.pinned ? <p className="mt-0.5 text-[11px] opacity-70">Épinglé</p> : null}
                           </>
@@ -1959,6 +2023,7 @@ export function ConversationScreen({ chatId }: { chatId: string }) {
                 [0, t("disappearingOff")],
                 [DISAPPEAR_24H, t("disappearing24h")],
                 [DISAPPEAR_7D, t("disappearing7d")],
+                [DISAPPEAR_30D, "30 jours"],
               ] as const
             ).map(([ms, label]) => {
               const on = (chat.disappearAfterMs ?? 0) === ms;
