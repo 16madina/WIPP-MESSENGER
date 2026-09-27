@@ -95,6 +95,7 @@ export function SignupScreen() {
       return;
     }
     setNeedAccept(false);
+    // REMOVE BEFORE PRODUCTION — mode démo.
     const isTest = isTestPhone(phone);
     if (!isTest && password.length < 8) {
       setWeakPassword(true);
@@ -396,6 +397,7 @@ export function LoginScreen() {
   async function tryLogin() {
     setBusy(true);
     setErr(null);
+    // REMOVE BEFORE PRODUCTION — mode démo.
     if (isTestPhone(phone)) {
       startTestCode(phone.trim(), "signup");
       setBusy(false);
@@ -511,6 +513,7 @@ export function OtpScreen() {
   const pending = useWgoStore((s) => s.pendingSignup);
   const phone = pendingPhone() ?? pending.phone ?? "";
   const mode = pendingMode() ?? "signup";
+  // REMOVE BEFORE PRODUCTION — mode démo.
   const isTest = isTestPhone(phone);
   const codeLen = isTest ? 4 : 6;
   const [code, setCode] = useState("");
@@ -528,6 +531,7 @@ export function OtpScreen() {
       setErr(res.error);
       return;
     }
+    // REMOVE BEFORE PRODUCTION — session démo sans Firebase.
     if (res.idToken === "test-mode") {
       clearPending();
       useWgoStore.getState().openDemo();

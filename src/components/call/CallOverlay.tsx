@@ -458,6 +458,7 @@ function OutcomeActions() {
 function QualityPill() {
   const q = useCall((s) => s.quality);
   const media = useCall((s) => s.media);
+  const reconnecting = useCall((s) => s.status === "reconnecting");
   const [showReduced, setShowReduced] = useState(false);
   useEffect(() => {
     if (q !== "reduced") return;
@@ -465,7 +466,8 @@ function QualityPill() {
     const id = window.setTimeout(() => setShowReduced(false), 4000);
     return () => window.clearTimeout(id);
   }, [q]);
-  if (q === "good" && !showReduced) return null;
+  // Pendant « Reconnexion… », seul ce bandeau s'affiche (évite deux pastilles superposées).
+  if (reconnecting || (q === "good" && !showReduced)) return null;
   return (
     <div className="pointer-events-none flex flex-col items-center gap-1.5 pt-1">
       {q !== "good" ? (
@@ -947,6 +949,7 @@ function PermissionScreen() {
 
 /* ============================ Appel réduit ============================ */
 
+// Barre audio réduite au-dessus des onglets / du champ de saisie : ne masque ni les en-têtes ni leurs boutons.
 function MiniCall() {
   const c = useCall();
   const users = useWgoStore((s) => s.users);
@@ -959,7 +962,7 @@ function MiniCall() {
     const p = c.participants.find((x) => x.state === "connected") ?? c.participants[0];
     return (
       <div className="pointer-events-none absolute inset-0 z-[70]">
-        <CornerFloat w={116} h={168} inset={{ top: 64, bottom: 110 }} onTap={() => callEngine.expand()} className="overflow-hidden rounded-2xl shadow-[0_14px_36px_rgba(0,0,0,.5)] outline outline-1 outline-white/25">
+        <CornerFloat w={116} h={168} inset={{ top: 120, bottom: 150 }} onTap={() => callEngine.expand()} className="overflow-hidden rounded-2xl shadow-[0_14px_36px_rgba(0,0,0,.5)] outline outline-1 outline-white/25">
           <div className="relative size-full text-paper" aria-label="Revenir à l’appel">
             {p ? <RemoteTile p={p} /> : null}
             <span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-ink/85 to-transparent px-2 pt-4 pb-1.5 text-[11px] font-semibold tabular-nums">
@@ -985,7 +988,7 @@ function MiniCall() {
   }
 
   return (
-    <div className="pointer-events-none absolute inset-x-0 top-0 z-[70] flex justify-center pt-[max(52px,env(safe-area-inset-top))]">
+    <div className="pointer-events-none absolute inset-x-0 bottom-[calc(96px+env(safe-area-inset-bottom))] z-[70] flex justify-center">
       <div className="call-mini pointer-events-auto flex items-center gap-1 rounded-full bg-navy py-1.5 pr-1.5 pl-1.5 text-paper shadow-[0_12px_32px_rgba(0,0,0,.45)] outline outline-1 outline-white/15">
         <button type="button" className="press flex min-h-10 items-center gap-2 pr-2" onClick={() => callEngine.expand()} aria-label="Revenir à l’appel">
           <span className={cn("call-face rounded-full", c.speakingId && "is-speaking")}>

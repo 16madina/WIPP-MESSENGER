@@ -214,27 +214,7 @@ export function CallsScreen() {
               {t("returnToCall")}
             </span>
           </button>
-        ) : !live ? (
-          <button
-            type="button"
-            onClick={() => startCall("maya", "video", "in")}
-            className="glass-card mx-4 mt-2 flex w-[calc(100%-2rem)] items-center gap-3 rounded-2xl px-3 py-3 text-left"
-          >
-            <span className="relative flex size-12 items-center justify-center">
-              <span className="wgo-call-ring absolute inset-0 rounded-full bg-accent/40" />
-              <Avatar user={users.maya} size={48} />
-            </span>
-            <span className="min-w-0 flex-1">
-              <span className="block text-[15px] font-semibold">{users.maya?.displayName}</span>
-              <span className="text-[12px] text-muted">
-                {t("incomingFrom")} · {t("videoCall")}
-              </span>
-            </span>
-            <span className="rounded-full bg-accent px-3 py-1.5 text-[12px] font-semibold text-accent-fg">
-              {t("answer")}
-            </span>
-          </button>
-        ) : null}
+        ) : null /* Carte « Maya vous appelle » retirée : faux appel entrant permanent ; les scénarios démo la remplacent. */}
         {!live ? <DemoScenarios /> : null}
         {groups.length === 0 ? (
           <Empty title={t("noResults")} body={t("createCallLink")} />
