@@ -19,7 +19,7 @@ export function QrCard({
   const qPad = 3;
   const dim = n + qPad * 2;
   const inner = Math.max(48, size - pad * 2);
-  const mark = Math.round(inner * 0.22);
+  const mark = Math.round(inner * 0.18);
 
   return (
     <div
@@ -38,13 +38,7 @@ export function QrCard({
                 width={1}
                 height={1}
                 rx={0.15}
-                fill={
-                  (r < 7 && c < 7) || (r < 7 && c > n - 8) || (r > n - 8 && c < 7)
-                    ? "#0B1220"
-                    : r % 7 === 3 && c % 7 === 3
-                      ? "#C9A227"
-                      : "#0B1220"
-                }
+                fill="#0B1220"
               />
             ) : null,
           ),
