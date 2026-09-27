@@ -34,7 +34,6 @@ export function WelcomeScreen() {
 export function PhoneEntryScreen() {
   const pop = useWgoStore((s) => s.pop);
   const push = useWgoStore((s) => s.push);
-  const push = useWgoStore((s) => s.push);
   const [country, setCountry] = useState<(typeof COUNTRIES)[number]>(COUNTRIES[0]);
   const [phone, setPhone] = useState("");
   const [menuOpen, setMenuOpen] = useState(false);
@@ -150,6 +149,7 @@ export function SmsReferenceScreen() {
 
 export function ProfileReferenceScreen() {
   const pop = useWgoStore((s) => s.pop);
+  const push = useWgoStore((s) => s.push);
   const completeSetup = useWgoStore((s) => s.completeSetup);
   const country = useWgoStore((s) => s.pendingSignup.country ?? "CA");
   const phone = useWgoStore((s) => s.pendingSignup.phone ?? "");
