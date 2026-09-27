@@ -281,35 +281,17 @@ export function ScannerScreen() {
       <StatusBar />
       <Header title={t("scan")} onBack={pop} className="text-paper [&_button]:text-paper" />
       <LiveScanner
-        onResult={(msg, userId) => {
-          if (userId) replace({ name: "found-profile", userId, via: "qr" });
-          else setFail(msg);
+        onFallback={(to) => replace({ name: to === "search" ? "search-user" : "my-qr" })}
+        onResult={(d) => {
+          if (!d.ok) return setFail(d.error);
+          if (d.kind === "profile") replace({ name: "found-profile", userId: d.userId, via: "qr" });
+          else if (d.kind === "group") replace({ name: "group-invite", token: d.token });
+          else replace({ name: "shop", shopId: d.shopId });
         }}
       />
       <div className="flex flex-1 flex-col items-center justify-center px-8">
-        <button
-          type="button"
-          onClick={() => {
-            setFail(null);
-            setScan("profile");
-          }}
-          className="relative size-64"
-          aria-label={t("scanAction")}
-        >
-          <span className="absolute inset-0 rounded-3xl border border-accent/40" />
-          <span className="absolute top-0 left-0 h-8 w-8 rounded-tl-2xl border-t-2 border-l-2 border-accent" />
-          <span className="absolute top-0 right-0 h-8 w-8 rounded-tr-2xl border-t-2 border-r-2 border-accent" />
-          <span className="absolute bottom-0 left-0 h-8 w-8 rounded-bl-2xl border-b-2 border-l-2 border-accent" />
-          <span className="absolute bottom-0 right-0 h-8 w-8 rounded-br-2xl border-b-2 border-r-2 border-accent" />
-          <span
-            className={cn(
-              "absolute inset-x-3 h-0.5 bg-accent/80",
-              scan ? "top-4 animate-pulse" : "top-1/2",
-            )}
-          />
-        </button>
-        <p className="mt-6 text-[14px] text-paper/60">{t("scanHint")}</p>
-        {fail ? <p className="mt-2 text-[13px] text-danger">{fail}</p> : null}
+        <p className="mt-2 text-[14px] text-paper/60">{t("scanHint")}</p>
+        {fail ? <p className="mt-2 text-[13px] text-danger" role="alert">{fail}</p> : null}
         <div className="mt-6 w-full rounded-2xl bg-paper/8 p-3 ring-1 ring-paper/10">
           <p className="mb-2 text-center text-[12px] text-paper/50">Code WIPP Touch</p>
           <input
@@ -327,20 +309,18 @@ export function ScannerScreen() {
             {touchBusy ? "…" : t("touchAllow")}
           </Btn>
         </div>
-        <div className="mt-6 grid w-full gap-2">
-          <Btn onClick={() => { setFail(null); setScan("profile"); }}>
-            {t("scanProfile")}
-          </Btn>
-          <Btn variant="secondary" onClick={() => { setFail(null); setScan("once"); }}>
-            {t("scanOnce")}
-          </Btn>
-          <Btn variant="secondary" onClick={() => { setFail(null); setScan("group"); }}>
-            {t("scanGroup")}
-          </Btn>
-          <Btn variant="secondary" onClick={() => { setFail(null); setScan("shop"); }}>
-            {t("scanShop")}
-          </Btn>
-        </div>
+        {import.meta.env.DEV ? (
+          /* REMOVE BEFORE PRODUCTION — simulateurs de scan (mode développeur uniquement) */
+          <details className="mt-6 w-full text-[12px] text-paper/50">
+            <summary className="cursor-pointer py-2 text-center">Debug · simuler un scan</summary>
+            <div className="grid gap-2">
+              <Btn variant="secondary" onClick={() => { setFail(null); setScan("profile"); }}>{t("scanProfile")}</Btn>
+              <Btn variant="secondary" onClick={() => { setFail(null); setScan("once"); }}>{t("scanOnce")}</Btn>
+              <Btn variant="secondary" onClick={() => { setFail(null); setScan("group"); }}>{t("scanGroup")}</Btn>
+              <Btn variant="secondary" onClick={() => { setFail(null); setScan("shop"); }}>{t("scanShop")}</Btn>
+            </div>
+          </details>
+        ) : null}
       </div>
     </div>
   );

@@ -1,4 +1,5 @@
 import { lazy, Suspense, useEffect, useRef, useState } from "react";
+import { OfflineBanner } from "@/components/offline-banner";
 import { AppLockGate } from "@/components/safety";
 import { PhoneShell } from "@/components/phone-shell";
 import { TabBar } from "@/components/tab-bar";
@@ -360,6 +361,7 @@ export function WgoApp() {
           <CallOverlay />
         </Suspense>
         <AppLockGate />
+        <OfflineBanner />
       </div>
     </PhoneShell>
   );

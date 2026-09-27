@@ -8,3 +8,4 @@
 - Lot 4 groupes : fait en démonstration locale (création 2 étapes, infos, admins, permissions, mentions, réactions détaillées, recherche ↑↓, invitation/réinitialisation, quitter, 2 groupes démo). À faire : groupes réels côté serveur + chiffrement de groupe (backend).
 - [x] Lot 5 validation finale (tests écran téléphone, 4 corrections)
 - [ ] REMOVE BEFORE PRODUCTION : mode démo (1234567 / test / test-mode)
+- Lot 6 (suite) : résolveur QR 4 types, scanner iPhone, Touch 10 états, protection des captures, bandeau hors ligne — fait. Bloqué : backend Touch/QR/demandes (accord requis sur audit).
