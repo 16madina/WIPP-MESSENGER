@@ -53,19 +53,23 @@ export function SignupScreen() {
   const replace = useWgoStore((s) => s.replace);
   const saveSignup = useWgoStore((s) => s.saveSignup);
   const acceptLegal = useWgoStore((s) => s.acceptLegal);
-  const [firstName, setFirst] = useState("Deena");
-  const [lastName, setLast] = useState("Diallo");
+  const [firstName, setFirst] = useState("");
+  const [lastName, setLast] = useState("");
   const [country, setCountry] = useState<(typeof COUNTRIES)[number]>(COUNTRIES[0]);
-  const [phone, setPhone] = useState("514 555 0148");
+  const [phone, setPhone] = useState("");
+  const [password, setPassword] = useState("");
   const [birthday, setBirthday] = useState("1999-04-12");
   const [accepted, setAccepted] = useState(false);
   const [needAccept, setNeedAccept] = useState(false);
   const [tooYoung, setTooYoung] = useState(false);
+  const [weakPassword, setWeakPassword] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
   const [doc, setDoc] = useState<"privacy" | "terms" | null>(null);
   const [countryOpen, setCountryOpen] = useState(false);
   const [dialOpen, setDialOpen] = useState(false);
 
-  function tryContinue() {
+  async function tryContinue() {
     const age = yearsOld(birthday);
     if (age > 0 && age < 13) {
       setTooYoung(true);
@@ -78,6 +82,19 @@ export function SignupScreen() {
       return;
     }
     setNeedAccept(false);
+    if (password.length < 8) {
+      setWeakPassword(true);
+      return;
+    }
+    setWeakPassword(false);
+    setBusy(true);
+    setErr(null);
+    const smsErr = await startPhoneCode(`${country.dial}${phone}`, "signup", password);
+    setBusy(false);
+    if (smsErr) {
+      setErr(smsErr);
+      return;
+    }
     acceptLegal();
     saveSignup({
       firstName,
