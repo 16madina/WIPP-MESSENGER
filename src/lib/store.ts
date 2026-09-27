@@ -204,7 +204,7 @@ type WgoState = ReturnType<typeof fresh> & {
   setEphemeralCalls: (on: boolean) => void;
   setNotif: (key: keyof NotifSettings, value: boolean) => void;
   setNearby: (mode: NearbyMode) => void;
-  sendMessage: (chatId: string, data: Partial<Message> & { text?: string }) => void;
+  sendMessage: (chatId: string, data: Partial<Message> & { text?: string }) => string;
   retryMessage: (chatId: string, messageId: string) => void;
   markScratch: (chatId: string, messageId: string) => void;
   addReaction: (chatId: string, messageId: string, emoji: string) => void;
@@ -669,7 +669,7 @@ export const useWgoStore = create<WgoState>()(
 
       sendMessage: (chatId, data) => {
         const existingChat = get().chats.find((c) => c.id === chatId);
-        if (existingChat && isChatSealed(existingChat)) return;
+        if (existingChat && isChatSealed(existingChat)) return "";
         const cited = data.replyTo
           ? (get().messages[chatId] ?? []).find((m) => m.id === data.replyTo)
           : undefined;
@@ -687,6 +687,7 @@ export const useWgoStore = create<WgoState>()(
           imageUrl: data.imageUrl,
           videoUrl: data.videoUrl,
           viewOnce: data.viewOnce || undefined,
+          mediaState: data.mediaState,
           album: data.album,
           file: data.file,
           gifUrl: data.gifUrl,
@@ -899,6 +900,10 @@ export const useWgoStore = create<WgoState>()(
       retryMessage: (chatId, messageId) => {
         const msg = (get().messages[chatId] ?? []).find((m) => m.id === messageId);
         if (!msg || msg.status !== "failed") return;
+        if (chatId.startsWith("srv:") && msg.type !== "text") {
+          void import("@/lib/messaging/send-media").then(({ retryMedia }) => retryMedia(messageId));
+          return;
+        }
         if (chatId.startsWith("srv:") && msg.text) {
           set((st) => ({
             messages: {

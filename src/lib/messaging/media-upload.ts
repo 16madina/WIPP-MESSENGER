@@ -36,6 +36,8 @@ export async function uploadCipherFile(input: {
   clientId: string;
   vault?: boolean;
   onProgress?: (fraction: number) => void;
+  caption?: string;
+  size?: number;
 }) {
   const serverChatId = input.chatId.replace(/^srv:/, "");
   const chunkCount = Math.max(1, Math.ceil(input.bytes.byteLength / CHUNK_PLAIN_MAX));
@@ -61,6 +63,8 @@ export async function uploadCipherFile(input: {
     mime: input.mime,
     viewOnce: input.viewOnce,
     durationMs: input.durationMs,
+    caption: input.caption || undefined,
+    size: input.size,
     chunks: metas,
   });
   const message = await sendViaServer(input.chatId, inner, input.clientId, {
