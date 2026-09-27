@@ -307,7 +307,8 @@ export type Message = {
   mediaChunks?: { i: number; iv: string; sha256: string }[];
   contactCard?: { userId: string; username: string; displayName: string; fingerprint?: string };
   geo?: { lat: number; lon: number };
-  linkCard?: { url: string; title?: string; description?: string };
+  linkCard?: { url: string; title?: string; description?: string; image?: string };
+  geoLive?: boolean;
   enc?: EncBlob;
   encFailed?: boolean;
   translated?: string;
