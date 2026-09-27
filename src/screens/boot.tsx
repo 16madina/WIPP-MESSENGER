@@ -3,6 +3,7 @@ import { PhoneShell } from "@/components/phone-shell";
 import { withGroupMeta } from "@/lib/seed";
 import { useWgoStore } from "@/lib/store";
 import { IntroSplash } from "@/screens/intro";
+import { OverlayProvider } from "@/components/native/Overlay";
 
 const AUTH = new Set(["splash", "onboarding", "signup", "login", "otp", "setup"]);
 
@@ -63,7 +64,9 @@ export function BootedApp({ pendingGroupToken }: { pendingGroupToken?: string })
         </PhoneShell>
       }
     >
-      <WgoApp />
+      <OverlayProvider>
+        <WgoApp />
+      </OverlayProvider>
     </Suspense>
   );
 }
