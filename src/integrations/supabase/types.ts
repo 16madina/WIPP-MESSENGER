@@ -119,6 +119,13 @@ export type Database = {
             referencedRelation: "wipp_profiles"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "wipp_attachments_owner_id_fkey"
+            columns: ["owner_id"]
+            isOneToOne: false
+            referencedRelation: "wipp_public_profiles"
+            referencedColumns: ["id"]
+          },
         ]
       }
       wipp_blocks: {
@@ -152,10 +159,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "wipp_blocks_blocked_id_fkey"
+            columns: ["blocked_id"]
+            isOneToOne: false
+            referencedRelation: "wipp_public_profiles"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "wipp_blocks_blocker_id_fkey"
             columns: ["blocker_id"]
             isOneToOne: false
             referencedRelation: "wipp_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "wipp_blocks_blocker_id_fkey"
+            columns: ["blocker_id"]
+            isOneToOne: false
+            referencedRelation: "wipp_public_profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -203,10 +224,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "wipp_call_invites_callee_id_fkey"
+            columns: ["callee_id"]
+            isOneToOne: false
+            referencedRelation: "wipp_public_profiles"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "wipp_call_invites_caller_id_fkey"
             columns: ["caller_id"]
             isOneToOne: false
             referencedRelation: "wipp_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "wipp_call_invites_caller_id_fkey"
+            columns: ["caller_id"]
+            isOneToOne: false
+            referencedRelation: "wipp_public_profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -255,6 +290,13 @@ export type Database = {
             columns: ["profile_id"]
             isOneToOne: false
             referencedRelation: "wipp_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "wipp_chat_members_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "wipp_public_profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -317,6 +359,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "wipp_devices_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "wipp_public_profiles"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "wipp_devices_session_token_fkey"
             columns: ["session_token"]
             isOneToOne: false
@@ -364,6 +413,13 @@ export type Database = {
             referencedRelation: "wipp_profiles"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "wipp_link_codes_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "wipp_public_profiles"
+            referencedColumns: ["id"]
+          },
         ]
       }
       wipp_message_hides: {
@@ -395,6 +451,13 @@ export type Database = {
             columns: ["profile_id"]
             isOneToOne: false
             referencedRelation: "wipp_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "wipp_message_hides_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "wipp_public_profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -455,6 +518,13 @@ export type Database = {
             columns: ["sender_id"]
             isOneToOne: false
             referencedRelation: "wipp_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "wipp_messages_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "wipp_public_profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -537,6 +607,13 @@ export type Database = {
             columns: ["reporter_id"]
             isOneToOne: false
             referencedRelation: "wipp_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "wipp_moderation_flags_reporter_id_fkey"
+            columns: ["reporter_id"]
+            isOneToOne: false
+            referencedRelation: "wipp_public_profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -643,6 +720,13 @@ export type Database = {
             referencedRelation: "wipp_profiles"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "wipp_push_tokens_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "wipp_public_profiles"
+            referencedColumns: ["id"]
+          },
         ]
       }
       wipp_reactions: {
@@ -677,6 +761,13 @@ export type Database = {
             columns: ["profile_id"]
             isOneToOne: false
             referencedRelation: "wipp_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "wipp_reactions_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "wipp_public_profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -715,6 +806,13 @@ export type Database = {
             referencedRelation: "wipp_profiles"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "wipp_receipts_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "wipp_public_profiles"
+            referencedColumns: ["id"]
+          },
         ]
       }
       wipp_sessions: {
@@ -742,6 +840,13 @@ export type Database = {
             columns: ["profile_id"]
             isOneToOne: false
             referencedRelation: "wipp_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "wipp_sessions_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "wipp_public_profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -799,6 +904,13 @@ export type Database = {
             columns: ["profile_id"]
             isOneToOne: false
             referencedRelation: "wipp_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "wipp_touch_candidates_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "wipp_public_profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -873,10 +985,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "wipp_touch_invites_matched_profile_id_fkey"
+            columns: ["matched_profile_id"]
+            isOneToOne: false
+            referencedRelation: "wipp_public_profiles"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "wipp_touch_invites_receiver_id_fkey"
             columns: ["receiver_id"]
             isOneToOne: false
             referencedRelation: "wipp_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "wipp_touch_invites_receiver_id_fkey"
+            columns: ["receiver_id"]
+            isOneToOne: false
+            referencedRelation: "wipp_public_profiles"
             referencedColumns: ["id"]
           },
           {
@@ -886,17 +1012,54 @@ export type Database = {
             referencedRelation: "wipp_profiles"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "wipp_touch_invites_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "wipp_public_profiles"
+            referencedColumns: ["id"]
+          },
         ]
       }
     }
     Views: {
-      [_ in never]: never
+      wipp_public_profiles: {
+        Row: {
+          avatar_url: string | null
+          bio: string | null
+          display_name: string | null
+          e2e_public_jwk: Json | null
+          id: string | null
+          role: string | null
+          username: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          bio?: string | null
+          display_name?: string | null
+          e2e_public_jwk?: Json | null
+          id?: string | null
+          role?: string | null
+          username?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          bio?: string | null
+          display_name?: string | null
+          e2e_public_jwk?: Json | null
+          id?: string | null
+          role?: string | null
+          username?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       wipp_is_muted: {
         Args: { _chat_id: string; _profile_id: string }
         Returns: boolean
       }
+      wipp_my_profile_id: { Args: never; Returns: string }
     }
     Enums: {
       [_ in never]: never
