@@ -1254,7 +1254,7 @@ export function ConversationScreen({ chatId }: { chatId: string }) {
                   onClick={() => {
                     setPickStickers(false);
                     setEmojiBar(false);
-                    setAttach(true);
+                    setSurprise(true);
                   }}
                 >
                   <Plus className="size-5" />
