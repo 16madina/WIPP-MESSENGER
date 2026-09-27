@@ -1,3 +1,5 @@
+import { supabase } from "@/integrations/supabase/client";
+import * as S from "./supa";
 import type { WippChatSummary, WippMessage, WippProfile, WippSessionPayload } from "./types";
 
 const TOKEN_KEY = "wipp-server-token";
@@ -5,7 +7,7 @@ const PROFILE_KEY = "wipp-server-profile";
 
 export function getStoredToken(): string | null {
   if (typeof localStorage === "undefined") return null;
-  return localStorage.getItem(TOKEN_KEY);
+  return localStorage.getItem(TOKEN_KEY) ?? (S.cachedProfile() ? "supabase" : null);
 }
 
 export function getStoredProfile(): WippProfile | null {
@@ -93,42 +95,36 @@ export async function logoutAccount() {
 }
 
 export async function fetchMe() {
-  const data = await api<{ profile: WippProfile }>("/me");
-  persistSession({ token: getStoredToken()!, profile: data.profile });
-  return data.profile;
+  return S.loadMe();
 }
 
 export async function publishMyE2eKey(publicJwk: JsonWebKey) {
-  const data = await api<{ profile: WippProfile }>("/me/e2e-key", {
-    method: "PUT",
-    body: JSON.stringify({ publicJwk }),
-  });
-  persistSession({ token: getStoredToken()!, profile: data.profile });
-  return data.profile;
+  return S.publishKey(publicJwk);
 }
 
 export async function searchUsers(q: string) {
-  const data = await api<{ users: WippProfile[] }>(`/users/search?q=${encodeURIComponent(q)}`);
-  return data.users;
+  return S.searchProfiles(q);
 }
 
 export async function openServerChat(peerUsername: string) {
-  const data = await api<{ chat: WippChatSummary }>("/chats", {
-    method: "POST",
-    body: JSON.stringify({ peerUsername }),
-  });
-  return data.chat;
+  const { openDm } = await import("@/lib/chats.functions");
+  const { data } = await supabase.auth.getSession();
+  const token = data.session?.access_token;
+  const { chatId } = await openDm({
+    data: { peerUsername },
+    headers: token ? { authorization: `Bearer ${token}` } : undefined,
+  } as never);
+  const chat = (await S.listChats()).find((c) => c.id === chatId);
+  if (!chat) throw new Error("Conversation introuvable");
+  return chat;
 }
 
 export async function fetchServerChats() {
-  const data = await api<{ chats: WippChatSummary[] }>("/chats");
-  return data.chats;
+  return S.listChats();
 }
 
-export async function fetchServerMessages(chatId: string, after?: number) {
-  const q = after ? `?after=${after}` : "";
-  const data = await api<{ messages: WippMessage[] }>(`/chats/${chatId}/messages${q}`);
-  return data.messages;
+export async function fetchServerMessages(chatId: string, _after?: number) {
+  return S.listMessages(chatId);
 }
 
 export async function postServerMessage(
@@ -137,50 +133,31 @@ export async function postServerMessage(
   clientId: string,
   opts?: { replyTo?: string | null; vault?: boolean },
 ) {
-  const data = await api<{ message: WippMessage }>(`/chats/${chatId}/messages`, {
-    method: "POST",
-    body: JSON.stringify({ body, clientId, replyTo: opts?.replyTo, vault: opts?.vault }),
-  });
-  return data.message;
+  return S.insertMessage(chatId, body, clientId, opts?.replyTo);
 }
 
-export async function editServerMessage(chatId: string, messageId: string, body: string) {
-  const data = await api<{ message: WippMessage }>(`/chats/${chatId}/messages/${messageId}/edit`, {
-    method: "POST",
-    body: JSON.stringify({ body }),
-  });
-  return data.message;
+export async function editServerMessage(_chatId: string, messageId: string, body: string) {
+  return S.updateMessage(messageId, { body, edited_at: new Date().toISOString() });
 }
 
-export async function hideServerMessage(chatId: string, messageId: string) {
-  return api(`/chats/${chatId}/messages/${messageId}/hide`, { method: "POST", body: "{}" });
+export async function hideServerMessage(_chatId: string, messageId: string) {
+  return S.hideMessage(messageId);
 }
 
-export async function tombstoneServerMessage(chatId: string, messageId: string) {
-  return api(`/chats/${chatId}/messages/${messageId}/tombstone`, { method: "POST", body: "{}" });
+export async function tombstoneServerMessage(_chatId: string, messageId: string) {
+  return S.updateMessage(messageId, { deleted_at: new Date().toISOString(), body: "" });
 }
 
-export async function reactServerMessage(chatId: string, messageId: string, emoji: string) {
-  const data = await api<{ message: WippMessage }>(`/chats/${chatId}/messages/${messageId}/reaction`, {
-    method: "POST",
-    body: JSON.stringify({ emoji }),
-  });
-  return data.message;
+export async function reactServerMessage(_chatId: string, messageId: string, emoji: string) {
+  return S.toggleReaction(messageId, emoji);
 }
 
-export async function pinServerMessage(chatId: string, messageId: string, pinned: boolean) {
-  const data = await api<{ message: WippMessage }>(`/chats/${chatId}/messages/${messageId}/pin`, {
-    method: "POST",
-    body: JSON.stringify({ pinned }),
-  });
-  return data.message;
+export async function pinServerMessage(_chatId: string, messageId: string, pinned: boolean) {
+  return S.updateMessage(messageId, { pinned_at: pinned ? new Date().toISOString() : null });
 }
 
-export async function postReceipts(chatId: string, messageIds: string[], kind: "delivered" | "read") {
-  return api(`/chats/${chatId}/receipts`, {
-    method: "POST",
-    body: JSON.stringify({ messageIds, kind }),
-  });
+export async function postReceipts(_chatId: string, messageIds: string[], kind: "delivered" | "read") {
+  return S.upsertReceipts(messageIds, kind);
 }
 
 export async function postChatPrefs(
@@ -192,15 +169,15 @@ export async function postChatPrefs(
     manuallyUnread?: boolean;
   },
 ) {
-  return api(`/chats/${chatId}/prefs`, { method: "POST", body: JSON.stringify(patch) });
+  return S.updatePrefs(chatId, patch);
 }
 
 export async function postFocus(chatId: string, active: boolean) {
-  return api(`/chats/${chatId}/focus`, { method: "POST", body: JSON.stringify({ active }) });
+  S.setFocus(chatId, active);
 }
 
 export async function postTyping(chatId: string, active: boolean) {
-  return api(`/chats/${chatId}/typing`, { method: "POST", body: JSON.stringify({ active }) });
+  S.sendTyping(chatId, active);
 }
 
 export async function createWebLinkCode(origin?: string) {
@@ -232,37 +209,13 @@ export async function claimWebLinkCode(code: string) {
   });
 }
 
-/** Ensure a server session exists for the current local profile (demo password). */
-export async function ensureServerSession(opts: {
+/** Real Supabase session → WIPP profile. Throws when signed out. */
+export async function ensureServerSession(_opts: {
   username: string;
   displayName: string;
   password?: string;
 }) {
-  const existing = getStoredToken();
-  if (existing) {
-    try {
-      return await fetchMe();
-    } catch {
-      persistSession(null);
-    }
-  }
-  const password = opts.password ?? "wipp-demo";
-  try {
-    return (await loginAccount({ username: opts.username, password })).profile;
-  } catch {
-    try {
-      return (
-        await registerAccount({
-          username: opts.username,
-          password,
-          displayName: opts.displayName,
-        })
-      ).profile;
-    } catch {
-      // Username taken with different password — fall back to seeded demo user
-      return (await loginAccount({ username: "deena", password: "wipp-demo" })).profile;
-    }
-  }
+  return S.loadMe();
 }
 
 export type CallInvite = {
