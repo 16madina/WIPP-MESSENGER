@@ -678,7 +678,7 @@ function GroupAudioStage() {
           return (
             <div key={p.id} className="flex flex-col items-center">
               <span className={cn("call-face relative rounded-full", speaking && "is-speaking", p.state !== "connected" && "opacity-50")}>
-                <Avatar user={face(u)} size={84} />
+                <Avatar user={face(u)} size={all.length > 6 ? 64 : 84} />
                 {p.muted ? (
                   <span className="absolute -right-0.5 -bottom-0.5 flex size-7 items-center justify-center rounded-full bg-navy ring-2 ring-navy">
                     <MicOff className="size-3.5 text-paper/80" />
