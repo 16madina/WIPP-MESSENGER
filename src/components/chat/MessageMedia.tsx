@@ -17,6 +17,7 @@ import type { MediaItem, Message } from "@/lib/types";
 import { formatDuration } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { useMediaUrl } from "./useMediaUrl";
+import { useLinkPreview } from "./useLinkPreview";
 
 export function mediaItemsOf(m: Message): MediaItem[] {
   if (m.album?.length) return m.album;
@@ -358,4 +359,10 @@ export function LinkPreview({ card }: { card: NonNullable<Message["linkCard"]> }
       </span>
     </a>
   );
+}
+
+/** Aperçu automatique si le texte contient une URL. */
+export function AutoLinkPreview({ text, preset }: { text?: string; preset?: Message["linkCard"] }) {
+  const card = useLinkPreview(text, preset);
+  return card ? <LinkPreview card={card} /> : null;
 }
