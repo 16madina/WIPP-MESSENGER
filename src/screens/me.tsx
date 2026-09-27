@@ -693,7 +693,8 @@ export function PrivacyScreen() {
         {open ? (
           <div className="mt-4 px-4">
             <Section title={t(PRIVACY_ROWS.find((r) => r.key === open)!.label)}>
-              {(["everyone", "contacts", "nobody"] as const).map((v) => (
+              {/* Appels : structure prête pour d'autres options ; pour l'instant contacts WIPP ou personne. */}
+              {(open === "whoCall" ? (["contacts", "nobody"] as const) : (["everyone", "contacts", "nobody"] as const)).map((v) => (
                 <button
                   key={v}
                   type="button"
@@ -703,7 +704,7 @@ export function PrivacyScreen() {
                     setOpen(null);
                   }}
                 >
-                  {labelFor(v)}
+                  {open === "whoCall" && v === "contacts" ? "Mes contacts WIPP" : labelFor(v)}
                   {privacy[open] === v ? <span className="size-2 rounded-full bg-accent" /> : null}
                 </button>
               ))}
