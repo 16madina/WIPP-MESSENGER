@@ -13,7 +13,7 @@ export function BusinessCardScreen() {
       <div className="px-5 pt-4">
         <div className="rounded-3xl bg-surface p-5 shadow-sm">
           <Tag className="size-6 text-accent" />
-          <p className="mt-3 text-[17px] font-semibold">{me?.name ?? "Ton nom"}</p>
+          <p className="mt-3 text-[17px] font-semibold">{me?.displayName || "Ton nom"}</p>
           <p className="text-[14px] text-muted">Activité · Ville</p>
         </div>
         <p className="mt-4 text-[13px] leading-relaxed text-muted">
