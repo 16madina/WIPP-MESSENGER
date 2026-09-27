@@ -492,6 +492,150 @@ export type Database = {
           },
         ]
       }
+      wipp_group_bans: {
+        Row: {
+          chat_id: string
+          created_at: string
+          profile_id: string
+        }
+        Insert: {
+          chat_id: string
+          created_at?: string
+          profile_id: string
+        }
+        Update: {
+          chat_id?: string
+          created_at?: string
+          profile_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wipp_group_bans_chat_id_fkey"
+            columns: ["chat_id"]
+            isOneToOne: false
+            referencedRelation: "wipp_chats"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "wipp_group_bans_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "wipp_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "wipp_group_bans_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "wipp_public_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      wipp_group_invites: {
+        Row: {
+          chat_id: string
+          created_at: string
+          created_by: string
+          expires_at: string | null
+          id: string
+          max_uses: number | null
+          revoked_at: string | null
+          token_hash: string
+          uses: number
+        }
+        Insert: {
+          chat_id: string
+          created_at?: string
+          created_by: string
+          expires_at?: string | null
+          id?: string
+          max_uses?: number | null
+          revoked_at?: string | null
+          token_hash: string
+          uses?: number
+        }
+        Update: {
+          chat_id?: string
+          created_at?: string
+          created_by?: string
+          expires_at?: string | null
+          id?: string
+          max_uses?: number | null
+          revoked_at?: string | null
+          token_hash?: string
+          uses?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wipp_group_invites_chat_id_fkey"
+            columns: ["chat_id"]
+            isOneToOne: false
+            referencedRelation: "wipp_chats"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "wipp_group_invites_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "wipp_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "wipp_group_invites_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "wipp_public_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      wipp_groups: {
+        Row: {
+          chat_id: string
+          created_at: string
+          invites_enabled: boolean
+          name: string
+          owner_id: string
+        }
+        Insert: {
+          chat_id: string
+          created_at?: string
+          invites_enabled?: boolean
+          name: string
+          owner_id: string
+        }
+        Update: {
+          chat_id?: string
+          created_at?: string
+          invites_enabled?: boolean
+          name?: string
+          owner_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wipp_groups_chat_id_fkey"
+            columns: ["chat_id"]
+            isOneToOne: true
+            referencedRelation: "wipp_chats"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "wipp_groups_owner_id_fkey"
+            columns: ["owner_id"]
+            isOneToOne: false
+            referencedRelation: "wipp_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "wipp_groups_owner_id_fkey"
+            columns: ["owner_id"]
+            isOneToOne: false
+            referencedRelation: "wipp_public_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       wipp_link_codes: {
         Row: {
           claimed_at: string | null
@@ -847,6 +991,65 @@ export type Database = {
           },
         ]
       }
+      wipp_qr_tokens: {
+        Row: {
+          created_at: string
+          expires_at: string
+          profile_id: string
+          revoked_at: string | null
+          token_hash: string
+          used_at: string | null
+          used_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          expires_at: string
+          profile_id: string
+          revoked_at?: string | null
+          token_hash: string
+          used_at?: string | null
+          used_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string
+          profile_id?: string
+          revoked_at?: string | null
+          token_hash?: string
+          used_at?: string | null
+          used_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wipp_qr_tokens_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "wipp_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "wipp_qr_tokens_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "wipp_public_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "wipp_qr_tokens_used_by_fkey"
+            columns: ["used_by"]
+            isOneToOne: false
+            referencedRelation: "wipp_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "wipp_qr_tokens_used_by_fkey"
+            columns: ["used_by"]
+            isOneToOne: false
+            referencedRelation: "wipp_public_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       wipp_reactions: {
         Row: {
           created_at: string
@@ -1173,13 +1376,40 @@ export type Database = {
       }
     }
     Functions: {
+      wipp_create_group: { Args: { _me: string; _name: string }; Returns: Json }
+      wipp_create_group_invite: {
+        Args: {
+          _chat: string
+          _expires_at: string
+          _hash: string
+          _max_uses: number
+          _me: string
+        }
+        Returns: Json
+      }
+      wipp_group_invite_check: {
+        Args: { _hash: string; _join: boolean; _me: string }
+        Returns: Json
+      }
       wipp_is_muted: {
         Args: { _chat_id: string; _profile_id: string }
         Returns: boolean
       }
+      wipp_issue_qr_token: {
+        Args: { _hash: string; _me: string }
+        Returns: Json
+      }
       wipp_my_profile_id: { Args: never; Returns: string }
+      wipp_redeem_qr_token: {
+        Args: { _hash: string; _me: string }
+        Returns: Json
+      }
       wipp_respond_connection_request: {
         Args: { _action: string; _id: string; _me: string }
+        Returns: Json
+      }
+      wipp_revoke_group_invite: {
+        Args: { _id: string; _me: string }
         Returns: Json
       }
       wipp_send_connection_request: {
