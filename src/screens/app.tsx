@@ -240,7 +240,7 @@ function ScreenSwitch({ screen }: { screen: Screen }) {
     case "wgo-touch":
       return <WgoTouchScreen />;
     case "touch-incoming":
-      return <TouchIncomingScreen demo={screen.demo} />;
+      return screen.requestId ? <RealIncomingScreen requestId={screen.requestId} /> : <TouchIncomingScreen demo={screen.demo} />;
     case "pharmacy":
       return <PharmacyScreen pharmacyId={screen.pharmacyId} />;
     case "shop":

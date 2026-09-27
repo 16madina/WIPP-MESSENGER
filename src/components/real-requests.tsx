@@ -69,7 +69,7 @@ export function RealRequestsSection() {
         <div key={r.id} className="mb-3 rounded-xl bg-surface p-4 hairline" data-testid="real-request">
           <button type="button" className="flex w-full gap-3 text-left"
             onClick={() => push({ name: "touch-incoming", requestId: r.id })}>
-            <Avatar user={{ id: r.sender.id, displayName: r.sender.displayName, avatar: r.sender.avatarUrl ?? undefined } as never} size={48} />
+            <Avatar user={{ displayName: r.sender.displayName, avatar: r.sender.avatarUrl ?? undefined } as never} size={48} />
             <div className="min-w-0">
               <p className="font-medium">{r.sender.displayName}</p>
               <p className="text-[13px] text-muted">@{r.sender.username}</p>

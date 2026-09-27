@@ -199,7 +199,7 @@ export type Screen =
   | { name: "group-info"; chatId: string }
   | { name: "group-invite"; token: string }
   | { name: "wgo-touch" }
-  | { name: "touch-incoming"; demo?: TouchIncomingCase }
+  | { name: "touch-incoming"; demo?: TouchIncomingCase; requestId?: string }
   | { name: "pharmacy"; pharmacyId: string }
   | { name: "shop"; shopId: string }
   | { name: "create-shop" }
