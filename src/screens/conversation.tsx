@@ -463,6 +463,16 @@ export function ConversationScreen({ chatId }: { chatId: string }) {
     };
   }, []);
 
+  const isGroup = chat?.type === "group";
+  const liveMessages = messages.filter((m) => !m.expiresAt || (m.expiresAt > now && m.expiresAt > nowTick));
+  const findQ = threadQuery.trim().toLowerCase();
+  const findHits = isGroup && findQ ? liveMessages.filter((m) => m.type !== "system" && (m.text ?? "").toLowerCase().includes(findQ)).map((m) => m.id).reverse() : [];
+  const mentionQuery = isGroup ? (text.match(/@([\p{L}\p{N}_.-]*)$/u)?.[1] ?? null) : null;
+  const hitId = findHits[findIdx];
+  useEffect(() => {
+    if (hitId) document.getElementById(`msg-${hitId}`)?.scrollIntoView({ behavior: "smooth", block: "center" });
+  }, [hitId]);
+
   if (!chat) return null;
 
   const peerId = chat.type === "dm" ? chat.participantIds.find((id) => id !== "me") : undefined;
@@ -2321,6 +2331,7 @@ export function ConversationScreen({ chatId }: { chatId: string }) {
           </div>
         )}
       </Sheet>
+      <ReactionsSheet m={reactionsOf} onClose={() => setReactionsOf(null)} />
       <ReportSheet
         open={reportOpen}
         onClose={() => setReportOpen(false)}
