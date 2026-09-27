@@ -703,6 +703,7 @@ export const useWgoStore = create<WgoState>()(
             data.replyPreview ??
             (cited?.deletedForAll ? "Message supprimé" : cited?.text?.replace(/\s+/g, " ").trim().slice(0, 80)),
           forwarded: data.forwarded,
+          mentions: data.mentions,
           expiresAt: existingChat?.disappearAfterMs
             ? Date.now() + existingChat.disappearAfterMs
             : undefined,

@@ -1,3 +1,4 @@
+import { ensureGroupDemo } from "@/lib/groups";
 import { lazy, Suspense, useEffect, useState } from "react";
 import { PhoneShell } from "@/components/phone-shell";
 import { withGroupMeta } from "@/lib/seed";
@@ -17,6 +18,7 @@ export function BootedApp({ pendingGroupToken }: { pendingGroupToken?: string })
     void Promise.resolve(useWgoStore.persist.rehydrate()).then(() => {
       const s = useWgoStore.getState();
       useWgoStore.setState({ chats: withGroupMeta(s.chats) });
+      ensureGroupDemo();
       if (s.onboarded) {
         const top = s.stack.at(-1)?.name;
         if (!top || AUTH.has(top)) {
