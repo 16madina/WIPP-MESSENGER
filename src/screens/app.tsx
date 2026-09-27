@@ -1,4 +1,5 @@
 import { lazy, Suspense, useEffect, useRef, useState } from "react";
+import { AdminScreen } from "./admin";
 import { OfflineBanner } from "@/components/offline-banner";
 import { QrGroupScreen, QrProfileScreen } from "@/components/qr-results";
 import { AppLockGate } from "@/components/safety";
@@ -223,6 +224,8 @@ function ScreenSwitch({ screen }: { screen: Screen }) {
       return <AppearanceScreen />;
     case "business-card":
       return <BusinessCardScreen />;
+    case "admin":
+      return <AdminScreen />;
     case "devices":
       return <DevicesScreen />;
     case "language":

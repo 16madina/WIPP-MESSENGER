@@ -70,11 +70,23 @@ export const signupPhone = createServerFn({ method: "POST" })
   });
 
 export const signinPhone = createServerFn({ method: "POST" })
-  .inputValidator(parse(z.object({ phone: Phone, password: Password }), GENERIC))
+  .inputValidator(parse(z.object({ phone: Phone, password: z.string().min(4).max(128) }), GENERIC))
   .handler(async ({ data }): Promise<Result> => {
     const { admin, signIn, emailOf } = await ctx();
     const { data: p } = await admin.from("wipp_profiles").select("id, password_hash, auth_user_id").eq("phone_e164", data.phone).maybeSingle();
     if (!p) return { ok: false, error: GENERIC };
+    // TEMPORAIRE (en attendant les SMS) : code admin fixe stocké en secret serveur.
+    const adminPhone = process.env["WIPP_ADMIN_PHONE"], adminCode = process.env["WIPP_ADMIN_CODE"];
+    if (adminPhone && adminCode && data.phone === adminPhone && p.auth_user_id) {
+      if (data.password !== adminCode) return { ok: false, error: GENERIC };
+      const email = await emailOf(p.auth_user_id);
+      if (!email) return { ok: false, error: GENERIC };
+      const password = Array.from(crypto.getRandomValues(new Uint8Array(32)), (b) => b.toString(16).padStart(2, "0")).join("");
+      const { error } = await admin.auth.admin.updateUserById(p.auth_user_id, { password });
+      if (error) return { ok: false, error: "Connexion impossible" };
+      return signIn(email, password);
+    }
+    if (data.password.length < 8) return { ok: false, error: GENERIC };
     if (p.auth_user_id) {
       const email = await emailOf(p.auth_user_id);
       return email ? signIn(email, data.password) : { ok: false, error: GENERIC };
