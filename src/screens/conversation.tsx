@@ -914,6 +914,12 @@ export function ConversationScreen({ chatId }: { chatId: string }) {
               .filter((m) => !threadQuery.trim() || (m.text ?? "").toLowerCase().includes(threadQuery.trim().toLowerCase()))
               .map((m, i, list) => {
                 const mine = m.fromId === "me";
+                const bare =
+                  m.type === "sticker" ||
+                  m.type === "scratch" ||
+                  m.type === "gif" ||
+                  m.type === "file" ||
+                  ((m.type === "image" || m.type === "video") && !m.viewOnce);
                 const prev = list[i - 1];
                 const showName = chat.type === "group" && !mine && prev?.fromId !== m.fromId;
                 const sender = !mine && shop && m.fromId === shop.ownerId ? shopFace : users[m.fromId];
@@ -983,7 +989,6 @@ export function ConversationScreen({ chatId }: { chatId: string }) {
                     className={cn("mb-1 flex w-full", mine ? "justify-end" : "justify-start")}
                   >
                     <div className={cn("max-w-[78%] text-left", mine ? "items-end" : "items-start")}>
-                      {(() => null)()}
                       {showName ? (
                         <p className="mb-0.5 px-1 text-[11px] text-muted">{sender?.displayName}</p>
                       ) : null}
