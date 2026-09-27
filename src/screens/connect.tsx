@@ -141,19 +141,39 @@ export function MyQrScreen() {
         {isTouchShare ? (
           <p className="mt-2 font-mono text-[22px] font-semibold tracking-[0.2em] text-accent">{touchInvite!.code}</p>
         ) : null}
-        <div className="wipp-card mt-5 rounded-2xl p-1">
+        <div className="wipp-card wipp-qr-save mt-5 rounded-2xl p-1">
           <div className="rounded-xl bg-paper p-4">
             <QrCard value={qrValue} size={220} />
           </div>
         </div>
-        <p className="mt-4 max-w-[28ch] text-center text-[13px] leading-relaxed text-paper/60">
-          {isTouchShare ? t("touchFail") : t("myCardHint")}
+        {temp && !isTouchShare ? (
+          <p className="mt-3 font-mono text-[13px] text-accent" aria-live="polite">
+            Expire dans {String(Math.floor(left / 60)).padStart(2, "0")}:{String(left % 60).padStart(2, "0")}
+          </p>
+        ) : null}
+        <p className="mt-3 max-w-[30ch] text-center text-[13px] leading-relaxed text-paper/60">
+          {isTouchShare
+            ? t("touchFail")
+            : temp
+              ? "QR temporaire : usage unique, il se renouvelle tout seul."
+              : "Ce QR ne contient ni ton numéro, ni ton e-mail."}
         </p>
-        <p className="mt-1 text-[12px] text-paper/40">{isTouchShare ? touchInvite!.qrPayload : link}</p>
+        <p className="mt-1 text-[12px] text-paper/40">{link}</p>
         <Btn className="mt-5 w-full" onClick={share}>
           <Share2 className="size-4" />
-          {copied ? t("copied") : t("shareMyCard")}
+          {copied ? t("copied") : "Partager mon WIPP"}
         </Btn>
+        {!isTouchShare ? (
+          <div className="mt-2 grid w-full grid-cols-2 gap-2">
+            <Btn variant="secondary" onClick={() => void save()}>Enregistrer</Btn>
+            <Btn
+              variant="secondary"
+              onClick={() => setTemp(temp ? null : issueTempToken(me.username))}
+            >
+              {temp ? "QR permanent" : "QR temporaire"}
+            </Btn>
+          </div>
+        ) : null}
         {!isTouchShare ? (
           <Btn variant="secondary" className="mt-2 w-full" onClick={() => push({ name: "wgo-touch" })}>
             <Smartphone className="size-4" />
