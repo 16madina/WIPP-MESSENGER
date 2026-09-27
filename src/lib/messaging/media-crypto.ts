@@ -8,7 +8,7 @@ import { sha256 } from "@noble/hashes/sha2.js";
 import { bytesToHex, randomBytes } from "@noble/hashes/utils.js";
 
 export const MEDIA_VERSION = "wipp-media-v1";
-export const CHUNK_PLAIN_MAX = 4 * 1024 * 1024;
+export const CHUNK_PLAIN_MAX = 1024 * 1024;
 export const LIMITS = {
   image: 16 * 1024 * 1024,
   video: 100 * 1024 * 1024,

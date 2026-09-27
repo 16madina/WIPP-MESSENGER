@@ -289,35 +289,28 @@ export async function postDisappear(chatId: string, ms: number) {
 }
 
 export async function createServerAttachment(chatId: string, input: { chunkCount: number; byteSize: number; viewOnce?: boolean }) {
-  return api<{ id: string; state: string }>(`/chats/${chatId}/attachments`, {
-    method: "POST",
-    body: JSON.stringify(input),
-  });
+  const { createAttachment } = await import("@/lib/attachments.functions");
+  return createAttachment({ data: { chatId, ...input } });
 }
 
 export async function putServerChunk(attachmentId: string, index: number, ciphertext: string, sha256: string) {
-  return api<{ ok: boolean }>(`/attachments/${attachmentId}/chunks/${index}`, {
-    method: "PUT",
-    body: JSON.stringify({ ciphertext, sha256 }),
-  });
+  const { putAttachmentChunk } = await import("@/lib/attachments.functions");
+  return putAttachmentChunk({ data: { attachmentId, index, ciphertext, sha256 } });
 }
 
 export async function completeServerAttachment(attachmentId: string, messageId?: string) {
-  return api<{ ok: boolean; state: string }>(`/attachments/${attachmentId}/complete`, {
-    method: "POST",
-    body: JSON.stringify({ messageId }),
-  });
+  const { completeAttachment } = await import("@/lib/attachments.functions");
+  return completeAttachment({ data: { attachmentId, messageId } });
 }
 
 export async function fetchServerChunk(attachmentId: string, index: number) {
-  return api<{ ciphertext: string; sha256: string; index: number }>(`/attachments/${attachmentId}/chunks/${index}`);
+  const { fetchAttachmentChunk } = await import("@/lib/attachments.functions");
+  return fetchAttachmentChunk({ data: { attachmentId, index } });
 }
 
 export async function consumeServerAttachment(attachmentId: string) {
-  return api<{ ok: boolean; state: string }>(`/attachments/${attachmentId}/consume`, {
-    method: "POST",
-    body: "{}",
-  });
+  const { consumeAttachment } = await import("@/lib/attachments.functions");
+  return consumeAttachment({ data: { attachmentId } });
 }
 
 export async function fetchModerationPublicKey() {

@@ -35,6 +35,7 @@ export async function uploadCipherFile(input: {
   peerPublicJwk?: JsonWebKey | null;
   clientId: string;
   vault?: boolean;
+  onProgress?: (fraction: number) => void;
 }) {
   const serverChatId = input.chatId.replace(/^srv:/, "");
   const chunkCount = Math.max(1, Math.ceil(input.bytes.byteLength / CHUNK_PLAIN_MAX));
@@ -50,6 +51,7 @@ export async function uploadCipherFile(input: {
     const chunk = encryptChunk(fileKey, created.id, i, slice);
     metas.push({ i, iv: chunk.iv, sha256: chunk.sha256 });
     await putServerChunk(created.id, i, b64(chunk.ciphertext), chunk.sha256);
+    input.onProgress?.((i + 1) / (chunkCount + 1));
   }
   const inner = describeMedia({
     id: created.id,
@@ -67,5 +69,38 @@ export async function uploadCipherFile(input: {
     vault: input.vault,
   });
   if (message?.id) await completeServerAttachment(created.id, message.id);
+  else await completeServerAttachment(created.id);
+  input.onProgress?.(1);
   return { attachmentId: created.id, message };
+}
+
+function unb64(s: string) {
+  const bin = atob(s.replace(/-/g, "+").replace(/_/g, "/"));
+  const out = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+  return out;
+}
+
+/** Télécharge puis déchiffre une pièce jointe ; renvoie une URL locale. */
+export async function downloadCipherFile(input: {
+  attachmentId: string;
+  fileKey: string;
+  chunks: { i: number; iv: string; sha256: string }[];
+  mime?: string;
+  onProgress?: (fraction: number) => void;
+}) {
+  const { fetchServerChunk } = await import("@/lib/messaging/client");
+  const { decryptChunk } = await import("@/lib/messaging/media-crypto");
+  const key = unb64(input.fileKey);
+  const parts: Uint8Array[] = [];
+  const sorted = [...input.chunks].sort((a, b) => a.i - b.i);
+  for (let n = 0; n < sorted.length; n++) {
+    const meta = sorted[n];
+    const row = await fetchServerChunk(input.attachmentId, meta.i);
+    const plain = decryptChunk(key, input.attachmentId, { index: meta.i, iv: meta.iv, ciphertext: unb64(row.ciphertext) } as never);
+    parts.push(plain);
+    input.onProgress?.((n + 1) / sorted.length);
+  }
+  const blob = new Blob(parts as BlobPart[], { type: input.mime || "application/octet-stream" });
+  return URL.createObjectURL(blob);
 }
