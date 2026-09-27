@@ -81,7 +81,7 @@ export async function resolveWippQr(raw: string): Promise<QrDestination> {
           .select("id,username,display_name,avatar_url,bio").ilike("username", id.value).maybeSingle();
         if (p) {
           if (p.id === me) return { ok: false, error: "C'est ton propre QR" };
-          const a = [me as string, p.id].sort();
+          const a = [String(me), p.id].sort();
           const { data: c } = await (supabase as any).from("wipp_connections").select("id").eq("user_a", a[0]).eq("user_b", a[1]).maybeSingle();
           return { ok: true, kind: "remote-profile", connected: Boolean(c),
             profile: { id: p.id, username: p.username, displayName: p.display_name, avatarUrl: p.avatar_url, bio: p.bio ?? "" } };
