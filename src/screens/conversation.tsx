@@ -246,7 +246,9 @@ export function ConversationScreen({ chatId }: { chatId: string }) {
     const beat = window.setInterval(() => {
       void import("@/lib/messaging/client").then((api) => api.postFocus(serverId, true));
     }, 12_000);
+    let disposed = false;
     void import("@/lib/messaging/live-client").then(({ startMessageStream }) => {
+      if (disposed) return;
       stop = startMessageStream((event) => {
         if (event.chatId !== serverId) return;
         if (event.kind === "typing") {
@@ -290,7 +292,8 @@ export function ConversationScreen({ chatId }: { chatId: string }) {
             }
           }
         });
-      });
+      }, serverId);
+      void import("@/lib/messaging/client").then((api) => api.postFocus(serverId, true));
     });
     const onOnline = () => {
       void import("@/lib/messaging/flush-outbox").then(({ flushAllOutbox }) =>
@@ -298,8 +301,14 @@ export function ConversationScreen({ chatId }: { chatId: string }) {
       );
     };
     window.addEventListener("online", onOnline);
+    onOnline();
     return () => {
-      stop();
+      disposed = true;
+      void import("@/lib/messaging/client").then((api) => {
+        void api.postFocus(serverId, false);
+        void api.postTyping(serverId, false);
+        stop();
+      });
       window.clearInterval(beat);
       window.clearTimeout(typingTimer);
       window.removeEventListener("online", onOnline);
