@@ -77,7 +77,8 @@ const OneTimeQrScreen = lazy(() => loadTrust().then((m) => ({ default: m.OneTime
 const IntroduceScreen = lazy(() => loadTrust().then((m) => ({ default: m.IntroduceScreen })));
 const IntroDetailScreen = lazy(() => loadTrust().then((m) => ({ default: m.IntroDetailScreen })));
 const GroupQrScreen = lazy(() => loadTrust().then((m) => ({ default: m.GroupQrScreen })));
-const GroupInfoScreen = lazy(() => loadTrust().then((m) => ({ default: m.GroupInfoScreen })));
+const GroupInfoScreen = lazy(() => import("./groups").then((m) => ({ default: m.GroupInfoFull })));
+const NewGroupFlow = lazy(() => import("./groups").then((m) => ({ default: m.NewGroupFlow })));
 const GroupInviteScreen = lazy(() => loadTrust().then((m) => ({ default: m.GroupInviteScreen })));
 
 const E2eInfoScreen = lazy(() => loadE2e().then((m) => ({ default: m.E2eInfoScreen })));
@@ -214,7 +215,7 @@ function ScreenSwitch({ screen }: { screen: Screen }) {
     case "global-search":
       return <GlobalSearchScreen />;
     case "new-group":
-      return <NewGroupScreen />;
+      return <NewGroupFlow />;
     case "my-groups":
       return <MyGroupsScreen />;
     case "new-story":
