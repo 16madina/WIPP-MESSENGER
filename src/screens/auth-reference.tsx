@@ -8,7 +8,7 @@ import { COUNTRIES } from "./auth-chrome";
 
 /** The supplied artwork includes the logo, photograph and copy; live controls sit over it. */
 function Artwork({ src }: { src: string }) {
-  return <img src={src} alt="" draggable={false} className="pointer-events-none absolute inset-0 size-full" />;
+  return <img src={src} alt="" draggable={false} className="pointer-events-none absolute inset-0 size-full object-cover object-center" />;
 }
 
 export function WelcomeScreen() {
