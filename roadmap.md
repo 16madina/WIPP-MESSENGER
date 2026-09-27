@@ -1,16 +1,4 @@
-- [x] Reproduire le menu Partager et l'entrée Surprise de l'image.
-- [x] Reproduire le choix de surprise et la création d'un message secret avec aperçu.
-- [x] Afficher une carte premium grattable, sa révélation et l'état déjà découvert dans la conversation.
-- [x] Ouvrir directement la création Surprise : message, quatre choix gris, puis tiroir d’animations à droite avec aperçu temporaire.
-- [x] Ajouter un aperçu interactif avant envoi et six illustrations pour les choix d’animation.
-- [x] Jouer l’animation une fois après la révélation (pause courte, calque transparent, 4–5 s), puis proposer ✨ pour la rejouer.
-- [x] Découper proprement les dix visuels Amour transparents, les proposer comme choix individuels et jouer uniquement celui sélectionné après la révélation.
-- [ ] Envoi réel chiffré, réception et notification sans aperçu — en attente d'un accord explicite pour les changements de données.
-- [x] Placer Stickers à côté du bouton vocal et préparer les onglets Général, Pour elle, Pour lui, Amusant, Drôle.
-- [x] Découper et animer les 16 stickers de la planche « Pour elle » dans leur onglet et dans la conversation.
-- [x] Découper et intégrer les 30 stickers officiels WIPP dans un nouvel onglet « Tout » (premier onglet du sélecteur).
-- [x] Animer les 86 stickers avec la méthode « Stop ! » : image intacte, partie isolée par clip-path, éclair en couche, geste réglé par sticker (src/lib/sticker-gestures.ts + GestureSticker).
-- [x] Découper et intégrer les 20 stickers comiques dans un onglet « Mood ».
-- [x] Découper et intégrer les 20 stickers comiques #2 dans l'onglet « Mood ».
-- [x] Remplacer toutes les découpes par les vrais stickers du dépôt 16madina/wipp : 7 packs (elle, lui, fun, fun2 filmés en MP4 fond vert ; sig, moji, scene en PNG), 192 stickers, onglets Tout / Pour elle / Pour lui / Mood / Amusant / Drôle / WIPP / Général.
-- [ ] Remplacer les stickers provisoires de Général et ajouter Pour lui, Amusant, Drôle — en attente des images.
+# Roadmap
+- [x] Lot 1 : messages synchronisés, réactions, modifier/supprimer/épingler, livré/lu réels, écrit… temps réel, file hors ligne
+- [ ] Lot 1 : notifications push — bloqué : clé de compte de service Firebase
+- [ ] Config Firebase web (4 valeurs) pour les SMS
