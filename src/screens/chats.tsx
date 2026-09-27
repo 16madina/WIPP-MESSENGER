@@ -146,7 +146,7 @@ export function ChatsScreen() {
     <div className="flex h-full flex-col">
       <div className="glass sticky top-0 z-10">
         <StatusBar />
-        <div className="flex items-center gap-2 px-4 pb-2">
+        <div className="flex h-14 items-center gap-2 px-4">
           <span
             className="inline-flex"
             onPointerDown={() => {
@@ -185,12 +185,13 @@ export function ChatsScreen() {
           </div>
         </div>
       </div>
+      <div className="flex-1 overflow-y-auto no-scrollbar pb-24">
       {pushMsg ? (
         <div className="mx-4 mb-1 rounded-2xl glass px-4 py-2.5 text-center text-[13px] text-fg">
           {pushMsg}
         </div>
       ) : null}
-      <div className="flex gap-4 overflow-x-auto no-scrollbar px-4 py-3">
+      <div className="flex gap-4 overflow-x-auto no-scrollbar px-4 pt-1.5 pb-2">
         <div className="flex w-16 shrink-0 flex-col items-center gap-1.5">
           <span className="relative">
             <button
@@ -247,7 +248,7 @@ export function ChatsScreen() {
         <button
           type="button"
           onClick={() => push({ name: "requests" })}
-          className="mx-4 mb-1 flex items-center gap-3 rounded-xl glass-card px-3 py-2.5"
+          className="mx-4 mb-2 flex w-[calc(100%-2rem)] min-h-[60px] items-center gap-3 rounded-xl glass-card px-3 py-2"
         >
           <span className="flex size-9 items-center justify-center rounded-full bg-accent/20 text-accent-fg">
             <UserPlus className="size-4 text-navy" />
@@ -256,7 +257,7 @@ export function ChatsScreen() {
           <Badge>{pending}</Badge>
         </button>
       ) : null}
-      <div className="flex gap-2 overflow-x-auto no-scrollbar px-4 pb-2">
+      <div className="flex h-11 items-center gap-2 overflow-x-auto no-scrollbar px-4">
         <Chip active={filter === "all"} onClick={() => setFilter("all")}>
           {t("chatsAll")}
         </Chip>
@@ -270,7 +271,6 @@ export function ChatsScreen() {
           {t("chatsGroups")}
         </Chip>
       </div>
-      <div className="flex-1 overflow-y-auto no-scrollbar pb-24">
         {visible.length === 0 ? (
           <Empty
             title={filter === "groups" ? t("groupsEmpty") : t("chatsEmpty")}
@@ -310,7 +310,7 @@ export function ChatsScreen() {
               <div key={chat.id} className="relative">
                 <button
                   type="button"
-                  className="flex w-full items-center gap-3 px-4 py-2.5 text-left"
+                  className="flex min-h-[74px] w-full items-center gap-3 px-4 py-2 text-left"
                   onClick={() => {
                     markRead(chat.id);
                     push({ name: "conversation", chatId: chat.id });
