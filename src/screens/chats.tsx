@@ -307,7 +307,7 @@ export function ChatsScreen() {
                       ) : null}
                       {peer && verifiedIds.includes(peer.id) ? (
                         <ShieldCheck className="size-3.5 shrink-0 text-accent" />
-                      ) : !sealed ? (
+                      ) : !sealed && chat.type !== "group" ? (
                         <Lock className="size-3.5 shrink-0 text-muted" />
                       ) : null}
                       {ephemeral ? <Clock className="size-3.5 shrink-0 text-accent" /> : null}

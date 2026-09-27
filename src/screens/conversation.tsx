@@ -958,7 +958,7 @@ export function ConversationScreen({ chatId }: { chatId: string }) {
               {sealed ? null : <span className="truncate">{title}</span>}
               {!sealed && peerId && verifiedIds.includes(peerId) ? (
                 <ShieldCheck className="size-3.5 shrink-0 text-accent" />
-              ) : !sealed ? (
+              ) : !sealed && !isGroup ? (
                 <Lock className="size-3.5 shrink-0 text-muted" />
               ) : null}
             </button>
@@ -2213,6 +2213,7 @@ export function ConversationScreen({ chatId }: { chatId: string }) {
           </div>
         ) : (
           <div className="grid gap-1">
+            {isGroup ? null : (
             <button
               type="button"
               className="flex h-12 items-center gap-3 rounded-lg px-2"
@@ -2223,6 +2224,7 @@ export function ConversationScreen({ chatId }: { chatId: string }) {
             >
               <Lock className="size-4" /> {t("e2e")}
             </button>
+            )}
             <button
               type="button"
               className="flex h-12 items-center gap-3 rounded-lg px-2"
