@@ -61,6 +61,8 @@ function startUpload(job: Parameters<typeof import("@/lib/messaging/send-media")
 }
 import type { MediaItem, Message } from "@/lib/types";
 import { cn } from "@/lib/utils";
+import { MentionPicker, MentionText, ReactionPills, ReactionsSheet, SystemEvent } from "@/components/chat/GroupBits";
+import { can, isAdmin, perms as groupPermsOf } from "@/lib/groups";
 
 const REACTS = ["❤️", "😂", "👍", "😮", "😢", "🔥"];
 const EMPTY_MSGS: Message[] = [];
@@ -237,7 +239,21 @@ export function ConversationScreen({ chatId }: { chatId: string }) {
     }
   });
   const [threadQuery, setThreadQuery] = useState("");
-  const [findOpen, setFindOpen] = useState(false);
+  const [findOpen, setFindOpen] = useState(() => {
+    try {
+      if (sessionStorage.getItem("wipp-open-find") === chatId) {
+        sessionStorage.removeItem("wipp-open-find");
+        return true;
+      }
+    } catch {
+      /* ignore */
+    }
+    return false;
+  });
+  const [findIdx, setFindIdx] = useState(0);
+  const [reactionsOf, setReactionsOf] = useState<Message | null>(null);
+  const [mentionIds, setMentionIds] = useState<string[]>([]);
+  const [visibleCount, setVisibleCount] = useState(60);
   const [reply, setReply] = useState<Message | null>(null);
   const [editing, setEditing] = useState<Message | null>(null);
   const [selected, setSelected] = useState<string[]>([]);
@@ -473,7 +489,7 @@ export function ConversationScreen({ chatId }: { chatId: string }) {
     : ephemeral
       ? t("firstNameOnly")
       : chat.type === "group"
-        ? `${chat.participantIds.length} ${t("members")}`
+        ? chat.left ? "Vous ne faites plus partie de ce groupe" : `${chat.participantIds.length} participants`
         : shop
           ? mineShop
             ? `${t("shopContext")} · ${shop.name}`
@@ -648,7 +664,9 @@ export function ConversationScreen({ chatId }: { chatId: string }) {
       setText("");
       return;
     }
-    sendMessage(chatId, { text: value, replyTo: reply?.id });
+    const ments = mentionIds.filter((id) => value.includes(id === "all" ? "@toutlemonde" : "@"));
+    sendMessage(chatId, { text: value, replyTo: reply?.id, ...(ments.length ? { mentions: ments } : {}) });
+    setMentionIds([]);
     setText("");
     setReply(null);
     try {
@@ -1024,10 +1042,13 @@ export function ConversationScreen({ chatId }: { chatId: string }) {
             {threadQuery ? (
               <p className="mb-2 text-[12px] text-muted">Recherche locale · rien n’est envoyé au serveur</p>
             ) : null}
-            {messages
-              .filter((m) => !m.expiresAt || m.expiresAt > now)
-              .filter((m) => !m.expiresAt || m.expiresAt > nowTick)
-              .filter((m) => !threadQuery.trim() || (m.text ?? "").toLowerCase().includes(threadQuery.trim().toLowerCase()))
+            {!threadQuery && liveMessages.length > visibleCount ? (
+              <button type="button" className="press mx-auto mb-2 block min-h-9 rounded-full bg-surface px-4 text-[12px] text-muted ring-1 ring-hair" onClick={() => setVisibleCount((n) => n + 60)}>
+                Charger les messages précédents
+              </button>
+            ) : null}
+            {(isGroup && threadQuery ? liveMessages : liveMessages.slice(-visibleCount))
+              .filter((m) => isGroup || !threadQuery.trim() || (m.text ?? "").toLowerCase().includes(threadQuery.trim().toLowerCase()))
               .map((m, i, list) => {
                 const mine = m.fromId === "me";
                 const bare =
@@ -1038,14 +1059,11 @@ export function ConversationScreen({ chatId }: { chatId: string }) {
                   Boolean(m.geo) ||
                   ((m.type === "image" || m.type === "video") && !m.viewOnce);
                 const prev = list[i - 1];
-                const showName = chat.type === "group" && !mine && prev?.fromId !== m.fromId;
+                const showName = chat.type === "group" && !mine && (prev?.fromId !== m.fromId || prev?.type === "system");
+                const hit = isGroup && findHits[findIdx] === m.id;
                 const sender = !mine && shop && m.fromId === shop.ownerId ? shopFace : users[m.fromId];
                 if (m.type === "system") {
-                  return (
-                    <p key={m.id} className="my-3 text-center text-[12px] text-muted">
-                      {m.text}
-                    </p>
-                  );
+                  return <div key={m.id} id={`msg-${m.id}`}><SystemEvent text={m.text} /></div>;
                 }
                 if (m.type === "shop") {
                   const card = shops.find((s) => s.id === m.shopId) ?? shop;
@@ -1108,11 +1126,14 @@ export function ConversationScreen({ chatId }: { chatId: string }) {
                         (e.currentTarget as HTMLElement).click();
                       }
                     }}
-                    className={cn("mb-1 flex w-full", mine ? "justify-end" : "justify-start")}
+                    className={cn("mb-1 flex w-full", mine ? "justify-end" : "justify-start", isGroup && !mine && "gap-1.5", showName && "mt-2", hit && "rounded-2xl bg-accent/10")}
                   >
+                    {isGroup && !mine ? (
+                      <span className="mt-auto w-7 shrink-0">{showName ? <Avatar user={sender} size={28} /> : null}</span>
+                    ) : null}
                     <div className={cn("max-w-[78%] text-left", mine ? "items-end" : "items-start")}>
                       {showName ? (
-                        <p className="mb-0.5 px-1 text-[11px] text-muted">{sender?.displayName}</p>
+                        <p className="mb-0.5 px-1 text-[11.5px] font-semibold text-accent">{sender?.displayName?.split(" ")[0]}</p>
                       ) : null}
                       <div
                         className={cn(
@@ -1214,11 +1235,16 @@ export function ConversationScreen({ chatId }: { chatId: string }) {
                                   document.getElementById(`msg-${m.replyTo}`)?.scrollIntoView({ behavior: "smooth", block: "center" });
                                 }}
                               >
+                                {isGroup ? (() => {
+                                  const orig = messages.find((x) => x.id === m.replyTo);
+                                  const who = orig ? (orig.fromId === "me" ? "Vous" : users[orig.fromId]?.displayName) : null;
+                                  return who ? <span className="block font-semibold text-accent">{who}</span> : null;
+                                })() : null}
                                 {m.replyPreview || "Message"}
                               </button>
                             ) : null}
                             {m.forwarded ? <p className="mb-0.5 text-[11px] opacity-70">Transféré</p> : null}
-                            <p className="whitespace-pre-wrap break-words text-[15px] leading-snug">{m.deletedForAll ? "Message supprimé" : (m.text ?? t("e2eLocked"))}</p>
+                            <p className="whitespace-pre-wrap break-words text-[15px] leading-snug">{m.deletedForAll ? "Message supprimé" : m.text ? <MentionText text={m.text} mentions={m.mentions} mine={mine} /> : t("e2eLocked")}</p>
                             {!m.deletedForAll ? <AutoLinkPreview text={m.text} preset={m.linkCard} /> : null}
                             {m.editedAt ? <p className="mt-0.5 text-[11px] opacity-70">Modifié</p> : null}
                             {m.pinned ? <p className="mt-0.5 text-[11px] opacity-70">Épinglé</p> : null}
@@ -1247,15 +1273,7 @@ export function ConversationScreen({ chatId }: { chatId: string }) {
                         </span>
                         )}
                       </div>
-                      {m.reactions.length ? (
-                        <div className={cn("mt-0.5 flex gap-1", mine ? "justify-end" : "justify-start")}>
-                          {m.reactions.map((r) => (
-                            <span key={r.userId + r.emoji} className="hairline rounded-full bg-surface px-1.5 text-[12px]">
-                              {r.emoji}
-                            </span>
-                          ))}
-                        </div>
-                      ) : null}
+                      {m.reactions.length ? <ReactionPills m={m} mine={mine} onOpen={() => setReactionsOf(m)} /> : null}
                     </div>
                   </div>
                 );
@@ -1268,7 +1286,11 @@ export function ConversationScreen({ chatId }: { chatId: string }) {
               </div>
             ) : null}
           </div>
-          {peerId && blockedIds.includes(peerId) ? (
+          {isGroup && (chat.left || !can(chat, "send")) ? (
+            <div className="glass px-4 py-4 text-center text-[13px] text-muted">
+              {chat.left ? "Vous avez quitté ce groupe." : "Seuls les admins peuvent envoyer des messages."}
+            </div>
+          ) : peerId && blockedIds.includes(peerId) ? (
             <div className="glass flex flex-col items-center gap-2 px-4 py-4 text-center">
               <p className="text-[13px] text-muted">Tu as bloqué {peer?.displayName?.split(" ")[0] ?? "ce contact"}. Vous ne pouvez plus échanger de messages.</p>
               <button
@@ -1417,7 +1439,32 @@ export function ConversationScreen({ chatId }: { chatId: string }) {
                   </span>
                 </div>
               ) : null}
-              {findOpen ? (
+              {isGroup && mentionQuery !== null ? (
+                <MentionPicker
+                  query={mentionQuery}
+                  members={chat.participantIds.filter((id) => id !== "me").map((id) => users[id]).filter(Boolean) as never}
+                  allowEveryone={groupPermsOf(chat).everyone && isAdmin(chat)}
+                  onPick={(label, id) => {
+                    setText((v) => v.replace(/@([\p{L}\p{N}_.-]*)$/u, `@${label} `));
+                    setMentionIds((xs) => [...new Set([...xs, id])]);
+                  }}
+                />
+              ) : null}
+              {findOpen && isGroup ? (
+                <div className="mx-3 mb-1 flex items-center gap-2">
+                  <input
+                    value={threadQuery}
+                    onChange={(e) => { setThreadQuery(e.target.value); setFindIdx(0); }}
+                    placeholder={`Rechercher dans ${chat.name ?? "le groupe"}`}
+                    className="h-9 min-w-0 flex-1 rounded-full bg-surface-2 px-3 text-[13px] outline-none"
+                  />
+                  <span className="shrink-0 text-[12px] tabular-nums text-muted">
+                    {findHits.length ? `${findIdx + 1}/${findHits.length}` : threadQuery ? "0" : ""}
+                  </span>
+                  <button type="button" aria-label="Résultat précédent" className="press flex size-9 items-center justify-center rounded-full" disabled={!findHits.length} onClick={() => setFindIdx((i) => (i - 1 + findHits.length) % findHits.length)}>↑</button>
+                  <button type="button" aria-label="Résultat suivant" className="press flex size-9 items-center justify-center rounded-full" disabled={!findHits.length} onClick={() => setFindIdx((i) => (i + 1) % findHits.length)}>↓</button>
+                </div>
+              ) : findOpen ? (
                 <input
                   value={threadQuery}
                   onChange={(e) => setThreadQuery(e.target.value)}
