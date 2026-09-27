@@ -2,7 +2,7 @@ import { emojiFromStickerId, isEmojiSticker } from "./emoji";
 
 export type StickerDef = {
   id: string;
-  pack: "elle" | "lui" | "fun" | "fun2" | "sig" | "moji" | "scene" | "general";
+  pack: "elle" | "lui" | "fun" | "fun2" | "sig" | "moji" | "scene" | "general" | "ani";
   src: string;
   anim?: string;
   loopSoft?: boolean;
@@ -133,37 +133,66 @@ const SIG: StickerDef[] = [
   { id: "sig-raconte", pack: "sig", src: "/stickers/sig/sig-raconte.png", motion: "raconte", labelFr: "Raconte !", labelEn: "Tell me!" },
 ];
 
+// Wippmojis : WebP animés officiels (dépôt wipp-grok), joués tels quels dans <img>.
 const MOJI: StickerDef[] = [
-  { id: "moji-01", pack: "moji", src: "/stickers/moji/moji-01.png", motion: "laugh", fx: "shake", sound: "laugh", bubble: "shake", labelFr: "Fou rire", labelEn: "Laughing" },
-  { id: "moji-02", pack: "moji", src: "/stickers/moji/moji-02.png", motion: "love", labelFr: "Amoureux", labelEn: "In love" },
-  { id: "moji-03", pack: "moji", src: "/stickers/moji/moji-03.png", motion: "kiss", fx: "hearts", sound: "mwah", labelFr: "Bisou", labelEn: "Kiss" },
-  { id: "moji-04", pack: "moji", src: "/stickers/moji/moji-04.png", motion: "cool", sound: "bling", labelFr: "Cool", labelEn: "Cool" },
-  { id: "moji-05", pack: "moji", src: "/stickers/moji/moji-05.png", motion: "hug", bubble: "glow", labelFr: "Cœur WIPP", labelEn: "WIPP heart" },
-  { id: "moji-06", pack: "moji", src: "/stickers/moji/moji-06.png", motion: "cry", labelFr: "Gros chagrin", labelEn: "Big tears" },
-  { id: "moji-07", pack: "moji", src: "/stickers/moji/moji-07.png", motion: "rage", sound: "hiss", labelFr: "Furieux", labelEn: "Furious" },
-  { id: "moji-08", pack: "moji", src: "/stickers/moji/moji-08.png", motion: "shock", labelFr: "Choqué", labelEn: "Shocked" },
-  { id: "moji-09", pack: "moji", src: "/stickers/moji/moji-09.png", motion: "judge", labelFr: "Je te juge", labelEn: "Judging" },
-  { id: "moji-10", pack: "moji", src: "/stickers/moji/moji-10.png", motion: "hmm", labelFr: "Hmm…", labelEn: "Hmm…" },
-  { id: "moji-11", pack: "moji", src: "/stickers/moji/moji-11.png", motion: "sleep", labelFr: "Dodo", labelEn: "Sleepy" },
-  { id: "moji-12", pack: "moji", src: "/stickers/moji/moji-12.png", motion: "party", fx: "confetti", sound: "party", labelFr: "Fête", labelEn: "Party" },
-  { id: "moji-13", pack: "moji", src: "/stickers/moji/moji-13.png", motion: "hands", labelFr: "Amour", labelEn: "Love" },
-  { id: "moji-14", pack: "moji", src: "/stickers/moji/moji-14.png", motion: "yes", labelFr: "Validé", labelEn: "Yes" },
-  { id: "moji-15", pack: "moji", src: "/stickers/moji/moji-15.png", motion: "nope", labelFr: "Nope", labelEn: "Nope" },
-  { id: "moji-16", pack: "moji", src: "/stickers/moji/moji-16.png", motion: "clap", sound: "clap", labelFr: "Bravo", labelEn: "Clap" },
-  { id: "moji-17", pack: "moji", src: "/stickers/moji/moji-17.png", motion: "pray", labelFr: "Merci", labelEn: "Please" },
-  { id: "moji-18", pack: "moji", src: "/stickers/moji/moji-18.png", motion: "palm", sound: "bonk", labelFr: "Facepalm", labelEn: "Facepalm" },
-  { id: "moji-19", pack: "moji", src: "/stickers/moji/moji-19.png", motion: "crown", labelFr: "King", labelEn: "King" },
-  { id: "moji-20", pack: "moji", src: "/stickers/moji/moji-20.png", motion: "fire", fx: "flame", bubble: "flame", labelFr: "C’est chaud", labelEn: "On fire" },
-  { id: "moji-21", pack: "moji", src: "/stickers/moji/moji-21.png", motion: "plead", labelFr: "Please", labelEn: "Please" },
-  { id: "moji-22", pack: "moji", src: "/stickers/moji/moji-22.png", motion: "silly", labelFr: "Foufou", labelEn: "Silly" },
-  { id: "moji-23", pack: "moji", src: "/stickers/moji/moji-23.png", motion: "zip", sound: "zip", labelFr: "Secret", labelEn: "Secret" },
-  { id: "moji-24", pack: "moji", src: "/stickers/moji/moji-24.png", motion: "side", labelFr: "Pas convaincu", labelEn: "Unconvinced" },
-  { id: "moji-25", pack: "moji", src: "/stickers/moji/moji-25.png", motion: "sip", labelFr: "Chill", labelEn: "Chill" },
-  { id: "moji-26", pack: "moji", src: "/stickers/moji/moji-26.png", motion: "money", sound: "ching", labelFr: "Money", labelEn: "Money" },
-  { id: "moji-27", pack: "moji", src: "/stickers/moji/moji-27.png", motion: "boom", fx: "flash", sound: "pop", labelFr: "Mind blown", labelEn: "Mind blown" },
-  { id: "moji-28", pack: "moji", src: "/stickers/moji/moji-28.png", motion: "wlove", fx: "heartwave", bubble: "glow", labelFr: "WIPP Love", labelEn: "WIPP love" },
-  { id: "moji-29", pack: "moji", src: "/stickers/moji/moji-29.png", motion: "run", sound: "whoosh", labelFr: "J’arrive", labelEn: "On my way" },
-  { id: "moji-30", pack: "moji", src: "/stickers/moji/moji-30.png", motion: "peace", labelFr: "Peace", labelEn: "Peace" },
+  { id: "moji-01", pack: "moji", src: "/stickers/moji-v/moji-01.webp", labelFr: "Fou rire", labelEn: "Laughing" },
+  { id: "moji-02", pack: "moji", src: "/stickers/moji-v/moji-02.webp", labelFr: "Mort de rire", labelEn: "Tears of joy" },
+  { id: "moji-03", pack: "moji", src: "/stickers/moji-v/moji-03.webp", labelFr: "Amoureux", labelEn: "In love" },
+  { id: "moji-04", pack: "moji", src: "/stickers/moji-v/moji-04.webp", labelFr: "Bisou", labelEn: "Kiss" },
+  { id: "moji-05", pack: "moji", src: "/stickers/moji-v/moji-05.webp", labelFr: "Cool", labelEn: "Cool" },
+  { id: "moji-06", pack: "moji", src: "/stickers/moji-v/moji-06.webp", labelFr: "Cœur WIPP", labelEn: "WIPP heart" },
+  { id: "moji-07", pack: "moji", src: "/stickers/moji-v/moji-07.webp", labelFr: "Gros chagrin", labelEn: "Big tears" },
+  { id: "moji-08", pack: "moji", src: "/stickers/moji-v/moji-08.webp", labelFr: "Choqué", labelEn: "Shocked" },
+  { id: "moji-09", pack: "moji", src: "/stickers/moji-v/moji-09.webp", labelFr: "Furieux", labelEn: "Furious" },
+  { id: "moji-10", pack: "moji", src: "/stickers/moji-v/moji-10.webp", labelFr: "Merci", labelEn: "Please" },
+  { id: "moji-11", pack: "moji", src: "/stickers/moji-v/moji-11.webp", labelFr: "Oh non…", labelEn: "Oh no…" },
+  { id: "moji-12", pack: "moji", src: "/stickers/moji-v/moji-12.webp", labelFr: "Le roi", labelEn: "The king" },
+  { id: "moji-13", pack: "moji", src: "/stickers/moji-v/moji-13.webp", labelFr: "En feu", labelEn: "On fire" },
+  { id: "moji-14", pack: "moji", src: "/stickers/moji-v/moji-14.webp", labelFr: "Étoiles", labelEn: "Starry" },
+  { id: "moji-15", pack: "moji", src: "/stickers/moji-v/moji-15.webp", labelFr: "Blague", labelEn: "Silly" },
+  { id: "moji-16", pack: "moji", src: "/stickers/moji-v/moji-16.webp", labelFr: "Chut", labelEn: "Zip it" },
+  { id: "moji-17", pack: "moji", src: "/stickers/moji-v/moji-17.webp", labelFr: "Méfiant", labelEn: "Side-eye" },
+  { id: "moji-18", pack: "moji", src: "/stickers/moji-v/moji-18.webp", labelFr: "Hein ?", labelEn: "Huh?" },
+  { id: "moji-19", pack: "moji", src: "/stickers/moji-v/moji-19.webp", labelFr: "Mon cœur", labelEn: "My heart" },
+  { id: "moji-20", pack: "moji", src: "/stickers/moji-v/moji-20.webp", labelFr: "Je dors", labelEn: "Sleepy" },
+  { id: "moji-21", pack: "moji", src: "/stickers/moji-v/moji-21.webp", labelFr: "Fête", labelEn: "Party" },
+  { id: "moji-22", pack: "moji", src: "/stickers/moji-v/moji-22.webp", labelFr: "Bof", labelEn: "Meh" },
+  { id: "moji-23", pack: "moji", src: "/stickers/moji-v/moji-23.webp", labelFr: "Frais", labelEn: "Sipping" },
+  { id: "moji-24", pack: "moji", src: "/stickers/moji-v/moji-24.webp", labelFr: "Pouce", labelEn: "Thumbs up" },
+  { id: "moji-25", pack: "moji", src: "/stickers/moji-v/moji-25.webp", labelFr: "Riche", labelEn: "Money" },
+  { id: "moji-26", pack: "moji", src: "/stickers/moji-v/moji-26.webp", labelFr: "Boum", labelEn: "Mind blown" },
+  { id: "moji-27", pack: "moji", src: "/stickers/moji-v/moji-27.webp", labelFr: "Cœur mains", labelEn: "Heart hands" },
+  { id: "moji-28", pack: "moji", src: "/stickers/moji-v/moji-28.webp", labelFr: "Sprint", labelEn: "Sprint" },
+  { id: "moji-29", pack: "moji", src: "/stickers/moji-v/moji-29.webp", labelFr: "Couronne", labelEn: "Crowned" },
+  { id: "moji-30", pack: "moji", src: "/stickers/moji-v/moji-30.webp", labelFr: "Pluie de cœurs", labelEn: "Heart shower" },
+  { id: "moji-31", pack: "moji", src: "/stickers/moji-v/moji-31.webp", labelFr: "Coup de cœur", labelEn: "Heart eyes" },
+  { id: "moji-32", pack: "moji", src: "/stickers/moji-v/moji-32.webp", labelFr: "C’est moi", labelEn: "That’s me" },
+  { id: "moji-33", pack: "moji", src: "/stickers/moji-v/moji-33.webp", labelFr: "Rock", labelEn: "Rock on" },
+  { id: "moji-34", pack: "moji", src: "/stickers/moji-v/moji-34.webp", labelFr: "Je réfléchis", labelEn: "Thinking" },
+  { id: "moji-35", pack: "moji", src: "/stickers/moji-v/moji-35.webp", labelFr: "Timide", labelEn: "Shy" },
+  { id: "moji-36", pack: "moji", src: "/stickers/moji-v/moji-36.webp", labelFr: "Gros câlin", labelEn: "Big hug" },
+  { id: "moji-37", pack: "moji", src: "/stickers/moji-v/moji-37.webp", labelFr: "Motus", labelEn: "Shh" },
+  { id: "moji-38", pack: "moji", src: "/stickers/moji-v/moji-38.webp", labelFr: "Youpi", labelEn: "Let’s party" },
+  { id: "moji-39", pack: "moji", src: "/stickers/moji-v/moji-39.webp", labelFr: "Trop mignon", labelEn: "So cute" },
+  { id: "moji-40", pack: "moji", src: "/stickers/moji-v/moji-40.webp", labelFr: "Inquiet", labelEn: "Worried" },
+  { id: "moji-41", pack: "moji", src: "/stickers/moji-v/moji-41.webp", labelFr: "Sieste", labelEn: "Nap" },
+  { id: "moji-42", pack: "moji", src: "/stickers/moji-v/moji-42.webp", labelFr: "Rage", labelEn: "Rage" },
+  { id: "moji-43", pack: "moji", src: "/stickers/moji-v/moji-43.webp", labelFr: "Pluie d’argent", labelEn: "Cash rain" },
+  { id: "moji-44", pack: "moji", src: "/stickers/moji-v/moji-44.webp", labelFr: "Princesse", labelEn: "Princess" },
+  { id: "moji-45", pack: "moji", src: "/stickers/moji-v/moji-45.webp", labelFr: "Casque", labelEn: "Headphones" },
+  { id: "moji-46", pack: "moji", src: "/stickers/moji-v/moji-46.webp", labelFr: "Émerveillé", labelEn: "Starstruck" },
+  { id: "moji-47", pack: "moji", src: "/stickers/moji-v/moji-47.webp", labelFr: "Laptop", labelEn: "Laptop" },
+  { id: "moji-48", pack: "moji", src: "/stickers/moji-v/moji-48.webp", labelFr: "Bouquet", labelEn: "Bouquet" },
+  { id: "moji-49", pack: "moji", src: "/stickers/moji-v/moji-49.webp", labelFr: "Spa", labelEn: "Spa" },
+  { id: "moji-50", pack: "moji", src: "/stickers/moji-v/moji-50.webp", labelFr: "Ange", labelEn: "Angel" },
+  { id: "moji-51", pack: "moji", src: "/stickers/moji-v/moji-51.webp", labelFr: "Café", labelEn: "Coffee" },
+  { id: "moji-52", pack: "moji", src: "/stickers/moji-v/moji-52.webp", labelFr: "Shopping", labelEn: "Shopping" },
+];
+
+// AniWipp : animations en couches (Stop) et clip fond vert découpé (Bisou).
+const ANI: StickerDef[] = [
+  { id: "ani-stop", pack: "ani", src: "/stickers/aniwipp/stop-full.png", labelFr: "Stop !", labelEn: "Stop!" },
+  { id: "ani-bisou", pack: "ani", src: "/stickers/aniwipp/bisou-poster.png", anim: "/stickers/aniwipp/bisou.webm", labelFr: "Bisou", labelEn: "Kiss" },
 ];
 
 const SCENE: StickerDef[] = [
@@ -233,9 +262,10 @@ export const STICKER_PACKS = {
   moji: { id: "moji" as const, labelFr: "Emoji", labelEn: "Emoji", stickers: MOJI },
   scene: { id: "scene" as const, labelFr: "Scènes", labelEn: "Scenes", stickers: SCENE },
   general: { id: "general" as const, labelFr: "Général", labelEn: "General", stickers: GEN },
+  ani: { id: "ani" as const, labelFr: "AniWipp", labelEn: "AniWipp", stickers: ANI },
 };
 
-export const WIPP_STICKERS = [...ELLE, ...LUI, ...FUN, ...FUN2, ...SIG, ...MOJI, ...SCENE, ...GEN];
+export const WIPP_STICKERS = [...ELLE, ...LUI, ...FUN, ...FUN2, ...SIG, ...MOJI, ...SCENE, ...GEN, ...ANI];
 
 export type StickerId = string;
 export type StickerPackId = keyof typeof STICKER_PACKS;
