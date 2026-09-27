@@ -31,7 +31,7 @@ import { cn } from "@/lib/utils";
 
 /* ============================ Aides ============================ */
 
-const face = (u?: User) => (u ? { displayName: u.displayName, avatar: u.avatar } : undefined);
+const face = (u?: Pick<User, "displayName" | "avatar">) => (u ? { displayName: u.displayName, avatar: u.avatar, online: false } : undefined);
 
 function remoteVideoSrc(u?: User) {
   const m = u?.avatar?.match(/\/avatars\/([^/.]+)\.\w+$/);
@@ -542,7 +542,7 @@ function SelfView({ small }: { small?: boolean }) {
       ) : null}
       {camOff || !ok ? (
         <div className="absolute inset-0 flex items-center justify-center bg-navy">
-          {camOff ? <Avatar user={{ displayName: me.displayName, avatar: me.avatar }} size={small ? 44 : 72} /> : me.avatar ? <img src={me.avatar} alt="" className="size-full object-cover opacity-80" /> : null}
+          {camOff ? <Avatar user={face(me)} size={small ? 44 : 72} /> : me.avatar ? <img src={me.avatar} alt="" className="size-full object-cover opacity-80" /> : null}
         </div>
       ) : null}
     </div>
@@ -678,7 +678,7 @@ function GroupAudioStage() {
           return (
             <div key={p.id} className="flex flex-col items-center">
               <span className={cn("call-face relative rounded-full", speaking && "is-speaking", p.state !== "connected" && "opacity-50")}>
-                <Avatar user={u ? { displayName: u.displayName, avatar: u.avatar } : undefined} size={84} />
+                <Avatar user={face(u)} size={84} />
                 {p.muted ? (
                   <span className="absolute -right-0.5 -bottom-0.5 flex size-7 items-center justify-center rounded-full bg-navy ring-2 ring-navy">
                     <MicOff className="size-3.5 text-paper/80" />

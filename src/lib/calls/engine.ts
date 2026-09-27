@@ -266,7 +266,7 @@ export const callEngine = {
 
   simulateIncoming(userId: string, media: CallMedia, chatId?: string) {
     if (busyElsewhere() || !callable(userId)) return;
-    if (useWgoStore.getState().privacy.whoCall === "nobody") return;
+    if (useWgoStore.getState().privacy.calls === "nobody") return;
     const chat = chatId ? useWgoStore.getState().chats.find((c) => c.id === chatId) : undefined;
     const members = chat ? chat.participantIds.filter((id) => id !== "me") : [userId];
     reset();

@@ -85,8 +85,8 @@ export class SimulatedCallProvider implements CallProvider {
   hangup() {
     this.dispose();
   }
-  setMuted() {}
-  setCamera() {}
+  setMuted(_muted: boolean) {}
+  setCamera(_on: boolean) {}
   dispose() {
     this.timers.forEach((t) => window.clearTimeout(t));
     this.timers = [];
