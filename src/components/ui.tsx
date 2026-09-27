@@ -126,7 +126,7 @@ export function Header({
 }) {
   const t = useT();
   return (
-    <div className={cn("flex shrink-0 items-center gap-1 px-2", subtitle ? "min-h-14" : "h-12 min-h-12", className)}>
+    <div className={cn("flex h-14 min-h-14 shrink-0 items-center gap-1 px-2", className)}>
       {onBack ? (
         <IconBtn label={t("back")} onClick={onBack}>
           <ChevronLeft className="size-6" />
