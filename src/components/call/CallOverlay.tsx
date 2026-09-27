@@ -24,7 +24,6 @@ import {
 import { Avatar } from "@/components/avatar";
 import { callEngine, useCall } from "@/lib/calls/engine";
 import type { CallParticipant, CallState, ParticipantState } from "@/lib/calls/types";
-import { formatDuration } from "@/lib/format";
 import { haptic } from "@/lib/haptics";
 import { useWgoStore } from "@/lib/store";
 import type { User } from "@/lib/types";
@@ -866,7 +865,6 @@ function MoreMenu({ onClose }: { onClose: () => void }) {
   return (
     <div className="pb-2">
       {c.media === "audio" ? row("Activer la vidéo", () => void callEngine.toggleCamera()) : row("Changer de caméra", () => callEngine.flipCamera())}
-      {c.group ? null : row("Ajouter quelqu’un", () => undefined)}
       <p className="mt-3 mb-1 px-3 text-[11px] font-semibold tracking-wide text-muted uppercase">Simulation</p>
       {row("Connexion instable", () => callEngine.simUnstable())}
       {row("Coupure réseau puis reprise", () => callEngine.simDrop(true))}
@@ -1009,4 +1007,3 @@ function MiniCall() {
   );
 }
 
-export { formatDuration };
