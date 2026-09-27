@@ -1,10 +1,18 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { playSound } from "@/lib/sticker-fx";
 import { useWgoStore } from "@/lib/store";
 import { cn } from "@/lib/utils";
 
-const SRC = "/stickers/aniwipp/bisou-green.mp4";
+const SRC_MP4 = "/stickers/aniwipp/bisou-green.mp4";
+const SRC_WEBM = "/stickers/aniwipp/bisou.webm";
 const POSTER = "/stickers/aniwipp/bisou-poster.png";
+
+/** True when the browser plays VP9 WebM with a real alpha channel. */
+function supportsAlphaWebm() {
+  if (typeof document === "undefined") return false;
+  const v = document.createElement("video");
+  return v.canPlayType('video/webm; codecs="vp9"') !== "";
+}
 
 /** Cut the green screen out of every frame so the chat shows through. */
 function keyScreen(data: ImageData) {
@@ -25,7 +33,7 @@ function keyScreen(data: ImageData) {
   }
 }
 
-/** Kiss clip painted with a transparent background, never a black plate. */
+/** Kiss clip with a transparent background, never a black plate. */
 export function AniClip({
   loop = false,
   cue = false,
@@ -40,8 +48,11 @@ export function AniClip({
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const reduce = useWgoStore((s) => s.a11y.reduceMotion);
+  const [useWebm] = useState(supportsAlphaWebm);
 
+  // Canvas path: key the green mp4 frame by frame (Safari fallback).
   useEffect(() => {
+    if (useWebm) return;
     const video = videoRef.current;
     const canvas = canvasRef.current;
     if (!video || !canvas || reduce) return;
@@ -80,7 +91,18 @@ export function AniClip({
       cancelAnimationFrame(raf);
       video.pause();
     };
-  }, [playKey, loop, reduce]);
+  }, [playKey, loop, reduce, useWebm]);
+
+  // WebM path: plain video element, alpha channel preserved.
+  useEffect(() => {
+    if (!useWebm || reduce) return;
+    const video = videoRef.current;
+    if (!video) return;
+    video.loop = loop;
+    video.currentTime = 0;
+    void video.play().catch(() => {});
+    return () => video.pause();
+  }, [playKey, loop, reduce, useWebm]);
 
   useEffect(() => {
     if (!cue || reduce) return;
@@ -95,9 +117,24 @@ export function AniClip({
     return <img src={POSTER} alt="" className={cn("object-contain", className)} draggable={false} />;
   }
 
+  if (useWebm) {
+    return (
+      <div key={playKey} className={cn("ani-clip", className)} aria-hidden>
+        <video
+          ref={videoRef}
+          src={SRC_WEBM}
+          muted
+          playsInline
+          preload="auto"
+          className="size-full object-contain"
+        />
+      </div>
+    );
+  }
+
   return (
     <div key={playKey} className={cn("ani-clip", className)} aria-hidden>
-      <video ref={videoRef} src={SRC} muted playsInline preload="auto" className="ani-clip-src" />
+      <video ref={videoRef} src={SRC_MP4} muted playsInline preload="auto" className="ani-clip-src" />
       <canvas ref={canvasRef} width={405} height={720} />
     </div>
   );
