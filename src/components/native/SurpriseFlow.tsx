@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { createPortal } from "react-dom";
 import { ArrowLeft, Camera, ChevronRight, Clock3, Eye, FileText, Gift, Images, MapPin, PartyPopper, Smile, Sparkles, UserRound, WandSparkles, X } from "lucide-react";
@@ -30,7 +30,7 @@ const options = [
 ] as const;
 
 /** Parcours local de composition ; seuls les messages à gratter sont simulés dans la conversation. */
-export function SurpriseFlow({ onSend, onShareContent, onOpenStickers, onUnavailable }: { onSend: (surprise: Surprise) => void; onShareContent: (text: string) => void; onOpenStickers: () => void; onUnavailable: (label: string) => void }) {
+export function SurpriseFlow({ onSend, onShareContent, onOpenStickers, onUnavailable, autoOpen = false }: { onSend: (surprise: Surprise) => void; onShareContent: (text: string) => void; onOpenStickers: () => void; onUnavailable: (label: string) => void; autoOpen?: boolean }) {
   const reducedMotion = useReducedMotion();
   const galleryRef = useRef<HTMLInputElement>(null);
   const cameraRef = useRef<HTMLInputElement>(null);
