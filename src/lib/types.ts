@@ -199,6 +199,7 @@ export type Screen =
   | { name: "group-info"; chatId: string }
   | { name: "group-invite"; token: string }
   | { name: "wgo-touch" }
+  | { name: "touch-incoming"; demo?: TouchIncomingCase }
   | { name: "pharmacy"; pharmacyId: string }
   | { name: "shop"; shopId: string }
   | { name: "create-shop" }
@@ -344,6 +345,9 @@ export type StoryItem = {
   kind?: "status" | "profile";
   ttlMs?: number;
   music?: StoryMusic;
+  /** Qui peut voir : contacts WIPP, proches choisis, ou moi seul. Local tant que le serveur n'existe pas (BACKEND). */
+  audience?: StoryAudience;
+  audienceIds?: string[];
 };
 
 export type CallLog = {
@@ -497,3 +501,6 @@ export function storyTtlMs(story: Pick<StoryItem, "ttlMs">) {
 export function isStoryLive(story: Pick<StoryItem, "createdAt" | "ttlMs">, now = Date.now()) {
   return now - story.createdAt < storyTtlMs(story);
 }
+
+export type StoryAudience = "contacts" | "close" | "me";
+export type TouchIncomingCase = "pending" | "expired" | "handled" | "blocked" | "error";
