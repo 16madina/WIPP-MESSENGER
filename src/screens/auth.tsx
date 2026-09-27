@@ -377,13 +377,15 @@ export function LoginScreen() {
     await supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken });
     const { data: u } = await supabase.auth.getUser();
     let displayName = "";
+    let username = "";
     if (u.user) {
       const { data: p } = await supabase
         .from("wipp_public_profiles")
-        .select("display_name")
+        .select("display_name,username")
         .eq("id", (await supabase.rpc("wipp_my_profile_id" as never)).data ?? "")
         .maybeSingle();
       displayName = p?.display_name ?? "";
+      username = p?.username ?? "";
     }
     const [firstName, ...rest] = displayName.split(" ");
     completeSetup({
@@ -392,6 +394,8 @@ export function LoginScreen() {
       displayName,
       phone: `${country.dial} ${phone}`,
     });
+    // Le QR permanent et le lien public doivent refléter le vrai @pseudo du compte.
+    if (username) useWgoStore.setState((st) => ({ me: { ...st.me, username } }));
   }
 
   async function tryLogin() {
@@ -597,10 +601,11 @@ export function OtpScreen() {
     await supabase.auth.setSession({ access_token: out.accessToken, refresh_token: out.refreshToken });
     const { data: u } = await supabase.auth.getUser();
     let displayName = "";
+    let username = "";
     if (u.user) {
       const { data: p } = await supabase
         .from("wipp_public_profiles")
-        .select("display_name")
+        .select("display_name,username")
         .eq("id", (await supabase.rpc("wipp_my_profile_id" as never)).data ?? "")
         .maybeSingle();
       displayName = p?.display_name ?? "";
