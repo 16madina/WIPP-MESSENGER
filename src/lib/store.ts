@@ -1276,6 +1276,13 @@ export const useWgoStore = create<WgoState>()(
       setPushGranted: (on) => set({ pushGranted: on }),
 
       startCall: (userId, kind, dir = "out") => {
+        // Lot 5 : hors session serveur, le moteur d'appel WIPP (simulation remplaçable) prend la main.
+        if (!get().serverConnected) {
+          void import("@/lib/calls/engine").then(({ callEngine }) =>
+            dir === "in" ? callEngine.simulateIncoming(userId, kind) : callEngine.start({ targets: [userId], media: kind }),
+          );
+          return;
+        }
         const live = get().liveCall;
         if (live) {
           if (live.userId === userId) {
