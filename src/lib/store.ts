@@ -250,7 +250,11 @@ type WgoState = ReturnType<typeof fresh> & {
     kind?: "status" | "profile";
     ttlMs?: number;
     music?: import("./story-music").StoryMusic;
+    audience?: import("./types").StoryAudience;
+    audienceIds?: string[];
   }) => void;
+  deleteStory: (id: string) => void;
+  setStoryAudience: (id: string, audience: import("./types").StoryAudience, ids?: string[]) => void;
   changeAvatar: (url: string) => void;
   setGroupAvatar: (chatId: string, url: string) => void;
   setDisappear: (chatId: string, ms: number) => void;
@@ -1413,6 +1417,8 @@ export const useWgoStore = create<WgoState>()(
               kind: item.kind ?? "status",
               ttlMs: item.ttlMs ?? STORY_TTL_24H,
               music: item.music,
+              audience: item.audience ?? "contacts",
+              audienceIds: item.audienceIds,
             },
             ...st.stories,
           ],
@@ -1432,6 +1438,11 @@ export const useWgoStore = create<WgoState>()(
           }, 900 + i * 1400);
         });
       },
+
+      // BACKEND : suppression / visibilité côté serveur quand les stories seront synchronisées.
+      deleteStory: (id) => set((st) => ({ stories: st.stories.filter((x) => x.id !== id) })),
+      setStoryAudience: (id, audience, ids) =>
+        set((st) => ({ stories: st.stories.map((x) => (x.id === id ? { ...x, audience, audienceIds: ids } : x)) })),
 
       changeAvatar: (url) => {
         set((st) => ({ me: { ...st.me, avatar: url } }));

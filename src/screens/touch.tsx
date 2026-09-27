@@ -298,6 +298,11 @@ export function WgoTouchScreen() {
                 ["B refuse", () => dispatch({ type: "DECLINED" })],
                 ["Expire", () => dispatch({ type: "EXPIRED" })],
                 ["Erreur", () => dispatch({ type: "FAIL", reason: "error" })],
+                ["Tél. B · demande", () => push({ name: "touch-incoming", demo: "pending" })],
+                ["Tél. B · expirée", () => push({ name: "touch-incoming", demo: "expired" })],
+                ["Tél. B · déjà traitée", () => push({ name: "touch-incoming", demo: "handled" })],
+                ["Tél. B · bloqué", () => push({ name: "touch-incoming", demo: "blocked" })],
+                ["Tél. B · erreur", () => push({ name: "touch-incoming", demo: "error" })],
               ].map(([l, f]) => (
                 <button key={l as string} type="button" className="h-11 rounded-xl bg-paper/8" onClick={f as () => void}>{l as string}</button>
               ))}
