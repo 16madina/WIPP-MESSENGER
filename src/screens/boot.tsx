@@ -6,7 +6,7 @@ import { useWgoStore } from "@/lib/store";
 import { IntroSplash } from "@/screens/intro";
 import { OverlayProvider } from "@/components/native/Overlay";
 
-const AUTH = new Set(["splash", "onboarding", "welcome", "phone-entry", "signup", "login", "otp", "setup"]);
+const AUTH = new Set(["splash", "onboarding", "welcome", "phone-entry", "sms-reference", "profile-reference", "signup", "login", "otp", "setup"]);
 
 const WgoApp = lazy(() => import("./app").then((m) => ({ default: m.WgoApp })));
 

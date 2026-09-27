@@ -10,6 +10,17 @@ const GENERIC = "Numéro ou mot de passe incorrect";
 const Phone = z.string().regex(/^\+[1-9]\d{6,14}$/);
 const Password = z.string().min(8).max(128);
 const Name = z.string().trim().min(1).max(40);
+const Username = z.string().trim().toLowerCase().regex(/^[a-z0-9_]{3,20}$/);
+const Country = z.enum(["CA", "SN", "CI", "ML", "GN", "FR", "US"]);
+
+export const usernameAvailable = createServerFn({ method: "POST" })
+  .inputValidator(parse(z.object({ username: Username }), "Pseudo invalide"))
+  .handler(async ({ data }) => {
+    const { admin } = await ctx();
+    const { data: existing, error } = await admin.from("wipp_profiles").select("id").ilike("username", data.username).limit(1);
+    if (error) throw new Error("Vérification indisponible");
+    return !existing?.length;
+  });
 
 async function ctx() {
   const { createClient } = await import("@supabase/supabase-js");
@@ -32,24 +43,30 @@ const parse = <T,>(schema: z.ZodType<T>, msg: string) => (d: unknown) => {
 };
 
 export const signupPhone = createServerFn({ method: "POST" })
-  .inputValidator(parse(z.object({ idToken: z.string().min(20), firstName: Name, lastName: Name, password: Password }), "Prénom, nom ou mot de passe (8 caractères min.) invalide"))
+  .inputValidator(parse(z.object({ idToken: z.string().min(20), firstName: Name, lastName: Name, username: Username, country: Country, avatar: z.string().max(60000).optional(), password: Password.optional() }), "Informations du profil invalides"))
   .handler(async ({ data }): Promise<Result> => {
     const { verifyFirebasePhone } = await import("./firebase-verify.server");
     let v: { uid: string; phone: string };
     try { v = await verifyFirebasePhone(data.idToken); } catch { return { ok: false, error: "Code SMS expiré, recommencez" }; }
     const { admin, signIn } = await ctx();
-    const { data: existing } = await admin.from("wipp_profiles").select("id").eq("phone_e164", v.phone).maybeSingle();
+    const { data: existing, error: checkError } = await admin.from("wipp_profiles").select("id").eq("phone_e164", v.phone).maybeSingle();
+    if (checkError) return { ok: false, error: "Vérification du numéro indisponible" };
     if (existing) return { ok: false, error: "Un compte existe déjà avec ce numéro. Connectez-vous." };
+    const { data: taken, error: usernameError } = await admin.from("wipp_profiles").select("id").ilike("username", data.username).limit(1);
+    if (usernameError) return { ok: false, error: "Vérification du pseudo indisponible" };
+    if (taken?.length) return { ok: false, error: "Ce pseudo est déjà utilisé." };
     const id = "u_" + crypto.randomUUID().replace(/-/g, "").slice(0, 24);
     const email = `${id}@users.wipp.app`;
-    const { data: c, error } = await admin.auth.admin.createUser({ email, password: data.password, email_confirm: true });
+    const bytes = crypto.getRandomValues(new Uint8Array(32));
+    const password = data.password ?? Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("");
+    const { data: c, error } = await admin.auth.admin.createUser({ email, password, email_confirm: true, user_metadata: { country: data.country } });
     if (error || !c.user) return { ok: false, error: "Création du compte impossible" };
     const { error: pErr } = await admin.from("wipp_profiles").insert({
-      id, username: id, display_name: `${data.firstName} ${data.lastName}`, password_hash: "",
-      phone_e164: v.phone, firebase_uid: v.uid, auth_user_id: c.user.id,
+      id, username: data.username, display_name: `${data.firstName} ${data.lastName}`, password_hash: "",
+      phone_e164: v.phone, firebase_uid: v.uid, auth_user_id: c.user.id, avatar_url: data.avatar ?? null,
     });
-    if (pErr) { await admin.auth.admin.deleteUser(c.user.id); return { ok: false, error: "Création du profil impossible" }; }
-    return signIn(email, data.password);
+    if (pErr) { await admin.auth.admin.deleteUser(c.user.id); return { ok: false, error: pErr.code === "23505" ? "Ce pseudo ou ce numéro est déjà utilisé." : "Création du profil impossible" }; }
+    return signIn(email, password);
   });
 
 export const signinPhone = createServerFn({ method: "POST" })

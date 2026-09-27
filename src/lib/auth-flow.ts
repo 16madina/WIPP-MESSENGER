@@ -14,6 +14,9 @@ type Pending = {
 };
 
 let pending: Pending | null = null;
+let verifiedSignup: { idToken: string; phone: string } | null = null;
+export function setVerifiedSignup(value: { idToken: string; phone: string }) { verifiedSignup = value; }
+export function getVerifiedSignup() { return verifiedSignup; }
 
 export const RECAPTCHA_ID = "wipp-recaptcha";
 
@@ -81,4 +84,5 @@ export async function verifyPhoneCode(
 
 export function clearPending() {
   pending = null;
+  verifiedSignup = null;
 }
