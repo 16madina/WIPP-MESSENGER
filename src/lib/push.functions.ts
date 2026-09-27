@@ -26,7 +26,14 @@ export const savePushToken = createServerFn({ method: "POST" })
     const profileId = await myProfileId(context.supabase, context.userId);
     const now = new Date().toISOString();
     const { error } = await context.supabase.from("wipp_push_tokens").upsert(
-      { token: data.token, profile_id: profileId, platform: data.platform, kind: "fcm", updated_at: now },
+      {
+        id: `pt_${crypto.randomUUID()}`,
+        token: data.token,
+        profile_id: profileId,
+        platform: data.platform,
+        kind: "fcm",
+        updated_at: now,
+      },
       { onConflict: "token" },
     );
     if (error) throw new Error(error.message);
