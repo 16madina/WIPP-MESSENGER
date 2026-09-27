@@ -226,6 +226,10 @@ export async function insertMessage(
     if (dup) return one(dup.id);
     throw new Error(error.message);
   }
+  // Notification push aux autres membres (sans attendre, jamais bloquant).
+  void import("@/lib/push.functions")
+    .then((m) => m.notifyNewMessage({ data: { chatId } }))
+    .catch(() => {});
   return one(id);
 }
 
