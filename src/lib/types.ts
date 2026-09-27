@@ -141,6 +141,8 @@ export type ScreenName =
   | "group-qr"
   | "group-info"
   | "group-invite"
+  | "qr-profile"
+  | "qr-group"
   | "wgo-touch"
   | "pharmacy"
   | "shop"
@@ -198,6 +200,8 @@ export type Screen =
   | { name: "group-qr"; chatId: string }
   | { name: "group-info"; chatId: string }
   | { name: "group-invite"; token: string }
+  | { name: "qr-profile"; key: string }
+  | { name: "qr-group"; key: string }
   | { name: "wgo-touch" }
   | { name: "touch-incoming"; demo?: TouchIncomingCase; requestId?: string }
   | { name: "pharmacy"; pharmacyId: string }

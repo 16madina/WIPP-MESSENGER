@@ -11,3 +11,5 @@
 - Lot 6 (suite) : résolveur QR 4 types, scanner iPhone, Touch 10 états, protection des captures, bandeau hors ligne — fait. Bloqué : backend Touch/QR/demandes (accord requis sur audit).
 - Lot 6 écrans : téléphone B (5 états, démo), stories (visibilité + suppression) — faits, NOT TESTED sur téléphone. Moi (compléments), passe de densité Chats, retests Touch/caméra/Debug/protection, audit final Lots 1→6 — à faire au prochain tour.
 - Plan backend : docs/backend-migration-plan.md — en attente d'autorisation, rien exécuté.
+
+- [ ] Production : wipp_touch_config calibrationLog = false avant publication

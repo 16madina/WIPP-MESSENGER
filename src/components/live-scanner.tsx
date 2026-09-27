@@ -19,10 +19,16 @@ export function LiveScanner({
 
   useEffect(() => () => ctrl.current?.stop(), []);
 
+  const busy = useRef(false);
   function handle(raw: string) {
+    if (busy.current) return;
+    busy.current = true;
+    ctrl.current?.stop();
     setPhase("ask");
     try { navigator.vibrate?.(30); } catch { /* */ }
-    onResult(resolveWippQr(raw));
+    void resolveWippQr(raw)
+      .then(onResult)
+      .finally(() => { busy.current = false; });
   }
 
   async function start() {
