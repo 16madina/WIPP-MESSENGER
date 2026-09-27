@@ -8,20 +8,26 @@ import {
 } from "@/lib/touch.functions";
 
 const safe = async <T,>(p: Promise<T>, fb: T) => { try { return await p; } catch { return fb; } };
+async function h() {
+  const t = (await supabase.auth.getSession()).data.session?.access_token;
+  return t ? { authorization: `Bearer ${t}` } : {};
+}
+// Les fonctions serveur attendent le jeton de session dans l'en-tête (même schéma que connections.ts).
+const withAuth = async <T,>(fn: (o: any) => Promise<T>, data?: unknown) => fn({ data, headers: await h() } as never);
 
 export async function hasSession() {
   return Boolean((await supabase.auth.getSession()).data.session);
 }
-export const createTouch = () => safe(createTouchInvite(), { status: "error" } as Awaited<ReturnType<typeof createTouchInvite>>);
-export const cancelTouch = (id: string) => safe(cancelTouchInvite({ data: { id } }), { status: "error" });
-export const requestTouch = (id: string, profileId: string) => safe(requestTouchConnection({ data: { id, profileId } }), { status: "error" });
-export const respondTouch = (id: string, action: "accept" | "decline") => safe(respondTouchInvite({ data: { id, action } }), { status: "error" });
+export const createTouch = (): Promise<{ status: string; id?: string; token?: string; expiresAt?: string }> => safe(withAuth(createTouchInvite), { status: "error" });
+export const cancelTouch = (id: string) => safe(withAuth(cancelTouchInvite, { id }), { status: "error" });
+export const requestTouch = (id: string, profileId: string) => safe(withAuth(requestTouchConnection, { id, profileId }), { status: "error" });
+export const respondTouch = (id: string, action: "accept" | "decline") => safe(withAuth(respondTouchInvite, { id, action }), { status: "error" });
 /** Entrée NATIVE (BLE/NFC). En web : uniquement le bouton DEV « canal debug ». */
 export const reportTouch = (token: string, channel: "ble" | "nfc" | "debug", rssi: number[] = []) =>
-  safe(reportTouchCandidate({ data: { token, channel, rssi } }), { status: "error" });
+  safe(withAuth(reportTouchCandidate, { token, channel, rssi }), { status: "error" });
 
 export async function touchCandidates(id: string): Promise<{ status: string; cards: PublicCard[] }> {
-  const r = await safe(listTouchCandidates({ data: { id } }), { status: "error" } as { status: string; cards?: never[] });
+  const r = await safe(withAuth(listTouchCandidates, { id }), { status: "error" } as { status: string; cards?: never[] });
   return {
     status: r.status,
     cards: ((r as { cards?: { id: string; username: string; display_name: string; avatar_url: string | null }[] }).cards ?? [])
