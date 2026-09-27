@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react";
+import { issueTempToken, profileQr, tempQr } from "@/lib/qr-payload";
+import { LiveScanner } from "@/components/live-scanner";
 import { BadgeCheck, Lock, MapPin, Phone, QrCode, ScanLine, Search, Share2, Smartphone, Store, Video } from "lucide-react";
 import { Avatar } from "@/components/avatar";
 import { SmartImg } from "@/components/smart-img";
@@ -77,11 +79,36 @@ export function MyQrScreen() {
   const push = useWgoStore((s) => s.push);
   const me = useWgoStore((s) => s.me);
   const [copied, setCopied] = useState(false);
+  const [temp, setTemp] = useState<{ token: string; expiresAt: number } | null>(null);
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    if (!temp) return;
+    const id = window.setInterval(() => {
+      const n = Date.now();
+      setNow(n);
+      // À expiration : ancien jeton invalidé, nouveau jeton émis.
+      if (n >= temp.expiresAt) setTemp(issueTempToken(me.username));
+    }, 1000);
+    return () => window.clearInterval(id);
+  }, [temp, me.username]);
+  const left = temp ? Math.max(0, Math.ceil((temp.expiresAt - now) / 1000)) : 0;
   const touchInvite = getActiveTouchInvite();
   const isTouchShare = Boolean(touchInvite?.status === "active" && touchInvite.code);
-  const link = isTouchShare ? touchInvite!.qrPayload.replace(/^https?:\/\//, "") : `${APP_HOST}/${me.username}`;
-  const qrValue = isTouchShare ? touchInvite!.qrPayload : link;
-  const shareUrl = isTouchShare ? touchInvite!.qrPayload : `https://${link}`;
+  const permanent = profileQr(me.username);
+  const qrValue = isTouchShare ? touchInvite!.qrPayload : temp ? tempQr(temp.token) : permanent;
+  const link = qrValue.replace(/^https?:\/\//, "").replace(/\/t\/.{8}.*/, "/t/…");
+  const shareUrl = isTouchShare ? touchInvite!.qrPayload : permanent;
+  void APP_HOST;
+  async function save() {
+    const svg = document.querySelector(".wipp-qr-save svg");
+    if (!svg) return;
+    const blob = new Blob([new XMLSerializer().serializeToString(svg)], { type: "image/svg+xml" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = `wipp-${me.username}.svg`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+  }
 
   async function share() {
     const payload = {
@@ -114,19 +141,39 @@ export function MyQrScreen() {
         {isTouchShare ? (
           <p className="mt-2 font-mono text-[22px] font-semibold tracking-[0.2em] text-accent">{touchInvite!.code}</p>
         ) : null}
-        <div className="wipp-card mt-5 rounded-2xl p-1">
+        <div className="wipp-card wipp-qr-save mt-5 rounded-2xl p-1">
           <div className="rounded-xl bg-paper p-4">
             <QrCard value={qrValue} size={220} />
           </div>
         </div>
-        <p className="mt-4 max-w-[28ch] text-center text-[13px] leading-relaxed text-paper/60">
-          {isTouchShare ? t("touchFail") : t("myCardHint")}
+        {temp && !isTouchShare ? (
+          <p className="mt-3 font-mono text-[13px] text-accent" aria-live="polite">
+            Expire dans {String(Math.floor(left / 60)).padStart(2, "0")}:{String(left % 60).padStart(2, "0")}
+          </p>
+        ) : null}
+        <p className="mt-3 max-w-[30ch] text-center text-[13px] leading-relaxed text-paper/60">
+          {isTouchShare
+            ? t("touchFail")
+            : temp
+              ? "QR temporaire : usage unique, il se renouvelle tout seul."
+              : "Ce QR ne contient ni ton numéro, ni ton e-mail."}
         </p>
-        <p className="mt-1 text-[12px] text-paper/40">{isTouchShare ? touchInvite!.qrPayload : link}</p>
+        <p className="mt-1 text-[12px] text-paper/40">{link}</p>
         <Btn className="mt-5 w-full" onClick={share}>
           <Share2 className="size-4" />
-          {copied ? t("copied") : t("shareMyCard")}
+          {copied ? t("copied") : "Partager mon WIPP"}
         </Btn>
+        {!isTouchShare ? (
+          <div className="mt-2 grid w-full grid-cols-2 gap-2">
+            <Btn variant="secondary" onClick={() => void save()}>Enregistrer</Btn>
+            <Btn
+              variant="secondary"
+              onClick={() => setTemp(temp ? null : issueTempToken(me.username))}
+            >
+              {temp ? "QR permanent" : "QR temporaire"}
+            </Btn>
+          </div>
+        ) : null}
         {!isTouchShare ? (
           <Btn variant="secondary" className="mt-2 w-full" onClick={() => push({ name: "wgo-touch" })}>
             <Smartphone className="size-4" />
@@ -233,6 +280,12 @@ export function ScannerScreen() {
     <div className="flex h-full flex-col bg-ink text-paper">
       <StatusBar />
       <Header title={t("scan")} onBack={pop} className="text-paper [&_button]:text-paper" />
+      <LiveScanner
+        onResult={(msg, userId) => {
+          if (userId) replace({ name: "found-profile", userId, via: "qr" });
+          else setFail(msg);
+        }}
+      />
       <div className="flex flex-1 flex-col items-center justify-center px-8">
         <button
           type="button"
