@@ -54,7 +54,7 @@ export function ChatInfoScreen({ chatId }: { chatId: string }) {
   const isGroup = chat.type === "group";
   const peerId = isGroup ? undefined : chat.participantIds.find((id) => id !== "me");
   const peer = peerId ? users[peerId] : undefined;
-  const live = messages.filter((m) => !m.deletedAt);
+  const live = messages.filter((m) => !m.deletedForAll);
   const media = live.filter((m) => m.type === "image" || m.type === "video" || m.type === "voice" || m.type === "gif");
   const docs = live.filter((m) => m.type === "file" || m.type === "listing");
   const links = live.flatMap((m) => (m.text ? linksIn(m.text).map((url) => ({ id: m.id, url })) : []));
