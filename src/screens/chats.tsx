@@ -146,7 +146,7 @@ export function ChatsScreen() {
     <div className="flex h-full flex-col">
       <div className="glass sticky top-0 z-10">
         <StatusBar />
-        <div className="flex h-14 items-center gap-2 px-4">
+        <div className="flex h-[var(--wipp-nav-bar-height)] items-center gap-2 px-4">
           <span
             className="inline-flex"
             onPointerDown={() => {

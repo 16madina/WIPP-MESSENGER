@@ -135,7 +135,7 @@ export function ExploreScreen() {
     <div className="flex h-full flex-col">
       <div className="glass sticky top-0 z-10">
         <StatusBar />
-        <div className="flex h-14 items-center px-2">
+        <div className="flex h-[var(--wipp-nav-bar-height)] items-center px-2">
           {hub !== "home" && !searching ? (
             <IconBtn label={t("back")} onClick={() => setHub("home")}>
               <ChevronLeft className="size-6" />

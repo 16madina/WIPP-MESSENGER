@@ -272,6 +272,8 @@ export function themeToCssVars(mode: ThemeMode): string {
     `--wipp-shadow-lift:${shadows.lift};`,
     `--wipp-shadow-glow:${shadows.glow};`,
     `--wipp-shimmer-duration:${motion.shimmerSeconds}s;`,
+    `--wipp-nav-bar-height:${layout.navBarHeight}px;`,
+    `--wipp-tab-bar-height:${layout.tabBarHeight}px;`,
     `--wipp-font-display:${fonts.display};`,
     `--wipp-font-body:${fonts.body};`,
   );

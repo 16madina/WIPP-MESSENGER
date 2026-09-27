@@ -153,19 +153,19 @@ export function CallsScreen() {
     <div className="flex h-full flex-col">
       <div className="glass sticky top-0 z-10">
         <StatusBar />
-        <div className="grid h-14 grid-cols-[minmax(0,1fr)_auto] items-center gap-2 px-4">
+        <div className="grid h-[var(--wipp-nav-bar-height)] grid-cols-[minmax(0,1fr)_auto] items-center gap-2 px-4">
           <h1 className="min-w-0 truncate text-[22px] font-semibold tracking-tight">{t("callsTitle")}</h1>
           <div className="flex shrink-0 items-center gap-2">
             <button
               type="button"
-              className="text-[13px] font-medium text-muted"
+              className="flex min-h-[var(--touch-min)] items-center text-[13px] font-medium text-muted"
               onClick={() => push({ name: "call-link" })}
             >
               {t("createCallLink")}
             </button>
             <button
               type="button"
-              className="press flex min-h-9 items-center gap-1.5 rounded-full bg-accent px-3 text-[13px] font-semibold text-accent-fg"
+              className="press flex min-h-[var(--touch-min)] items-center gap-1.5 rounded-full bg-accent px-3 text-[13px] font-semibold text-accent-fg"
               onClick={() => setPicker(true)}
             >
               <Phone className="size-4" />

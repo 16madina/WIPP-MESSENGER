@@ -100,7 +100,7 @@ export function MeScreen() {
     <div className="flex h-full flex-col">
       <div className="sticky top-0 z-10 bg-bg/80 backdrop-blur-md">
         <StatusBar />
-        <div className="flex h-14 items-center px-4">
+        <div className="flex h-[var(--wipp-nav-bar-height)] items-center px-4">
           <WippWordmark className="text-[26px] text-fg" />
           <div className="ml-auto flex items-center">
             <button

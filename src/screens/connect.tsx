@@ -30,7 +30,7 @@ export function ConnectScreen() {
     <div className="flex h-full flex-col">
       <div className="glass sticky top-0 z-10">
         <StatusBar />
-        <div className="flex h-14 items-center px-5">
+        <div className="flex h-[var(--wipp-nav-bar-height)] items-center px-5">
           <h1 className="min-w-0 truncate text-[24px] leading-tight font-semibold tracking-tight">{t("connectTitle")}</h1>
         </div>
       </div>
