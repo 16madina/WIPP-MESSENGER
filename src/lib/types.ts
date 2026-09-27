@@ -281,6 +281,11 @@ export type Message = {
   /** Document attachment (local blob URL until encrypted upload lands). */
   file?: { name: string; size: number; mime: string; url: string };
   gifUrl?: string;
+  mediaMime?: string;
+  /** États d’un média : preparing → uploading → sent / downloading → ready, ou failed. */
+  mediaState?: "preparing" | "uploading" | "sent" | "downloading" | "ready" | "failed";
+  /** 0..1 pendant l’envoi ou le téléchargement. */
+  progress?: number;
   stickerId?: string;
   /** Foil design for a scratch surprise. The secret itself stays in `text`. */
   scratchDesign?: "gold" | "love" | "birthday" | "fun" | "secret" | "heart" | "spark" | "crown" | "duo";

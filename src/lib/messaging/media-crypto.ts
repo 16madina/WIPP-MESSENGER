@@ -95,6 +95,8 @@ export type MediaEnvelope = {
   location?: { lat: number; lon: number };
   link?: { url: string; title?: string; description?: string };
   stickerId?: string;
+  caption?: string;
+  size?: number;
 };
 
 export function describeMedia(input: Omit<MediaEnvelope, "k">): string {
