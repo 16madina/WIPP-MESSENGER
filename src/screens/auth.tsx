@@ -17,12 +17,23 @@ import {
 import { GallerySheet } from "@/components/gallery";
 import { SmartImg } from "@/components/smart-img";
 import { StatusBar } from "@/components/ui";
+import {
+  RECAPTCHA_ID,
+  clearPending,
+  pendingMode,
+  pendingPassword,
+  pendingPhone,
+  startPhoneCode,
+  verifyPhoneCode,
+} from "@/lib/auth-flow";
+import { resetPasswordPhone, signinPhone, signupPhone } from "@/lib/auth.functions";
 import { announce, haptic } from "@/lib/haptics";
 import { yearsOld } from "@/lib/legal";
 import { TAKEN_USERNAMES } from "@/lib/seed";
 import { useT, useWgoStore } from "@/lib/store";
 import type { Lang } from "@/lib/types";
 import { cn } from "@/lib/utils";
+import { supabase } from "@/integrations/supabase/client";
 import {
   AuthCta,
   AuthField,
@@ -53,19 +64,23 @@ export function SignupScreen() {
   const replace = useWgoStore((s) => s.replace);
   const saveSignup = useWgoStore((s) => s.saveSignup);
   const acceptLegal = useWgoStore((s) => s.acceptLegal);
-  const [firstName, setFirst] = useState("Deena");
-  const [lastName, setLast] = useState("Diallo");
+  const [firstName, setFirst] = useState("");
+  const [lastName, setLast] = useState("");
   const [country, setCountry] = useState<(typeof COUNTRIES)[number]>(COUNTRIES[0]);
-  const [phone, setPhone] = useState("514 555 0148");
+  const [phone, setPhone] = useState("");
+  const [password, setPassword] = useState("");
   const [birthday, setBirthday] = useState("1999-04-12");
   const [accepted, setAccepted] = useState(false);
   const [needAccept, setNeedAccept] = useState(false);
   const [tooYoung, setTooYoung] = useState(false);
+  const [weakPassword, setWeakPassword] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
   const [doc, setDoc] = useState<"privacy" | "terms" | null>(null);
   const [countryOpen, setCountryOpen] = useState(false);
   const [dialOpen, setDialOpen] = useState(false);
 
-  function tryContinue() {
+  async function tryContinue() {
     const age = yearsOld(birthday);
     if (age > 0 && age < 13) {
       setTooYoung(true);
@@ -78,6 +93,19 @@ export function SignupScreen() {
       return;
     }
     setNeedAccept(false);
+    if (password.length < 8) {
+      setWeakPassword(true);
+      return;
+    }
+    setWeakPassword(false);
+    setBusy(true);
+    setErr(null);
+    const smsErr = await startPhoneCode(`${country.dial}${phone}`, "signup", password);
+    setBusy(false);
+    if (smsErr) {
+      setErr(smsErr);
+      return;
+    }
     acceptLegal();
     saveSignup({
       firstName,
@@ -91,6 +119,7 @@ export function SignupScreen() {
 
   return (
     <div className="absolute inset-0 flex flex-col bg-bg">
+      <div id={RECAPTCHA_ID} className="pointer-events-none absolute bottom-0 left-0" />
       <SignupBanner />
       <div className="relative z-10 min-h-0 flex-1 overflow-y-auto no-scrollbar px-5 pb-8">
         <AuthSteps step={1} />
@@ -167,6 +196,22 @@ export function SignupScreen() {
           </p>
         </div>
         <div className="relative mt-3">
+          <AuthField label={t("password")} icon={<Lock className="size-4" />}>
+            <input
+              type="password"
+              className="h-full w-full bg-transparent text-[15px] outline-none"
+              value={password}
+              autoComplete="new-password"
+              onChange={(e) => {
+                setPassword(e.target.value);
+                setWeakPassword(false);
+              }}
+            />
+          </AuthField>
+          <p className="mt-1.5 text-[11px] text-muted">{t("passwordHint")}</p>
+          {weakPassword ? <p className="mt-1 text-[13px] text-danger">{t("passwordWeak")}</p> : null}
+        </div>
+        <div className="relative mt-3">
           <AuthField label={t("birthday")} icon={<Calendar className="size-4" />}>
             <span className="flex-1 text-[15px]">{formatBday(birthday, lang)}</span>
             <input
@@ -214,8 +259,9 @@ export function SignupScreen() {
         </label>
         {needAccept ? <p className="mt-2 text-[13px] text-danger">{t("legalNeedAccept")}</p> : null}
         {tooYoung ? <p className="mt-2 text-[13px] text-danger">{t("legalTooYoung")}</p> : null}
-        <AuthCta onClick={tryContinue}>
-          {t("continue")}
+        {err ? <p className="mt-2 text-[13px] text-danger">{err}</p> : null}
+        <AuthCta disabled={busy} onClick={() => void tryContinue()}>
+          {busy ? t("sending") : t("continue")}
           <ArrowRight className="size-4" />
         </AuthCta>
         <div className="my-4 flex items-center gap-3">
@@ -312,12 +358,70 @@ export function LoginScreen() {
   const t = useT();
   const lang = useWgoStore((s) => s.language);
   const replace = useWgoStore((s) => s.replace);
-  const saveSignup = useWgoStore((s) => s.saveSignup);
+  const push = useWgoStore((s) => s.push);
+  const completeSetup = useWgoStore((s) => s.completeSetup);
   const [country, setCountry] = useState<(typeof COUNTRIES)[number]>(COUNTRIES[0]);
-  const [phone, setPhone] = useState("514 555 0148");
+  const [phone, setPhone] = useState("");
+  const [password, setPassword] = useState("");
   const [dialOpen, setDialOpen] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+
+  async function enterWithSession(accessToken: string, refreshToken: string) {
+    await supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken });
+    const { data: u } = await supabase.auth.getUser();
+    let displayName = "";
+    if (u.user) {
+      const { data: p } = await supabase
+        .from("wipp_profiles")
+        .select("display_name, phone_e164")
+        .eq("auth_user_id", u.user.id)
+        .maybeSingle();
+      displayName = p?.display_name ?? "";
+    }
+    const [firstName, ...rest] = displayName.split(" ");
+    completeSetup({
+      firstName: firstName ?? "",
+      lastName: rest.join(" "),
+      displayName,
+      phone: `${country.dial} ${phone}`,
+    });
+  }
+
+  async function tryLogin() {
+    setBusy(true);
+    setErr(null);
+    const { toE164 } = await import("@/lib/firebase-phone");
+    const e164 = toE164(`${country.dial}${phone}`);
+    if (!e164) {
+      setBusy(false);
+      setErr(t("loginError"));
+      return;
+    }
+    const res = await signinPhone({ data: { phone: e164, password } });
+    if (!res.ok) {
+      setBusy(false);
+      setErr(res.error);
+      return;
+    }
+    await enterWithSession(res.accessToken, res.refreshToken);
+  }
+
+  async function forgot() {
+    setBusy(true);
+    setErr(null);
+    const smsErr = await startPhoneCode(`${country.dial}${phone}`, "reset");
+    setBusy(false);
+    if (smsErr) {
+      setErr(smsErr);
+      return;
+    }
+    push({ name: "otp" });
+  }
+
   return (
     <div className="absolute inset-0 flex flex-col bg-bg">
+      <div id={RECAPTCHA_ID} className="pointer-events-none absolute bottom-0 left-0" />
       <SignupBanner />
       <div className="relative z-10 min-h-0 flex-1 overflow-y-auto no-scrollbar px-5 pb-8">
         <h2 className="text-[22px] font-semibold tracking-tight">{t("loginHero")}</h2>
@@ -353,21 +457,32 @@ export function LoginScreen() {
             />
           ) : null}
         </div>
-        <AuthCta
-          onClick={() =>
-            saveSignup({
-              phone: `${country.dial} ${phone}`,
-              country: country.id,
-              firstName: "",
-            })
-          }
-        >
-          {t("continue")}
+        <div className="relative mt-3">
+          <AuthField label={t("password")} icon={<Lock className="size-4" />}>
+            <input
+              type="password"
+              className="h-full w-full bg-transparent text-[15px] outline-none"
+              value={password}
+              autoComplete="current-password"
+              onChange={(e) => setPassword(e.target.value)}
+            />
+          </AuthField>
+        </div>
+        {err ? <p className="mt-2 text-[13px] text-danger">{err}</p> : null}
+        <AuthCta disabled={busy} onClick={() => void tryLogin()}>
+          {busy ? t("sending") : t("continue")}
           <ArrowRight className="size-4" />
         </AuthCta>
         <button
           type="button"
-          className="mx-auto mt-4 block text-[13px] text-muted"
+          className="mx-auto mt-4 block text-[13px] font-medium text-accent"
+          onClick={() => void forgot()}
+        >
+          {t("forgotPassword")}
+        </button>
+        <button
+          type="button"
+          className="mx-auto mt-3 block text-[13px] text-muted"
           onClick={() => replace({ name: "signup" })}
         >
           {t("back")}
@@ -381,24 +496,90 @@ export function OtpScreen() {
   const t = useT();
   const pop = useWgoStore((s) => s.pop);
   const push = useWgoStore((s) => s.push);
-  const openDemo = useWgoStore((s) => s.openDemo);
+  const completeSetup = useWgoStore((s) => s.completeSetup);
   const pending = useWgoStore((s) => s.pendingSignup);
-  const phone = useWgoStore((s) => s.pendingSignup.phone ?? s.me.phone);
-  const isLogin = !pending.firstName;
+  const phone = pendingPhone() ?? pending.phone ?? "";
+  const mode = pendingMode() ?? "signup";
   const [code, setCode] = useState("");
-  const [err, setErr] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [newPassword, setNewPassword] = useState("");
+  const [verified, setVerified] = useState<{ idToken: string; phone: string } | null>(null);
 
-  function pass() {
-    if (isLogin) openDemo();
-    else push({ name: "setup" });
+  async function finish(next: string) {
+    setBusy(true);
+    setErr(null);
+    const res = await verifyPhoneCode(next);
+    if ("error" in res) {
+      setBusy(false);
+      setErr(res.error);
+      return;
+    }
+    if (mode === "reset") {
+      setVerified(res);
+      setBusy(false);
+      return;
+    }
+    const password = pendingPassword() ?? "";
+    const out = await signupPhone({
+      data: {
+        idToken: res.idToken,
+        firstName: pending.firstName ?? "",
+        lastName: pending.lastName ?? "",
+        password,
+      },
+    });
+    setBusy(false);
+    if (!out.ok) {
+      setErr(out.error);
+      return;
+    }
+    await supabase.auth.setSession({ access_token: out.accessToken, refresh_token: out.refreshToken });
+    clearPending();
+    push({ name: "setup" });
   }
+
+  async function finishReset() {
+    if (!verified) return;
+    if (newPassword.length < 8) {
+      setErr(t("passwordWeak"));
+      return;
+    }
+    setBusy(true);
+    setErr(null);
+    const out = await resetPasswordPhone({ data: { idToken: verified.idToken, password: newPassword } });
+    setBusy(false);
+    if (!out.ok) {
+      setErr(out.error);
+      return;
+    }
+    await supabase.auth.setSession({ access_token: out.accessToken, refresh_token: out.refreshToken });
+    const { data: u } = await supabase.auth.getUser();
+    let displayName = "";
+    if (u.user) {
+      const { data: p } = await supabase
+        .from("wipp_profiles")
+        .select("display_name")
+        .eq("auth_user_id", u.user.id)
+        .maybeSingle();
+      displayName = p?.display_name ?? "";
+    }
+    const [firstName, ...rest] = displayName.split(" ");
+    clearPending();
+    completeSetup({ firstName: firstName ?? "", lastName: rest.join(" "), displayName, phone: verified.phone });
+  }
+
+  async function resend() {
+    setErr(null);
+    setCode("");
+    const smsErr = await startPhoneCode(phone, mode, pendingPassword());
+    if (smsErr) setErr(smsErr);
+  }
+
   function submit(next: string) {
     setCode(next);
-    setErr(false);
-    if (next.length === 4) {
-      if (next === "1234") pass();
-      else setErr(true);
-    }
+    setErr(null);
+    if (next.length === 6) void finish(next);
   }
 
   return (
@@ -408,37 +589,58 @@ export function OtpScreen() {
         {t("otpBody")} {phone}
       </p>
       <AuthSteps step={1} />
-      <div className="mt-2 flex justify-between gap-2">
-        {Array.from({ length: 4 }).map((_, i) => (
-          <input
-            key={i}
-            inputMode="numeric"
-            maxLength={1}
-            value={code[i] ?? ""}
-            onChange={(e) => {
-              const v = e.target.value.replace(/\D/g, "").slice(-1);
-              const chars = code.split("");
-              chars[i] = v;
-              submit(chars.join("").slice(0, 4));
-              const next = e.currentTarget.nextElementSibling;
-              if (v && next instanceof HTMLInputElement) next.focus();
-            }}
-            className="h-16 w-16 rounded-2xl bg-surface text-center text-[22px] font-semibold ring-1 ring-hair outline-none focus:ring-2 focus:ring-accent"
-          />
-        ))}
-      </div>
+      {verified ? (
+        <div className="mt-4">
+          <AuthField label={t("newPassword")} icon={<Lock className="size-4" />}>
+            <input
+              type="password"
+              className="h-full w-full bg-transparent text-[15px] outline-none"
+              value={newPassword}
+              autoComplete="new-password"
+              onChange={(e) => setNewPassword(e.target.value)}
+            />
+          </AuthField>
+          <p className="mt-1.5 text-[11px] text-muted">{t("passwordHint")}</p>
+        </div>
+      ) : (
+        <div className="mt-2 flex justify-between gap-1.5">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <input
+              key={i}
+              inputMode="numeric"
+              maxLength={1}
+              value={code[i] ?? ""}
+              onChange={(e) => {
+                const v = e.target.value.replace(/\D/g, "").slice(-1);
+                const chars = code.split("");
+                chars[i] = v;
+                submit(chars.join("").slice(0, 6));
+                const next = e.currentTarget.nextElementSibling;
+                if (v && next instanceof HTMLInputElement) next.focus();
+              }}
+              className="h-16 w-12 rounded-2xl bg-surface text-center text-[22px] font-semibold ring-1 ring-hair outline-none focus:ring-2 focus:ring-accent"
+            />
+          ))}
+        </div>
+      )}
       <p className="mt-4 text-[13px] text-muted">{t("otpHint")}</p>
-      {err ? <p className="mt-2 text-[13px] text-danger">{t("otpError")}</p> : null}
+      {err ? <p className="mt-2 text-[13px] text-danger">{err}</p> : null}
       <AuthCta
-        disabled={code.length !== 4}
-        onClick={() => {
-          if (code === "1234") pass();
-          else setErr(true);
-        }}
+        disabled={busy || (verified ? newPassword.length < 8 : code.length !== 6)}
+        onClick={() => (verified ? void finishReset() : void finish(code))}
       >
-        {t("continue")}
+        {busy ? t("sending") : t("continue")}
         <ArrowRight className="size-4" />
       </AuthCta>
+      {!verified ? (
+        <button
+          type="button"
+          className="mx-auto mt-4 block text-[13px] font-medium text-accent"
+          onClick={() => void resend()}
+        >
+          {t("resendCode")}
+        </button>
+      ) : null}
     </AuthShell>
   );
 }
