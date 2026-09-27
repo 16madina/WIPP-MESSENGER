@@ -820,11 +820,12 @@ function AddPeople({ onDone }: { onDone: () => void }) {
 
 function ParticipantsList({ onAdd }: { onAdd: () => void }) {
   const users = useWgoStore((s) => s.users);
+  const me = useWgoStore((s) => s.me);
   const c = useCall();
   return (
     <div className="pb-2">
       <div className="flex items-center gap-3 py-2">
-        <Avatar user={face(users.me) ?? undefined} size={40} />
+        <Avatar user={face(me)} size={40} />
         <p className="flex-1 text-[15px] font-medium">Moi</p>
         <span className="text-[12px] text-muted">{c.muted ? "Micro coupé" : "Connecté"}</span>
       </div>
