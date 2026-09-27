@@ -124,6 +124,9 @@ export type ScreenName =
   | "security"
   | "notifications"
   | "appearance"
+  | "business-card"
+  | "devices"
+  | "language"
   | "accessibility"
   | "help"
   | "blocked"
@@ -183,6 +186,9 @@ export type Screen =
   | { name: "security" }
   | { name: "notifications" }
   | { name: "appearance" }
+  | { name: "business-card" }
+  | { name: "devices" }
+  | { name: "language" }
   | { name: "accessibility" }
   | { name: "help" }
   | { name: "blocked" }
