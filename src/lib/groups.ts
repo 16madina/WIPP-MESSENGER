@@ -211,18 +211,18 @@ export function ensureGroupDemo() {
     chats.unshift({
       id: c, type: "group", name: "Équipe WIPP", description: "Produit, design et lancement 🚀",
       avatar: "/brand/wipp-logo.jpg", inviteToken: "equipe-wipp",
-      participantIds: ["me", "deena", "alex", "maya", "lea", "karim"], adminIds: ["deena", "me"],
+      participantIds: ["me", "julien", "alex", "maya", "lea", "karim"], adminIds: ["julien", "maya", "me"],
       groupPerms: { ...defaultGroupPerms, editInfo: "admins", addMembers: "admins" },
       unread: 2, muted: false, pinned: false, archived: false, isRequest: false,
       preview: "Maya : J’arrive dans 10 min", lastAt: m(6),
     });
     messages[c] = [
-      mk("e-sys1", c, "system", "Deena a créé le groupe.", h(48), { type: "system" }),
-      mk("e-sys2", c, "system", "Deena a ajouté Alex.", h(48) + 6e4, { type: "system" }),
+      mk("e-sys1", c, "system", "Julien a créé le groupe.", h(48), { type: "system" }),
+      mk("e-sys2", c, "system", "Julien a ajouté Alex.", h(48) + 6e4, { type: "system" }),
       mk("e-sys3", c, "system", "Maya est maintenant admin.", h(47), { type: "system" }),
       mk("e-sys4", c, "system", "La photo du groupe a été modifiée.", h(46), { type: "system" }),
-      mk("e-1", c, "deena", "Voici le programme du lancement.", h(5), { pinned: true }),
-      mk("e-doc", c, "deena", "", h(5) + 6e4, {
+      mk("e-1", c, "julien", "Voici le programme du lancement.", h(5), { pinned: true }),
+      mk("e-doc", c, "julien", "", h(5) + 6e4, {
         type: "file", file: { name: "Programme-soiree.pdf", size: 2_516_582, mime: "application/pdf", url: "/demo/Programme-soiree.pdf" },
       }),
       mk("e-video", c, "alex", "Teaser v2", h(4), { type: "video", videoUrl: "/stickers/bravo.mp4", duration: 3 }),
