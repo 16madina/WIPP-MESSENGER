@@ -280,6 +280,12 @@ export function ScannerScreen() {
     <div className="flex h-full flex-col bg-ink text-paper">
       <StatusBar />
       <Header title={t("scan")} onBack={pop} className="text-paper [&_button]:text-paper" />
+      <LiveScanner
+        onResult={(msg, userId) => {
+          if (userId) replace({ name: "found-profile", userId, via: "qr" });
+          else setFail(msg);
+        }}
+      />
       <div className="flex flex-1 flex-col items-center justify-center px-8">
         <button
           type="button"
