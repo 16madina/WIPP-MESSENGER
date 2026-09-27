@@ -1139,7 +1139,7 @@ export function ConversationScreen({ chatId }: { chatId: string }) {
                     className={cn("mb-1 flex w-full", mine ? "justify-end" : "justify-start", isGroup && !mine && "gap-1.5", showName && "mt-2", hit && "rounded-2xl bg-accent/10")}
                   >
                     {isGroup && !mine ? (
-                      <span className="mt-auto w-7 shrink-0">{showName ? <Avatar user={sender} size={28} /> : null}</span>
+                      <span className="mt-5 w-7 shrink-0">{showName ? <Avatar user={sender} size={28} /> : null}</span>
                     ) : null}
                     <div className={cn("max-w-[78%] text-left", mine ? "items-end" : "items-start")}>
                       {showName ? (
