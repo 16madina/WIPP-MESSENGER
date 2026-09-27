@@ -1245,10 +1245,10 @@ export const useWgoStore = create<WgoState>()(
         }));
       },
 
-      reportTarget: ({ kind, targetId, reason }) =>
+      reportTarget: ({ kind, targetId, reason, note }) =>
         set((st) => ({
           reports: [
-            { id: `r-${Date.now()}`, kind, targetId, reason, at: Date.now() },
+            { id: `r-${Date.now()}`, kind, targetId, reason, note, at: Date.now() },
             ...(st.reports ?? []),
           ],
         })),
