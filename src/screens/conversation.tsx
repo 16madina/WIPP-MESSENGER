@@ -30,7 +30,7 @@ import {
 } from "lucide-react";
 import { Avatar, GroupAvatar } from "@/components/avatar";
 import { SmartImg } from "@/components/smart-img";
-import { StoryMediaGrid, readImageFile, readVideoFile, type StoryMediaPick } from "@/components/gallery";
+import { StoryMediaGrid, type StoryMediaPick } from "@/components/gallery";
 import { BlockSheet, ReportSheet, SafetyRow } from "@/components/safety";
 import { SurpriseFlow } from "@/components/native/SurpriseFlow";
 import { SurpriseReveal } from "@/components/native/SurpriseReveal";
