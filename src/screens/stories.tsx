@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Eye, Flag, Volume2, VolumeX, X } from "lucide-react";
+import { Eye, Flag, Lock, Trash2, Users, Volume2, VolumeX, X } from "lucide-react";
 import { Avatar } from "@/components/avatar";
 import { SmartImg } from "@/components/smart-img";
 import { StoryMediaGrid, type StoryMediaPick } from "@/components/gallery";
@@ -10,6 +10,7 @@ import { formatRelativeShort, formatRemain } from "@/lib/format";
 import { useT, useWgoStore } from "@/lib/store";
 import { storyViewMs } from "@/lib/story-music";
 import type { StoryMusic } from "@/lib/story-music";
+import type { StoryAudience } from "@/lib/types";
 import { isStoryLive, STORY_TTL_24H, STORY_TTL_48H, STORY_VIDEO_MAX_MS, storyTtlMs } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
@@ -27,6 +28,9 @@ export function StoriesScreen({ userId }: { userId: string }) {
   const [now, setNow] = useState(Date.now());
   const [muted, setMuted] = useState(false);
   const [reportOpen, setReportOpen] = useState(false);
+  const [manageOpen, setManageOpen] = useState(false);
+  const deleteStory = useWgoStore((s) => s.deleteStory);
+  const setStoryAudience = useWgoStore((s) => s.setStoryAudience);
   const videoRef = useRef<HTMLVideoElement>(null);
 
   const stories = useMemo(
@@ -54,13 +58,13 @@ export function StoriesScreen({ userId }: { userId: string }) {
   }, [i, stories.length]);
 
   useEffect(() => {
-    if (!item || viewsOpen || reportOpen) return;
+    if (!item || viewsOpen || reportOpen || manageOpen) return;
     const id = window.setTimeout(() => {
       if (i < stories.length - 1) setI((n) => n + 1);
       else pop();
     }, storyViewMs(item));
     return () => window.clearTimeout(id);
-  }, [i, item, stories.length, pop, viewsOpen, reportOpen]);
+  }, [i, item, stories.length, pop, viewsOpen, reportOpen, manageOpen]);
 
   useStoryAudio(item?.music?.src, { paused: !item?.music || viewsOpen || reportOpen, muted, loop: true });
 
@@ -191,10 +195,18 @@ export function StoriesScreen({ userId }: { userId: string }) {
           onClick={() => (i < stories.length - 1 ? setI((n) => n + 1) : pop())}
         />
         {mine ? (
-          <div className="relative z-20 mt-auto p-4 pb-8">
+          <div className="relative z-20 mt-auto flex gap-2 p-4 pb-8">
             <button
               type="button"
-              className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-white/10 text-[14px] font-medium glass"
+              className="flex size-12 shrink-0 items-center justify-center rounded-full bg-white/10 glass"
+              onClick={() => setManageOpen(true)}
+              aria-label="Gérer ma story"
+            >
+              <Lock className="size-5" />
+            </button>
+            <button
+              type="button"
+              className="flex h-12 flex-1 items-center justify-center gap-2 rounded-full bg-white/10 text-[14px] font-medium glass"
               onClick={() => setViewsOpen(true)}
             >
               <Eye className="size-4" />
@@ -253,6 +265,27 @@ export function StoriesScreen({ userId }: { userId: string }) {
           </div>
         </div>
       ) : null}
+      {manageOpen ? (
+        <div className="absolute inset-0 z-40 flex flex-col justify-end">
+          <button type="button" className="absolute inset-0 bg-ink/50" aria-label={t("back")} onClick={() => setManageOpen(false)} />
+          <div className="glass-strong relative rounded-t-2xl px-4 pt-3 pb-8 text-fg">
+            <div className="mx-auto mb-3 h-1 w-10 rounded-full bg-muted/40" />
+            <StoryAudiencePicker value={item.audience ?? "contacts"} onChange={(a) => setStoryAudience(item.id, a)} />
+            <button
+              type="button"
+              className="mt-2 flex h-12 w-full items-center justify-center gap-2 rounded-full bg-danger/15 text-[15px] font-medium text-danger"
+              onClick={() => {
+                if (!window.confirm("Supprimer cette story ? Elle disparaîtra pour tout le monde.")) return;
+                deleteStory(item.id);
+                setManageOpen(false);
+                if (stories.length <= 1) pop();
+              }}
+            >
+              <Trash2 className="size-4" /> Supprimer ma story
+            </button>
+          </div>
+        </div>
+      ) : null}
       <ReportSheet
         open={reportOpen}
         onClose={() => setReportOpen(false)}
@@ -274,6 +307,7 @@ export function NewStoryScreen() {
   const [draft, setDraft] = useState<StoryMediaPick | null>(null);
   const [ttlMs, setTtlMs] = useState(STORY_TTL_24H);
   const [music, setMusic] = useState<StoryMusic | null>(null);
+  const [audience, setAudience] = useState<StoryAudience>("contacts");
   const [musicOpen, setMusicOpen] = useState(false);
   const bgs = ["#0B1220", "#151c2c", "#1a2a4a", "#3b2a12"];
   const [bg, setBg] = useState(bgs[0]);
@@ -323,6 +357,7 @@ export function NewStoryScreen() {
             ) : null}
             <StoryMusicButton track={music} onClick={() => setMusicOpen(true)} />
             <StoryTtlPicker value={ttlMs} onChange={setTtlMs} />
+            <StoryAudiencePicker compact value={audience} onChange={setAudience} />
             <Btn
               className="w-full"
               onClick={() => {
@@ -333,9 +368,10 @@ export function NewStoryScreen() {
                     durationMs: Math.min(draft.durationMs, STORY_VIDEO_MAX_MS),
                     ttlMs,
                     music: music ?? undefined,
+                    audience,
                   });
                 } else {
-                  addStory({ type: "image", imageUrl: draft.url, ttlMs, music: music ?? undefined });
+                  addStory({ type: "image", imageUrl: draft.url, ttlMs, music: music ?? undefined, audience });
                 }
                 pop();
               }}
@@ -395,7 +431,7 @@ export function NewStoryScreen() {
               className="w-full"
               disabled={!text.trim()}
               onClick={() => {
-                addStory({ type: "text", text: text.trim(), bg, ttlMs, music: music ?? undefined });
+                addStory({ type: "text", text: text.trim(), bg, ttlMs, music: music ?? undefined, audience });
                 pop();
               }}
             >
@@ -435,6 +471,42 @@ function StoryTtlPicker({
           {t("story48h")}
         </Chip>
       </div>
+    </div>
+  );
+}
+
+const AUDIENCES: { v: StoryAudience; label: string; hint: string }[] = [
+  { v: "contacts", label: "Mes contacts WIPP", hint: "Toutes les personnes connectées avec toi" },
+  { v: "close", label: "Proches", hint: "Seulement tes contacts favoris" },
+  { v: "me", label: "Moi seul", hint: "Personne d'autre ne la voit" },
+];
+
+export function StoryAudiencePicker({ value, onChange, compact }: { value: StoryAudience; onChange: (a: StoryAudience) => void; compact?: boolean }) {
+  if (compact) {
+    return (
+      <div className="mb-3">
+        <p className="mb-2 text-center text-[12px] font-medium text-muted">Qui peut voir ma story ?</p>
+        <div className="flex justify-center gap-2">
+          {AUDIENCES.map((a) => (
+            <Chip key={a.v} active={value === a.v} onClick={() => onChange(a.v)}>{a.label.replace("Mes contacts WIPP", "Contacts")}</Chip>
+          ))}
+        </div>
+      </div>
+    );
+  }
+  return (
+    <div>
+      <h2 className="mb-2 flex items-center justify-center gap-2 text-[15px] font-semibold"><Users className="size-4" />Qui peut voir ma story ?</h2>
+      {AUDIENCES.map((a) => (
+        <button key={a.v} type="button" onClick={() => onChange(a.v)}
+          className="flex min-h-12 w-full items-center gap-3 rounded-xl px-3 py-2 text-left active:bg-fg/5">
+          <span className={cn("size-5 shrink-0 rounded-full ring-2", value === a.v ? "bg-accent ring-accent" : "ring-muted/50")} />
+          <span className="min-w-0">
+            <span className="block text-[15px] font-medium">{a.label}</span>
+            <span className="block text-[12px] text-muted">{a.hint}</span>
+          </span>
+        </button>
+      ))}
     </div>
   );
 }
