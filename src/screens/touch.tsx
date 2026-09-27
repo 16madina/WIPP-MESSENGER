@@ -131,15 +131,23 @@ export function WgoTouchScreen() {
   const [contact, setContact] = useState(false);
   const stopRef = useRef<(() => void) | null>(null);
   const ttlRef = useRef<number | null>(null);
+  const pollRef = useRef<number | null>(null);
+  const inviteRef = useRef<{ id: string; token: string } | null>(null);
+  const [devToken, setDevToken] = useState<string | null>(null);
   const { state, peer, cards } = ctx;
   const peerUser = peer ? (users[peer.id] ?? CARD_USER(peer)) : null;
 
   const clear = () => {
     stopRef.current?.(); stopRef.current = null;
     if (ttlRef.current) window.clearTimeout(ttlRef.current);
-    ttlRef.current = null;
+    if (pollRef.current) window.clearInterval(pollRef.current);
+    ttlRef.current = null; pollRef.current = null;
   };
-  useEffect(() => clear, []);
+  useEffect(() => () => {
+    clear();
+    const inv = inviteRef.current;
+    if (inv) void import("@/lib/touch-remote").then((m) => m.cancelTouch(inv.id));
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (state === "accepted" && peer) {
@@ -148,28 +156,68 @@ export function WgoTouchScreen() {
       }));
       completeTouch(peer.id);
       haptic("success"); playConnectChime(); announce(t("touchConnected"));
-      clear();
+      clear(); inviteRef.current = null;
     }
     if (state === "declined" || state === "expired" || state === "failed") { haptic("error"); clear(); }
     if (state === "detected" || state === "multiple_devices") haptic("connect");
   }, [state]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  function start() {
+  async function start() {
     clear();
     dispatch({ type: "START" });
     haptic("hold");
     setContact(false);
     if (!reducedMotion()) window.setTimeout(() => setContact(true), 720);
-    // Jeton court et opaque — jamais numéro, e-mail ni identifiant permanent.
+    const remote = await import("@/lib/touch-remote");
+    if (await remote.hasSession()) {
+      // Réel (Migration D) : jeton opaque 60 s émis par le serveur ; seule la détection est NATIVE.
+      const inv = await remote.createTouch();
+      if (inv.status !== "created" || !("token" in inv) || !inv.token) return dispatch({ type: "FAIL", reason: "error" });
+      inviteRef.current = { id: inv.id!, token: inv.token };
+      setDevToken(inv.token);
+      stopRef.current = providers.proximity.start(inv.token, () => { /* résultat lu côté serveur */ });
+      pollRef.current = window.setInterval(async () => {
+        const r = await remote.touchCandidates(inv.id!);
+        if (r.cards.length) { if (pollRef.current) window.clearInterval(pollRef.current); pollRef.current = null; dispatch({ type: "FOUND", cards: r.cards }); }
+        else if (r.status === "expired") dispatch({ type: "FOUND", cards: [] });
+      }, 1500);
+      ttlRef.current = window.setTimeout(() => { clear(); dispatch({ type: "FOUND", cards: [] }); }, SEARCH_MS);
+      return;
+    }
+    // Hors session : démonstration, aucun téléphone réellement détecté.
     const token = Array.from(crypto.getRandomValues(new Uint8Array(12)), (b) => b.toString(16).padStart(2, "0")).join("");
     stopRef.current = providers.proximity.start(token, (found) => dispatch({ type: "FOUND", cards: found }));
   }
 
-  function connect() {
+  async function connect() {
     dispatch({ type: "CONNECT" });
-    // BACKEND : création de la demande (wipp_touch_invites) ; ici on passe en attente de réponse de B.
-    window.setTimeout(() => dispatch({ type: "SENT" }), 500);
-    ttlRef.current = window.setTimeout(() => dispatch({ type: "EXPIRED" }), TOUCH_REQUEST_TTL_MS);
+    const inv = inviteRef.current;
+    if (!inv || !peer) {
+      window.setTimeout(() => dispatch({ type: "SENT" }), 500);
+      ttlRef.current = window.setTimeout(() => dispatch({ type: "EXPIRED" }), TOUCH_REQUEST_TTL_MS);
+      return;
+    }
+    const remote = await import("@/lib/touch-remote");
+    const r = await remote.requestTouch(inv.id, peer.id);
+    if (r.status === "expired") return dispatch({ type: "FAIL", reason: "expired" });
+    if (r.status === "already_connected") { dispatch({ type: "SENT" }); return dispatch({ type: "ACCEPTED" }); }
+    if (r.status !== "sent") return dispatch({ type: "FAIL", reason: "error" });
+    dispatch({ type: "SENT" });
+    clear();
+    pollRef.current = window.setInterval(async () => {
+      const s = await remote.touchStatus(inv.id);
+      if (!s) return;
+      if (s.status === "accepted") dispatch({ type: "ACCEPTED" });
+      else if (s.status === "declined") dispatch({ type: "DECLINED" });
+      else if (s.status === "expired" || (s.status === "pending" && new Date(s.expiresAt) <= new Date())) dispatch({ type: "EXPIRED" });
+    }, 2000);
+  }
+
+  function cancel() {
+    clear();
+    const inv = inviteRef.current; inviteRef.current = null;
+    if (inv) void import("@/lib/touch-remote").then((m) => m.cancelTouch(inv.id));
+    dispatch({ type: "RESET" });
   }
 
   if (!allowed) {
