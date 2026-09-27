@@ -1,4 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { issueTempToken, parseWippQr, profileQr, redeemTempToken, tempQr } from "@/lib/qr-payload";
+import { providers } from "@/lib/providers";
 import { BadgeCheck, Lock, MapPin, Phone, QrCode, ScanLine, Search, Share2, Smartphone, Store, Video } from "lucide-react";
 import { Avatar } from "@/components/avatar";
 import { SmartImg } from "@/components/smart-img";
@@ -77,11 +79,36 @@ export function MyQrScreen() {
   const push = useWgoStore((s) => s.push);
   const me = useWgoStore((s) => s.me);
   const [copied, setCopied] = useState(false);
+  const [temp, setTemp] = useState<{ token: string; expiresAt: number } | null>(null);
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    if (!temp) return;
+    const id = window.setInterval(() => {
+      const n = Date.now();
+      setNow(n);
+      // À expiration : ancien jeton invalidé, nouveau jeton émis.
+      if (n >= temp.expiresAt) setTemp(issueTempToken(me.username));
+    }, 1000);
+    return () => window.clearInterval(id);
+  }, [temp, me.username]);
+  const left = temp ? Math.max(0, Math.ceil((temp.expiresAt - now) / 1000)) : 0;
   const touchInvite = getActiveTouchInvite();
   const isTouchShare = Boolean(touchInvite?.status === "active" && touchInvite.code);
-  const link = isTouchShare ? touchInvite!.qrPayload.replace(/^https?:\/\//, "") : `${APP_HOST}/${me.username}`;
-  const qrValue = isTouchShare ? touchInvite!.qrPayload : link;
-  const shareUrl = isTouchShare ? touchInvite!.qrPayload : `https://${link}`;
+  const permanent = profileQr(me.username);
+  const qrValue = isTouchShare ? touchInvite!.qrPayload : temp ? tempQr(temp.token) : permanent;
+  const link = qrValue.replace(/^https?:\/\//, "").replace(/\/t\/.{8}.*/, "/t/…");
+  const shareUrl = isTouchShare ? touchInvite!.qrPayload : permanent;
+  void APP_HOST;
+  async function save() {
+    const svg = document.querySelector(".wipp-qr-save svg");
+    if (!svg) return;
+    const blob = new Blob([new XMLSerializer().serializeToString(svg)], { type: "image/svg+xml" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = `wipp-${me.username}.svg`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+  }
 
   async function share() {
     const payload = {
