@@ -322,6 +322,124 @@ export type Database = {
         }
         Relationships: []
       }
+      wipp_connection_requests: {
+        Row: {
+          created_at: string
+          expires_at: string
+          id: string
+          recipient_id: string
+          responded_at: string | null
+          sender_id: string
+          status: string
+          via: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at?: string
+          id?: string
+          recipient_id: string
+          responded_at?: string | null
+          sender_id: string
+          status?: string
+          via?: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string
+          id?: string
+          recipient_id?: string
+          responded_at?: string | null
+          sender_id?: string
+          status?: string
+          via?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wipp_connection_requests_recipient_id_fkey"
+            columns: ["recipient_id"]
+            isOneToOne: false
+            referencedRelation: "wipp_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "wipp_connection_requests_recipient_id_fkey"
+            columns: ["recipient_id"]
+            isOneToOne: false
+            referencedRelation: "wipp_public_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "wipp_connection_requests_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "wipp_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "wipp_connection_requests_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "wipp_public_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      wipp_connections: {
+        Row: {
+          created_at: string
+          id: string
+          status: string
+          user_a: string
+          user_b: string
+          via: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          status?: string
+          user_a: string
+          user_b: string
+          via?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          status?: string
+          user_a?: string
+          user_b?: string
+          via?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wipp_connections_user_a_fkey"
+            columns: ["user_a"]
+            isOneToOne: false
+            referencedRelation: "wipp_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "wipp_connections_user_a_fkey"
+            columns: ["user_a"]
+            isOneToOne: false
+            referencedRelation: "wipp_public_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "wipp_connections_user_b_fkey"
+            columns: ["user_b"]
+            isOneToOne: false
+            referencedRelation: "wipp_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "wipp_connections_user_b_fkey"
+            columns: ["user_b"]
+            isOneToOne: false
+            referencedRelation: "wipp_public_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       wipp_devices: {
         Row: {
           created_at: string
@@ -1060,6 +1178,14 @@ export type Database = {
         Returns: boolean
       }
       wipp_my_profile_id: { Args: never; Returns: string }
+      wipp_respond_connection_request: {
+        Args: { _action: string; _id: string; _me: string }
+        Returns: Json
+      }
+      wipp_send_connection_request: {
+        Args: { _me: string; _recipient: string; _via?: string }
+        Returns: Json
+      }
     }
     Enums: {
       [_ in never]: never
