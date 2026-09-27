@@ -664,14 +664,14 @@ function GroupAudioStage() {
   const all = [{ id: "me", state: "connected" as const, muted: c.muted, camOff: true }, ...people];
   const me = useWgoStore((s) => s.me);
   return (
-    <div className="flex flex-1 flex-col px-5">
+    <div className="flex min-h-0 flex-1 flex-col px-5">
       <div className="pt-3 text-center">
         <h1 className="truncate text-[22px] font-semibold">{c.title || "Appel de groupe"}</h1>
         <p className="text-[13px] tabular-nums text-paper/60">
           {c.status === "reconnecting" ? "Reconnexion…" : `${clock(elapsed)} · ${people.filter((p) => p.state === "connected").length + 1} participants`}
         </p>
       </div>
-      <div className="no-scrollbar mt-6 grid flex-1 content-center grid-cols-2 gap-x-4 gap-y-6 overflow-y-auto">
+      <div className=cn("no-scrollbar my-4 grid min-h-0 flex-1 content-center gap-x-3 overflow-y-auto", all.length > 6 ? "grid-cols-3 gap-y-4" : "grid-cols-2 gap-y-6")>
         {all.map((p) => {
           const u = p.id === "me" ? { displayName: me.displayName, avatar: me.avatar, firstName: "Moi" } : users[p.id];
           const speaking = c.speakingId === p.id && p.state === "connected" && !p.muted;
