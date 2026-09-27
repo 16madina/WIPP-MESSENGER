@@ -91,7 +91,7 @@ function noise(t: number, dur: number, gain = 0.05) {
   src.start(t);
 }
 
-function playSound(kind: StickerSound) {
+export function playSound(kind: StickerSound) {
   const audio = ac();
   if (!audio) return;
   const t = audio.currentTime;
