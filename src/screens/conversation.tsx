@@ -312,10 +312,6 @@ export function ConversationScreen({ chatId }: { chatId: string }) {
       window.clearInterval(beat);
       window.clearTimeout(typingTimer);
       window.removeEventListener("online", onOnline);
-      void import("@/lib/messaging/client").then((api) => {
-        void api.postFocus(serverId, false);
-        void api.postTyping(serverId, false);
-      });
     };
   }, [chatId, markRead, sealExpired]);
 
