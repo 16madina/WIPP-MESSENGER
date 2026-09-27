@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
-import { issueTempToken, profileQr, tempQr } from "@/lib/qr-payload";
+import { profileQr, tempQr } from "@/lib/qr-payload";
+import { issueTemp } from "@/lib/qr-remote";
+import { stashHandoff } from "@/components/qr-results";
 import { LiveScanner } from "@/components/live-scanner";
 import { BadgeCheck, Lock, MapPin, Phone, QrCode, ScanLine, Search, Share2, Smartphone, Store, Video } from "lucide-react";
 import { Avatar } from "@/components/avatar";
@@ -87,10 +89,21 @@ export function MyQrScreen() {
       const n = Date.now();
       setNow(n);
       // À expiration : ancien jeton invalidé, nouveau jeton émis.
-      if (n >= temp.expiresAt) setTemp(issueTempToken(me.username));
+      if (n >= temp.expiresAt) void renewTemp();
     }, 1000);
     return () => window.clearInterval(id);
-  }, [temp, me.username]);
+  }, [temp]);
+  const [tempErr, setTempErr] = useState<string | null>(null);
+  async function renewTemp() {
+    setTemp(null);
+    try {
+      const r = await issueTemp();
+      if ("error" in r) setTempErr(r.error === "no_session" ? "Connecte-toi avec un vrai compte pour un QR temporaire." : "QR temporaire indisponible, réessaie.");
+      else { setTempErr(null); setTemp(r); setNow(Date.now()); }
+    } catch {
+      setTempErr("QR temporaire indisponible, réessaie.");
+    }
+  }
   const left = temp ? Math.max(0, Math.ceil((temp.expiresAt - now) / 1000)) : 0;
   const touchInvite = getActiveTouchInvite();
   const isTouchShare = Boolean(touchInvite?.status === "active" && touchInvite.code);
@@ -146,6 +159,7 @@ export function MyQrScreen() {
             <QrCard value={qrValue} size={220} />
           </div>
         </div>
+        {tempErr && !temp ? <p className="mt-3 text-[13px] text-danger" role="alert">{tempErr}</p> : null}
         {temp && !isTouchShare ? (
           <p className="mt-3 font-mono text-[13px] text-accent" aria-live="polite">
             Expire dans {String(Math.floor(left / 60)).padStart(2, "0")}:{String(left % 60).padStart(2, "0")}
@@ -168,7 +182,7 @@ export function MyQrScreen() {
             <Btn variant="secondary" onClick={() => void save()}>Enregistrer</Btn>
             <Btn
               variant="secondary"
-              onClick={() => setTemp(temp ? null : issueTempToken(me.username))}
+              onClick={() => (temp ? setTemp(null) : void renewTemp())}
             >
               {temp ? "QR permanent" : "QR temporaire"}
             </Btn>
@@ -285,6 +299,8 @@ export function ScannerScreen() {
         onResult={(d) => {
           if (!d.ok) return setFail(d.error);
           if (d.kind === "profile") replace({ name: "found-profile", userId: d.userId, via: "qr" });
+          else if (d.kind === "remote-profile") replace({ name: "qr-profile", key: stashHandoff({ kind: "profile", profile: d.profile, connected: d.connected }) });
+          else if (d.kind === "remote-group") replace({ name: "qr-group", key: stashHandoff({ kind: "group", token: d.token, name: d.name, members: d.members, member: d.member }) });
           else if (d.kind === "group") replace({ name: "group-invite", token: d.token });
           else replace({ name: "shop", shopId: d.shopId });
         }}

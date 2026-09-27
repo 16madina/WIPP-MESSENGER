@@ -1,5 +1,6 @@
 import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import { OfflineBanner } from "@/components/offline-banner";
+import { QrGroupScreen, QrProfileScreen } from "@/components/qr-results";
 import { AppLockGate } from "@/components/safety";
 import { PhoneShell } from "@/components/phone-shell";
 import { TabBar } from "@/components/tab-bar";
@@ -181,6 +182,10 @@ function ScreenSwitch({ screen }: { screen: Screen }) {
       return <SearchUserScreen />;
     case "nearby":
       return <NearbyScreen />;
+    case "qr-profile":
+      return <QrProfileScreen handoffKey={screen.key} />;
+    case "qr-group":
+      return <QrGroupScreen handoffKey={screen.key} />;
     case "found-profile":
       return <FoundProfileScreen userId={screen.userId} via={screen.via} />;
     case "explore":
