@@ -264,9 +264,13 @@ function AniBisouSticker({
 
   if (!animated) {
     return (
-      <div className="size-full" style={{ width: size, height: size }}>
-        <AniClip loop />
-      </div>
+      <img
+        src="/stickers/aniwipp/bisou-poster.png"
+        alt=""
+        draggable={false}
+        className="size-full object-contain"
+        style={{ width: size, height: size }}
+      />
     );
   }
 
