@@ -291,9 +291,12 @@ export function ConversationScreen({ chatId }: { chatId: string }) {
     const st = useWgoStore.getState();
     if ((st.messages[chatId] ?? []).some((m) => m.id === "l3-sys")) return;
     void import("@/lib/seed").then(({ lot3DemoMessages }) =>
-      useWgoStore.setState((s) => ({
-        messages: { ...s.messages, [chatId]: [...(s.messages[chatId] ?? []), ...lot3DemoMessages(chatId, "alex")] },
-      })),
+      useWgoStore.setState((s) => {
+        // Revérifié ici : deux ouvertures rapprochées ajoutaient la démo en double.
+        const cur = s.messages[chatId] ?? [];
+        if (cur.some((m) => m.id === "l3-sys")) return {};
+        return { messages: { ...s.messages, [chatId]: [...cur, ...lot3DemoMessages(chatId, "alex")] } };
+      }),
     );
   }, [chatId]);
   const [nowTick, setNowTick] = useState(() => Date.now());
