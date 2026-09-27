@@ -1254,7 +1254,7 @@ export function ConversationScreen({ chatId }: { chatId: string }) {
                   onClick={() => {
                     setPickStickers(false);
                     setEmojiBar(false);
-                    setAttach(true);
+                    setSurprise(true);
                   }}
                 >
                   <Plus className="size-5" />
@@ -1730,6 +1730,7 @@ export function ConversationScreen({ chatId }: { chatId: string }) {
       </Sheet>
       {surprise ? (
         <SurpriseFlow
+          autoOpen
           onSend={(sur) => {
             haptic("send");
             sendMessage(chatId, { type: "scratch", text: sur.message });

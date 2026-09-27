@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { createPortal } from "react-dom";
 import { ArrowLeft, Camera, ChevronRight, Clock3, Eye, FileText, Gift, Images, MapPin, PartyPopper, Smile, Sparkles, UserRound, WandSparkles, X } from "lucide-react";
@@ -30,7 +30,7 @@ const options = [
 ] as const;
 
 /** Parcours local de composition ; seuls les messages à gratter sont simulés dans la conversation. */
-export function SurpriseFlow({ onSend, onShareContent, onOpenStickers, onUnavailable }: { onSend: (surprise: Surprise) => void; onShareContent: (text: string) => void; onOpenStickers: () => void; onUnavailable: (label: string) => void }) {
+export function SurpriseFlow({ onSend, onShareContent, onOpenStickers, onUnavailable, autoOpen = false }: { onSend: (surprise: Surprise) => void; onShareContent: (text: string) => void; onOpenStickers: () => void; onUnavailable: (label: string) => void; autoOpen?: boolean }) {
   const reducedMotion = useReducedMotion();
   const galleryRef = useRef<HTMLInputElement>(null);
   const cameraRef = useRef<HTMLInputElement>(null);
@@ -45,6 +45,7 @@ export function SurpriseFlow({ onSend, onShareContent, onOpenStickers, onUnavail
   const [animationCategory, setAnimationCategory] = useState<string | null>(null);
   const [showPreview, setShowPreview] = useState(false);
   const [previewRun, setPreviewRun] = useState(0);
+  useEffect(() => { if (autoOpen) setStage("share"); }, [autoOpen]);
   const close = () => { setShowPreview(false); setDrawer(null); setAnimationCategory(null); setStage("closed"); };
   const selectedOption = options.find(option => option.id === kind) ?? options[0];
   const selectedAnimation = findAnimation(animation);
@@ -80,7 +81,7 @@ export function SurpriseFlow({ onSend, onShareContent, onOpenStickers, onUnavail
     close();
   };
   return <>
-    <Pressable aria-label="Ouvrir le menu Partager" onClick={() => { haptic("light"); setStage("share"); }} className="text-wipp-muted"><span className="flex h-8 w-8 items-center justify-center rounded-full border border-wipp-muted/60 text-[25px] font-light leading-none">+</span></Pressable>
+    {!autoOpen && <Pressable aria-label="Ouvrir le menu Partager" onClick={() => { haptic("light"); setStage("share"); }} className="text-wipp-muted"><span className="flex h-8 w-8 items-center justify-center rounded-full border border-wipp-muted/60 text-[25px] font-light leading-none">+</span></Pressable>}
     <input ref={galleryRef} type="file" accept="image/*,video/*" className="hidden" aria-label="Choisir dans la galerie" onChange={fileChosen("Galerie")} />
     <input ref={cameraRef} type="file" accept="image/*" capture="environment" className="hidden" aria-label="Prendre une photo" onChange={fileChosen("Caméra")} />
     <input ref={documentRef} type="file" className="hidden" aria-label="Choisir un document" onChange={fileChosen("Document")} />
