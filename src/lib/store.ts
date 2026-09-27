@@ -841,11 +841,6 @@ export const useWgoStore = create<WgoState>()(
         window.setTimeout(() => {
           const current = get().chats.find((c) => c.id === chatId);
           if (!current || isChatSealed(current)) return;
-          set((st) => ({ typing: { ...st.typing, [chatId]: true } }));
-        }, 700);
-        window.setTimeout(() => {
-          const current = get().chats.find((c) => c.id === chatId);
-          if (!current || isChatSealed(current)) return;
           const reply: Message = {
             id: uid("m"),
             chatId,
