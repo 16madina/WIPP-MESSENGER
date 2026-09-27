@@ -25,6 +25,7 @@ import {
   pendingPhone,
   startPhoneCode,
   startTestCode,
+  isTestPhone,
   verifyPhoneCode,
 } from "@/lib/auth-flow";
 import { resetPasswordPhone, signinPhone, signupPhone } from "@/lib/auth.functions";
