@@ -17,7 +17,11 @@ let pending: Pending | null = null;
 
 export const RECAPTCHA_ID = "wipp-recaptcha";
 
-/** Mode test en attendant Firebase : numéro « test » ou « 1234567 », code « test », sans SMS. */
+/**
+ * REMOVE BEFORE PRODUCTION — mode test en attendant Firebase :
+ * numéro « test » ou « 1234567 », code « test », sans SMS. Supprimer isTestPhone,
+ * startTestCode, la branche « test » de verifyPhoneCode et leurs appels dans src/screens/auth.tsx.
+ */
 export function isTestPhone(phone: string): boolean {
   const p = phone.trim().toLowerCase();
   return p === "test" || p === "1234567";
@@ -63,6 +67,7 @@ export async function verifyPhoneCode(
 ): Promise<{ idToken: string; phone: string } | { error: string }> {
   if (!pending) return { error: "Code expiré. Renvoie un nouveau code." };
   if (!pending.confirmation) {
+    // REMOVE BEFORE PRODUCTION — code démo « test ».
     if (code.trim().toLowerCase() === "test") return { idToken: "test-mode", phone: pending.phone };
     return { error: "Code incorrect ou expiré." };
   }
