@@ -48,6 +48,7 @@ import {
   SecurityScreen,
 } from "./me";
 import { LegalScreen } from "./legal";
+import { BusinessCardScreen, DevicesScreen, LanguageScreen } from "./me-extras";
 import { RealIncomingScreen, RealTouchIncomingScreen, TouchIncomingScreen } from "./touch-incoming";
 
 const loadCalls = () => import("./calls");
@@ -208,6 +209,12 @@ function ScreenSwitch({ screen }: { screen: Screen }) {
       return <NotificationsScreen />;
     case "appearance":
       return <AppearanceScreen />;
+    case "business-card":
+      return <BusinessCardScreen />;
+    case "devices":
+      return <DevicesScreen />;
+    case "language":
+      return <LanguageScreen />;
     case "accessibility":
       return <AccessibilityScreen />;
     case "help":

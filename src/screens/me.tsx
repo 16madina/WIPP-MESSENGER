@@ -343,7 +343,7 @@ export function MeScreen() {
                 color: "text-accent",
                 title: t("myCard"),
                 sub: t("myCardSub"),
-                go: () => push({ name: "my-qr" }),
+                go: () => push({ name: "business-card" }),
               },
               {
                 icon: Megaphone,
@@ -409,7 +409,7 @@ export function MeScreen() {
               icon={<Globe className="size-4" />}
               label={t("language")}
               value={language === "fr" ? t("french") : t("english")}
-              onClick={() => push({ name: "appearance" })}
+              onClick={() => push({ name: "language" })}
             />
           </Section>
         </div>
@@ -419,7 +419,7 @@ export function MeScreen() {
               icon={<Smartphone className="size-4" />}
               label={t("devices")}
               value="1"
-              onClick={() => push({ name: "security" })}
+              onClick={() => push({ name: "devices" })}
             />
             <Row icon={<HelpCircle className="size-4" />} label={t("help")} onClick={() => push({ name: "help" })} />
             <Row
