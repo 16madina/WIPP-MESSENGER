@@ -250,7 +250,7 @@ export function WgoTouchScreen() {
     request_sent: `Demande envoyée. En attente de ${peer?.displayName.split(" ")[0] ?? "la réponse"}…`,
     declined: "La demande a été refusée.",
     expired: "La demande a expiré.",
-    failed: ctx.reason === "none" ? "Personne détectée" : "Détection impossible pour le moment.",
+    failed: ctx.reason === "none" ? "Personne détectée" : ctx.reason === "expired" ? "Le Touch a expiré." : "Détection impossible pour le moment.",
   };
 
   return (
@@ -338,6 +338,7 @@ export function WgoTouchScreen() {
           /* REMOVE BEFORE PRODUCTION — simulateur d'états Touch (le navigateur ne détecte aucun téléphone) */
           <details className="mx-5 mt-4 text-[12px] text-paper/45">
             <summary className="cursor-pointer py-2 text-center">Debug · simuler</summary>
+            <DevTouchBridge token={devToken} />
             <div className="grid grid-cols-2 gap-2">
               {[
                 ["1 personne", () => dispatch({ type: "FOUND", cards: debugCards(users, 1) })],
@@ -392,7 +393,7 @@ export function WgoTouchScreen() {
           </>
         ) : null}
         {state === "searching" || state === "detected" || state === "multiple_devices" || state === "request_sent" ? (
-          <button type="button" className="mt-1 h-11 w-full text-[13px] text-paper/45" onClick={() => { clear(); dispatch({ type: "RESET" }); }}>
+          <button type="button" className="mt-1 h-11 w-full text-[13px] text-paper/45" onClick={cancel}>
             {t("cancel")}
           </button>
         ) : null}
@@ -403,4 +404,24 @@ export function WgoTouchScreen() {
 
 function debugCards(users: Record<string, User>, n: number): PublicCard[] {
   return Object.values(users).slice(0, n).map((u) => ({ id: u.id, displayName: u.displayName, username: u.username, avatar: u.avatar }));
+}
+
+/** REMOVE BEFORE PRODUCTION — remplace l'entrée BLE/NFC native par un copier-coller du jeton entre deux sessions. */
+function DevTouchBridge({ token }: { token: string | null }) {
+  const [v, setV] = useState("");
+  const [out, setOut] = useState<string | null>(null);
+  return (
+    <div className="mb-3 grid gap-2">
+      <p data-testid="dev-touch-token" className="break-all text-center">Jeton : {token ?? "—"}</p>
+      <div className="flex gap-2">
+        <input aria-label="Jeton capté (dev)" value={v} onChange={(e) => setV(e.target.value)}
+          className="h-11 min-w-0 flex-1 rounded-xl bg-paper/8 px-3 text-paper outline-none" />
+        <button type="button" className="h-11 rounded-xl bg-paper/8 px-3"
+          onClick={async () => { const m = await import("@/lib/touch-remote"); setOut((await m.reportTouch(v.trim(), "debug", [-50])).status); }}>
+          Capter (debug)
+        </button>
+      </div>
+      {out ? <p role="status" className="text-center">Résultat : {out}</p> : null}
+    </div>
+  );
 }
