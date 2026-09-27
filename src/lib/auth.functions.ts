@@ -1,4 +1,4 @@
-// WIPP — inscription / connexion : prénom, nom, numéro vérifié par SMS (Firebase), mot de passe.
+// WIPP — inscription par numéro vérifié par SMS (Firebase) ; secret interne généré côté serveur.
 // Le numéro reste privé (jamais affiché, pas de recherche par numéro).
 // Compte Supabase Auth avec e-mail interne invisible <profileId>@users.wipp.app.
 // Migration douce : un ancien profil (numéro + password_hash) est relié au premier login.
@@ -43,7 +43,7 @@ export const usernameAvailable = createServerFn({ method: "POST" })
   });
 
 export const signupPhone = createServerFn({ method: "POST" })
-  .inputValidator(parse(z.object({ idToken: z.string().min(20), firstName: Name, lastName: Name, username: Username, country: Country, avatar: z.string().max(60000).refine((v) => /^\/avatars\/[a-z0-9-]+\.jpg$/.test(v) || /^data:image\/jpeg;base64,[A-Za-z0-9+/]+={0,2}$/.test(v)).optional(), password: Password.optional() }), "Informations du profil invalides"))
+  .inputValidator(parse(z.object({ idToken: z.string().min(20), firstName: Name, lastName: Name, username: Username, country: Country, avatar: z.string().max(60000).refine((v) => /^\/avatars\/[a-z0-9-]+\.jpg$/.test(v) || /^data:image\/jpeg;base64,[A-Za-z0-9+/]+={0,2}$/.test(v)).optional() }), "Informations du profil invalides"))
   .handler(async ({ data }): Promise<Result> => {
     const { verifyFirebasePhone } = await import("./firebase-verify.server");
     let v: { uid: string; phone: string };
@@ -58,7 +58,7 @@ export const signupPhone = createServerFn({ method: "POST" })
     const id = "u_" + crypto.randomUUID().replace(/-/g, "").slice(0, 24);
     const email = `${id}@users.wipp.app`;
     const bytes = crypto.getRandomValues(new Uint8Array(32));
-    const password = data.password ?? Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("");
+    const password = Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("");
     const { data: c, error } = await admin.auth.admin.createUser({ email, password, email_confirm: true, user_metadata: { country: data.country } });
     if (error || !c.user) return { ok: false, error: "Création du compte impossible" };
     const { error: pErr } = await admin.from("wipp_profiles").insert({

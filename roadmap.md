@@ -1,6 +1,7 @@
 # Roadmap
 - [x] Accueil et saisie du téléphone selon les images fournies ; « Continuer » envoie le SMS Firebase.
-- [x] Vérification SMS puis profil (nom, prénom, pays conservé, photo, pseudo unique et mot de passe facultatif) selon les deux nouvelles images. SMS réel à vérifier lorsque Firebase est disponible.
+- [x] Vérification SMS puis profil (nom, prénom, pays conservé, photo, pseudo unique, sans mot de passe) selon les deux nouvelles images. SMS réel à vérifier lorsque Firebase est disponible.
+- [x] Création réussie : récompense plein écran automatique, puis Chats ; accueil de connexion uniquement si la liste est vide.
 - [x] Lot 1 : messages synchronisés, réactions, modifier/supprimer/épingler, livré/lu réels, écrit… temps réel, file hors ligne
 - [x] Lot 2 : épingler, archiver, sourdine (Toujours explicite), non lu manuel, brouillons locaux, recherche, infos
 - [ ] Lot 1 : notifications push (doit vérifier wipp_is_muted) — bloqué : clé de compte de service Firebase

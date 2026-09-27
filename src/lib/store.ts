@@ -192,7 +192,7 @@ type WgoState = ReturnType<typeof fresh> & {
   openDemo: () => void;
   acceptLegal: () => void;
   saveSignup: (data: Partial<MeProfile>) => void;
-  completeSetup: (data: Partial<MeProfile>) => void;
+  completeSetup: (data: Partial<MeProfile>, freshAccount?: boolean) => void;
   syncServerInbox: () => Promise<void>;
   openServerDm: (username: string) => Promise<void>;
   updateMe: (data: Partial<MeProfile>) => void;
@@ -435,11 +435,12 @@ export const useWgoStore = create<WgoState>()(
         void get().syncServerInbox();
       },
 
-      completeSetup: (data) => {
+      completeSetup: (data, freshAccount = false) => {
         set((st) => ({
           onboarded: true,
           me: { ...st.me, ...st.pendingSignup, ...data, id: "me", online: true },
           stack: [{ name: "chats" }],
+          ...(freshAccount ? { chats: [], messages: {}, requests: [], intros: [], stories: [], calls: [] } : {}),
         }));
         void get().ensureCrypto();
         void get().syncServerInbox();

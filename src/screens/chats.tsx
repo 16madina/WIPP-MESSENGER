@@ -272,7 +272,19 @@ export function ChatsScreen() {
           {t("chatsGroups")}
         </Chip>
       </div>
-        {visible.length === 0 ? (
+        {visible.length === 0 && !chats.some((c) => !c.isRequest && c.participantIds.includes("me") && !isPrivateChat(c.id)) ? (
+          <div className="mx-4 mt-8 rounded-lg border border-wipp-sep bg-wipp-surface px-5 py-7 text-center">
+            <span className="mx-auto mb-5 flex size-14 items-center justify-center rounded-full bg-wipp-accent/15 text-wipp-accent" aria-hidden="true"><UserPlus className="size-7" /></span>
+            <h2 className="text-[20px] font-semibold text-wipp-fg">Commence ton premier WIPP 👋</h2>
+            <p className="mt-2 text-[14px] leading-relaxed text-wipp-muted">Retrouve quelqu’un sans partager ton numéro.</p>
+            <Btn className="mt-6 w-full" onClick={() => push({ name: "connect" })}>Se connecter</Btn>
+            <div className="mt-5 grid grid-cols-3 gap-1 border-t border-wipp-sep pt-4">
+              <Btn variant="ghost" className="h-auto! min-h-14! flex-col! gap-1! px-1! text-[11px]!" onClick={() => push({ name: "wgo-touch" })}><span className="text-wipp-accent">✦</span>WIPP Touch</Btn>
+              <Btn variant="ghost" className="h-auto! min-h-14! flex-col! gap-1! px-1! text-[11px]!" onClick={() => push({ name: "scanner" })}><ScanLine className="size-5 text-wipp-accent" />Scanner un QR</Btn>
+              <Btn variant="ghost" className="h-auto! min-h-14! flex-col! gap-1! px-1! text-[11px]!" onClick={() => push({ name: "search-user" })}><Search className="size-5 text-wipp-accent" />Rechercher</Btn>
+            </div>
+          </div>
+        ) : visible.length === 0 ? (
           <Empty
             title={filter === "groups" ? t("groupsEmpty") : t("chatsEmpty")}
             body={filter === "groups" ? t("groupsEmptySub") : t("chatsEmptySub")}

@@ -9,7 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import welcomeImage from "@/assets/wipp-auth-welcome.png.asset.json";
 import phoneImage from "@/assets/wipp-auth-phone.png.asset.json";
 import smsImage from "@/assets/wipp-auth-sms.png.asset.json";
-import profileImage from "@/assets/wipp-auth-profile.png.asset.json";
+import profileImage from "@/assets/wipp-auth-profile-no-password.png";
 import { COUNTRIES } from "./auth-chrome";
 
 /** The supplied artwork includes the logo, photograph and copy; live controls sit over it. */
@@ -149,6 +149,7 @@ export function SmsReferenceScreen() {
 
 export function ProfileReferenceScreen() {
   const pop = useWgoStore((s) => s.pop);
+  const push = useWgoStore((s) => s.push);
   const completeSetup = useWgoStore((s) => s.completeSetup);
   const country = useWgoStore((s) => s.pendingSignup.country ?? "CA");
   const phone = useWgoStore((s) => s.pendingSignup.phone ?? "");
@@ -156,8 +157,6 @@ export function ProfileReferenceScreen() {
   const [lastName, setLastName] = useState("");
   const [username, setUsername] = useState("");
   const [avatar, setAvatar] = useState("/avatars/deena.jpg");
-  const [passwordOn, setPasswordOn] = useState(false);
-  const [password, setPassword] = useState("");
   const [availability, setAvailability] = useState<"available" | "taken" | "checking" | null>(null);
   const [checkedUsername, setCheckedUsername] = useState("");
   const [error, setError] = useState("");
@@ -198,21 +197,21 @@ export function ProfileReferenceScreen() {
     if (!verified || verified.phone !== phone) { setError("Code SMS expiré. Recommence la vérification."); return; }
     if (!firstName.trim() || !lastName.trim() || !/^[a-z0-9_]{3,20}$/.test(username)) { setError("Renseigne ton prénom, ton nom et un pseudo valide."); return; }
     if (availability !== "available" || checkedUsername !== username) { setError("Vérifie la disponibilité du pseudo."); return; }
-    if (passwordOn && password.length < 8) { setError("Le mot de passe doit contenir au moins 8 caractères."); return; }
     setBusy(true); setError("");
     try {
-      const result = await signupPhone({ data: { idToken: verified.idToken, firstName: firstName.trim(), lastName: lastName.trim(), username, country: country as "CA" | "SN" | "CI" | "ML" | "GN" | "FR" | "US", avatar, ...(passwordOn ? { password } : {}) } });
+      const result = await signupPhone({ data: { idToken: verified.idToken, firstName: firstName.trim(), lastName: lastName.trim(), username, country: country as "CA" | "SN" | "CI" | "ML" | "GN" | "FR" | "US", avatar } });
       if (!result.ok) { setError(result.error); return; }
       const session = await supabase.auth.setSession({ access_token: result.accessToken, refresh_token: result.refreshToken });
       if (session.error) { setError("Compte créé, mais connexion impossible. Réessaie."); return; }
       clearPending();
-      completeSetup({ firstName: firstName.trim(), lastName: lastName.trim(), displayName: `${firstName.trim()} ${lastName.trim()}`, username, avatar, country, phone });
+      completeSetup({ firstName: firstName.trim(), lastName: lastName.trim(), displayName: `${firstName.trim()} ${lastName.trim()}`, username, avatar, country, phone }, true);
+      push({ name: "signup-celebration", username });
     } catch { setError("Inscription impossible. Réessaie."); } finally { setBusy(false); }
   }
 
   return <main className="relative size-full overflow-y-auto bg-wipp-bg text-wipp-fg" aria-label="Complète ton profil">
     <div className="relative min-h-[100%]" style={{ aspectRatio: "941 / 1672" }}>
-      <Artwork src={profileImage.url} />
+       <Artwork src={profileImage} />
       <Btn aria-label="Retour" onClick={pop} className="absolute! top-[8%] left-[4%] h-[5%]! w-[12%] bg-transparent! opacity-0" />
       <input ref={fileInput} type="file" accept="image/*" className="hidden" onChange={(e) => { void uploadPhoto(e.target.files?.[0]); e.target.value = ""; }} />
       <div className="absolute top-[38.5%] left-[10.5%] size-[19%] max-h-[9.5%] overflow-hidden rounded-full"><img src={avatar} alt="Photo de profil choisie" className="size-full object-cover" /></div>
@@ -225,8 +224,6 @@ export function ProfileReferenceScreen() {
       <input aria-label="Ton WIPP" autoComplete="username" maxLength={20} value={username} onChange={(e) => { setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, "")); setAvailability(null); }} placeholder="@pseudo" className="absolute top-[61.6%] left-[10%] h-[4.3%] w-[60%] bg-wipp-auth-input px-2 text-[15px] text-wipp-fg outline-none placeholder:text-wipp-muted" />
       <span aria-live="polite" className={`absolute top-[62.7%] right-[10%] text-[11px] ${availability === "taken" ? "text-wipp-danger" : "text-wipp-success"}`}>{checkedUsername === username && availability === "available" ? "✓ Disponible" : checkedUsername === username && availability === "taken" ? "Déjà utilisé" : ""}</span>
       <div className="absolute top-[72.1%] left-[11%] w-[78%] truncate bg-wipp-auth-input text-[14px] text-wipp-fg">{countryLabel?.fr ?? country} ({countryLabel?.dial ?? ""})</div>
-      <Btn role="switch" aria-checked={passwordOn} aria-label="Ajouter un mot de passe" onClick={() => setPasswordOn((v) => !v)} className="absolute! top-[80%] right-[8%] h-[5%]! w-[13%] bg-transparent! opacity-0" />
-      {passwordOn ? <input type="password" aria-label="Mot de passe" autoComplete="new-password" maxLength={128} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="8 caractères minimum" className="absolute top-[85%] left-[10%] h-[4%] w-[80%] rounded-md bg-wipp-auth-input px-3 text-[14px] text-wipp-fg" /> : null}
       {error ? <p role="alert" className="absolute top-[88%] left-[8%] z-10 max-w-[84%] rounded bg-wipp-share-panel p-2 text-[12px] text-wipp-danger">{error}</p> : null}
       <Btn aria-label="Continuer" disabled={busy} onClick={() => void finish()} className="absolute! top-[89.4%] left-[6%] h-[6.1%]! w-[88%] rounded-full! bg-transparent! text-transparent!" />
     </div>

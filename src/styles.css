@@ -266,6 +266,13 @@
   }
 }
 @keyframes wipp-shimmer { to { transform: translateX(100%); } }
+@keyframes wipp-celebrate-appear { from { opacity: 0; transform: translateY(14px) scale(.94); } to { opacity: 1; transform: translateY(0) scale(1); } }
+@keyframes wipp-celebrate-spark { 0%, 100% { opacity: 0; transform: translateY(10px); } 30%, 70% { opacity: .85; transform: translateY(-13px); } }
+.wipp-celebrate-logo { animation: wipp-celebrate-appear .65s ease-out both; }
+.wipp-celebrate-check { animation: wipp-celebrate-appear .5s .55s cubic-bezier(.2,1.5,.4,1) both; }
+.wipp-celebrate-words { animation: wipp-celebrate-appear .5s 1s ease-out both; }
+.wipp-celebrate-tagline { animation: wipp-celebrate-appear .5s 1.85s ease-out both; }
+.wipp-celebrate-spark { animation: wipp-celebrate-spark 2.2s .3s ease-in-out both; }
 @keyframes wipp-spin { to { transform: rotate(360deg); } }
 @keyframes wipp-sweep { from { transform: translateX(-34px) rotate(-18deg); opacity: 0; } 40% { opacity: 1; } to { transform: translateX(35px) rotate(-18deg); opacity: 0; } }
 @keyframes wipp-spark { from { opacity: 1; transform: scale(.25); } to { opacity: 0; transform: translate(var(--dx), var(--dy)) scale(1.3); } }
