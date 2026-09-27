@@ -248,7 +248,7 @@ export function ChatsScreen() {
         <button
           type="button"
           onClick={() => push({ name: "requests" })}
-          className="mx-4 mb-2 flex min-h-[60px] items-center gap-3 rounded-xl glass-card px-3 py-2"
+          className="mx-4 mb-2 flex w-[calc(100%-2rem)] min-h-[60px] items-center gap-3 rounded-xl glass-card px-3 py-2"
         >
           <span className="flex size-9 items-center justify-center rounded-full bg-accent/20 text-accent-fg">
             <UserPlus className="size-4 text-navy" />
