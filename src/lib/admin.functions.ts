@@ -69,3 +69,35 @@ export const adminResolveFlag = createServerFn({ method: "POST" })
     await admin.from("wipp_moderation_access").insert({ id: "ma_" + crypto.randomUUID().replace(/-/g, ""), flag_id: data.id, actor_id: meId, action: data.status });
     return true;
   });
+
+export const adminPush = createServerFn({ method: "POST" })
+  .inputValidator((d: unknown) =>
+    Tok.extend({
+      target: z.enum(["all", "one"]),
+      profileId: z.string().min(1).max(128).optional(),
+      title: z.string().trim().min(1).max(80),
+      body: z.string().trim().min(1).max(500),
+    }).parse(d),
+  )
+  .handler(async ({ data }) => {
+    const { admin } = await requireAdmin(data.token);
+    if (data.target === "one" && !data.profileId) throw new Error("Choisis un utilisateur");
+    const { readServiceAccount, googleAccessToken, sendFcm } = await import("./fcm.server");
+    const sa = readServiceAccount();
+    if (!sa) return { ok: false as const, reason: "not-configured", sent: 0, devices: 0 };
+    let q = admin.from("wipp_push_tokens").select("id, token");
+    if (data.target === "one") q = q.eq("profile_id", data.profileId!);
+    const { data: tokens, error } = await q.limit(5000);
+    if (error) throw new Error("Appareils indisponibles");
+    if (!tokens?.length) return { ok: true as const, sent: 0, devices: 0 };
+    const access = await googleAccessToken(sa);
+    const projectId = sa.project_id || "wipp-61124";
+    let sent = 0;
+    const stale: string[] = [];
+    for (const t of tokens) {
+      try { await sendFcm(access, projectId, t.token, data.title, data.body, "/"); sent++; }
+      catch (e) { if ((e as { stale?: boolean }).stale) stale.push(t.id); else console.error(e); }
+    }
+    if (stale.length) await admin.from("wipp_push_tokens").delete().in("id", stale);
+    return { ok: true as const, sent, devices: tokens.length };
+  });
