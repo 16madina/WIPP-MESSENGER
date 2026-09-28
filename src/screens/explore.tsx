@@ -181,7 +181,7 @@ export function ExploreScreen() {
           <Search className="pointer-events-none absolute left-8 top-[14px] size-4 text-muted" />
           <SearchField
             className="h-12 rounded-2xl pl-10"
-            placeholder={t("exploreAsk")}
+            placeholder={hub === "shops" ? "Rechercher une boutique" : t("exploreAsk")}
             value={q}
             onChange={(e) => setQ(e.target.value)}
           />
