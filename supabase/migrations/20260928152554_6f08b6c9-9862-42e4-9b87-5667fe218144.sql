@@ -1,0 +1,1 @@
+DROP POLICY IF EXISTS "touch_config_read" ON public.wipp_touch_config;
