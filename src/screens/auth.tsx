@@ -70,12 +70,10 @@ export function SignupScreen() {
   const [lastName, setLast] = useState("");
   const [country, setCountry] = useState(DEFAULT_COUNTRY);
   const [phone, setPhone] = useState("");
-  const [password, setPassword] = useState("");
   const [birthday, setBirthday] = useState("1999-04-12");
   const [accepted, setAccepted] = useState(false);
   const [needAccept, setNeedAccept] = useState(false);
   const [tooYoung, setTooYoung] = useState(false);
-  const [weakPassword, setWeakPassword] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [doc, setDoc] = useState<"privacy" | "terms" | null>(null);
@@ -95,14 +93,9 @@ export function SignupScreen() {
       return;
     }
     setNeedAccept(false);
-    if (password.length < 8) {
-      setWeakPassword(true);
-      return;
-    }
-    setWeakPassword(false);
     setBusy(true);
     setErr(null);
-    const smsErr = await startPhoneCode(`${country.dial}${phone}`, "signup", password);
+    const smsErr = await startPhoneCode(`${country.dial}${phone}`, "signup");
     setBusy(false);
     if (smsErr) {
       setErr(smsErr);
@@ -196,22 +189,6 @@ export function SignupScreen() {
             <Lock className="mt-0.5 size-3 shrink-0 text-accent" />
             {t("phonePrivate")}
           </p>
-        </div>
-        <div className="relative mt-3">
-          <AuthField label={t("password")} icon={<Lock className="size-4" />}>
-            <input
-              type="password"
-              className="h-full w-full bg-transparent text-[15px] outline-none"
-              value={password}
-              autoComplete="new-password"
-              onChange={(e) => {
-                setPassword(e.target.value);
-                setWeakPassword(false);
-              }}
-            />
-          </AuthField>
-          <p className="mt-1.5 text-[11px] text-muted">{t("passwordHint")}</p>
-          {weakPassword ? <p className="mt-1 text-[13px] text-danger">{t("passwordWeak")}</p> : null}
         </div>
         <div className="relative mt-3">
           <AuthField label={t("birthday")} icon={<Calendar className="size-4" />}>
