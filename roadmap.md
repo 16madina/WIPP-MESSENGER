@@ -28,3 +28,4 @@
 - [x] Carte professionnelle réelle : créer, modifier, afficher, QR business, partager et découvrir dans Explorer.
 - [x] Carte de boutique : rapprocher la présentation du modèle fourni, rendre le QR lisible et garder Modifier/Partager visibles pour le propriétaire, y compris après enregistrement.
 - [x] Carte de boutique : trois actions Modifier, partage natif et téléchargement du QR ; logo WIPP fourni sous l'invitation à scanner.
+- [x] Explorer : afficher les boutiques publiées dans la recherche générale et dans Boutique, avec un message si le chargement échoue.
