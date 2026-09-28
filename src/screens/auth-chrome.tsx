@@ -1,6 +1,6 @@
 import { type ReactNode, useState } from "react";
 import { Check, ChevronDown, ChevronLeft, Globe } from "lucide-react";
-import { StatusBar } from "@/components/ui";
+import { Btn, StatusBar } from "@/components/ui";
 import { haptic } from "@/lib/haptics";
 import { useT, useWgoStore } from "@/lib/store";
 import type { Lang } from "@/lib/types";
@@ -234,9 +234,10 @@ export function LegalCheckbox({
       </span>
        <span className="text-[10px] leading-[1.3] text-wipp-muted">
          En continuant, j’accepte les{" "}
-         <button
+         <Btn
            type="button"
-           className="min-h-0! min-w-0! font-medium text-wipp-accent underline underline-offset-2"
+           variant="ghost"
+           className="inline! h-auto! min-h-0! min-w-0! p-0! align-baseline! text-[10px]! font-medium text-wipp-accent! underline underline-offset-2"
            onClick={(e) => {
              e.preventDefault();
              e.stopPropagation();
@@ -244,11 +245,12 @@ export function LegalCheckbox({
            }}
          >
            conditions d’utilisation
-         </button>{" "}
+         </Btn>{" "}
          et les{" "}
-        <button
+         <Btn
           type="button"
-          className="min-h-0! min-w-0! font-medium text-wipp-accent underline underline-offset-2"
+           variant="ghost"
+           className="inline! h-auto! min-h-0! min-w-0! p-0! align-baseline! text-[10px]! font-medium text-wipp-accent! underline underline-offset-2"
           onClick={(e) => {
             e.preventDefault();
             e.stopPropagation();
@@ -256,7 +258,7 @@ export function LegalCheckbox({
           }}
         >
           politiques de confidentialité
-        </button>
+         </Btn>
         .
       </span>
     </label>
@@ -289,9 +291,9 @@ export function AgeCheckbox({
         </span>
       </span>
       <span className="text-[10px] leading-[1.3] text-wipp-muted">Je reconnais avoir{" "}
-        <button type="button" className="min-h-0! min-w-0! font-medium text-wipp-accent underline underline-offset-2" onClick={(e) => { e.preventDefault(); e.stopPropagation(); onOpenAge(); }}>
+        <Btn type="button" variant="ghost" className="inline! h-auto! min-h-0! min-w-0! p-0! align-baseline! text-[10px]! font-medium text-wipp-accent! underline underline-offset-2" onClick={(e) => { e.preventDefault(); e.stopPropagation(); onOpenAge(); }}>
           18 ans et plus
-        </button>.
+        </Btn>.
       </span>
     </label>
   );

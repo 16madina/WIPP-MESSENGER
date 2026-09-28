@@ -394,12 +394,13 @@ export function LoginScreen() {
         ) : null}
       </div>
       {err ? <p role="alert" className="absolute top-[68.5%] left-[8%] rounded bg-wipp-share-panel px-2 text-[12px] text-wipp-danger">{err}</p> : null}
-      <LegalCheckbox
+       <div aria-hidden className="absolute top-[67.3%] left-[5%] h-[6.2%] w-[90%] rounded bg-wipp-share-panel" />
+       <LegalCheckbox
         checked={accepted}
         onToggle={(value) => { setAccepted(value); if (value) setErr(null); }}
         onOpenPolicy={() => push({ name: "legal", doc: "privacy" })}
         onOpenTerms={() => push({ name: "legal", doc: "terms" })}
-        className="absolute top-[68%] left-[6%] w-[88%] py-0"
+        className="absolute top-[67.8%] left-[6%] w-[88%] py-0"
       />
       <AgeCheckbox checked={adult} onToggle={setAdult} onOpenAge={() => push({ name: "legal", doc: "age" })} className="absolute top-[71.2%] left-[6%] w-[88%] py-0" />
       <Btn

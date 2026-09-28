@@ -89,15 +89,16 @@ export function PhoneEntryScreen() {
         className="absolute top-[69.1%] left-[10.6%] h-[6%] w-[78.8%] rounded-lg bg-wipp-auth-input px-4 text-[18px] text-wipp-fg outline-none placeholder:text-wipp-muted"
         placeholder="(514) 123-4567"
       />
+      <div aria-hidden className="absolute top-[76.8%] left-[6%] h-[9.7%] w-[88%] rounded bg-wipp-share-panel" />
       {error ? <p role="alert" className="absolute top-[85.3%] left-[10%] z-10 rounded bg-wipp-share-panel px-2 text-[10px] text-wipp-danger">{error}</p> : null}
       <LegalCheckbox
         checked={accepted}
         onToggle={(value) => { setAccepted(value); if (value) setError(""); }}
         onOpenPolicy={() => push({ name: "legal", doc: "privacy" })}
         onOpenTerms={() => push({ name: "legal", doc: "terms" })}
-        className="absolute top-[78.9%] left-[10%] w-[80%]"
+        className="absolute top-[77.8%] left-[10%] w-[80%]"
       />
-      <AgeCheckbox checked={adult} onToggle={setAdult} onOpenAge={() => push({ name: "legal", doc: "age" })} className="absolute top-[83.4%] left-[10%] w-[80%]" />
+      <AgeCheckbox checked={adult} onToggle={setAdult} onOpenAge={() => push({ name: "legal", doc: "age" })} className="absolute top-[83.2%] left-[10%] w-[80%]" />
       <Btn
         aria-label="Continuer"
         disabled={busy || !accepted || !adult}
