@@ -1,5 +1,5 @@
 # Roadmap
-- [ ] Remplacer uniquement l'onglet Stickers par la version complète et actuelle de wipp-grok (tous les sous-onglets, stickers et animations), après accès à sa source.
+- [x] Remplacer uniquement l'onglet Stickers par la version complète et actuelle de wipp-grok (tous les sous-onglets, stickers et animations), après accès à sa source.
 - [x] Rendre accessibles tous les packs Stickers disponibles dans le projet (Wippmojis, classiques, Elle, Lui, Fun, Fun 2, WIPP, Scènes, Général, AniWipp), avec leurs formats animés conservés, sans changer les autres onglets. Version antérieure remplacée par les familles et animations actuelles de wipp-grok.
 - [x] Conversation : rapprocher les réactions WIPP du menu compact et permettre de répondre par balayage aux textes, photos et vidéos sans ouvrir le média.
 - [x] Moi : retirer les panneaux de test messagerie et liaison web, rapprocher Mon activité ; retirer les accès de démonstration du client sans toucher à la messagerie réelle. Liaison web conservée dans le code pour un futur Moi → Paramètres → Appareils liés.
