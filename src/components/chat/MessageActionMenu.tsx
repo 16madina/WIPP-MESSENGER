@@ -1,5 +1,5 @@
 import { useState, type ReactNode } from "react";
-import { ArrowLeft, CircleEllipsis, Plus } from "lucide-react";
+import { ArrowLeft, CircleEllipsis } from "lucide-react";
 import { motion } from "framer-motion";
 import { Btn } from "@/components/ui";
 import { layout, motion as wippMotion } from "@/theme/theme";
@@ -62,7 +62,6 @@ export function MessageActionMenu({ anchor, container, reactions, actions, onClo
           {reactions.emojis.map((emoji) => (
             <Btn key={emoji} variant="ghost" className="h-11 min-h-11 min-w-0 flex-1 rounded-full px-0 text-[24px]" aria-label={`Réagir avec ${emoji}`} onClick={() => { onClose(); reactions.onSelect(emoji); }}>{emoji}</Btn>
           ))}
-          <Btn variant="ghost" className="h-11 min-h-11 w-10 shrink-0 rounded-full border border-wipp-glass-border px-0" aria-label="Autres réactions" onClick={() => setExpanded(true)}><Plus size={20} /></Btn>
         </motion.div>
       )}
       <motion.div
