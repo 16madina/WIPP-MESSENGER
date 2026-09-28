@@ -16,6 +16,8 @@ import {
 } from "lucide-react";
 import { GallerySheet } from "@/components/gallery";
 import { SmartImg } from "@/components/smart-img";
+import { CountryList } from "@/components/country-list";
+import { DEFAULT_COUNTRY } from "@/lib/countries";
 import { StatusBar } from "@/components/ui";
 import {
   RECAPTCHA_ID,
@@ -45,7 +47,6 @@ import {
   AuthShell,
   AuthSteps,
   AVATAR_PICKS,
-  COUNTRIES,
 } from "./auth-chrome";
 import { IntroSplash } from "./intro";
 import { LegalOverlay } from "./legal";
@@ -69,7 +70,7 @@ export function SignupScreen() {
   const acceptLegal = useWgoStore((s) => s.acceptLegal);
   const [firstName, setFirst] = useState("");
   const [lastName, setLast] = useState("");
-  const [country, setCountry] = useState<(typeof COUNTRIES)[number]>(COUNTRIES[0]);
+  const [country, setCountry] = useState(DEFAULT_COUNTRY);
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [birthday, setBirthday] = useState("1999-04-12");
@@ -153,7 +154,7 @@ export function SignupScreen() {
               className="flex h-full w-full items-center justify-between text-left text-[15px]"
               onClick={() => setCountryOpen((v) => !v)}
             >
-              {lang === "fr" ? country.fr : country.en}
+              <span className="truncate">{country.flag} {lang === "fr" ? country.fr : country.en}</span>
               <ChevronDown className="size-4 text-muted" />
             </button>
           </AuthField>
@@ -176,7 +177,7 @@ export function SignupScreen() {
               className="flex h-full items-center gap-1 px-1 text-[14px] font-medium"
               onClick={() => setDialOpen((v) => !v)}
             >
-              {country.dial}
+              <span aria-hidden="true" className="text-[20px]">{country.flag}</span>{country.dial}
               <ChevronDown className="size-3.5 text-muted" />
             </button>
             <span className="h-5 w-px bg-white/10" />
@@ -328,25 +329,14 @@ function SignupBanner() {
 function CountryMenu({
   lang,
   onPick,
-  showDial,
 }: {
   lang: Lang;
-  onPick: (c: (typeof COUNTRIES)[number]) => void;
+  onPick: (c: typeof DEFAULT_COUNTRY) => void;
   showDial?: boolean;
 }) {
   return (
-    <div className="absolute inset-x-0 top-[calc(100%+6px)] z-20 overflow-hidden rounded-2xl bg-navy ring-1 ring-hair">
-      {COUNTRIES.map((c) => (
-        <button
-          key={c.id}
-          type="button"
-          className="flex h-11 w-full items-center justify-between px-4 text-[14px]"
-          onClick={() => onPick(c)}
-        >
-          <span>{lang === "fr" ? c.fr : c.en}</span>
-          {showDial ? <span className="text-muted">{c.dial}</span> : null}
-        </button>
-      ))}
+    <div className="absolute inset-x-0 top-[calc(100%+6px)] z-20 flex max-h-[min(48vh,360px)] flex-col overflow-hidden rounded-lg bg-wipp-share-panel ring-1 ring-wipp-glass-border">
+      <CountryList language={lang} onPick={onPick} />
     </div>
   );
 }
@@ -367,7 +357,7 @@ export function LoginScreen() {
   const replace = useWgoStore((s) => s.replace);
   const push = useWgoStore((s) => s.push);
   const completeSetup = useWgoStore((s) => s.completeSetup);
-  const [country, setCountry] = useState<(typeof COUNTRIES)[number]>(COUNTRIES[0]);
+  const [country, setCountry] = useState(DEFAULT_COUNTRY);
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [dialOpen, setDialOpen] = useState(false);
@@ -453,7 +443,7 @@ export function LoginScreen() {
               className="flex h-full items-center gap-1 px-1 text-[14px] font-medium"
               onClick={() => setDialOpen((v) => !v)}
             >
-              {country.dial}
+              <span aria-hidden="true" className="text-[20px]">{country.flag}</span>{country.dial}
               <ChevronDown className="size-3.5 text-muted" />
             </button>
             <span className="h-5 w-px bg-white/10" />
