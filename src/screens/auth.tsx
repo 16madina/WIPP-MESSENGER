@@ -18,7 +18,7 @@ import { GallerySheet } from "@/components/gallery";
 import { SmartImg } from "@/components/smart-img";
 import { CountryList } from "@/components/country-list";
 import { DEFAULT_COUNTRY } from "@/lib/countries";
-import { StatusBar } from "@/components/ui";
+import { Btn, StatusBar } from "@/components/ui";
 import {
   RECAPTCHA_ID,
   clearPending,
@@ -353,62 +353,46 @@ export function LoginScreen() {
   }
 
   return (
-    <div className="absolute inset-0 flex flex-col bg-bg">
+    <main className="relative size-full overflow-hidden bg-wipp-bg text-wipp-fg" aria-label={t("loginHero")}>
+      <img src={loginImage} alt="" draggable={false} className="pointer-events-none absolute inset-0 size-full object-fill" />
       <div id={RECAPTCHA_ID} className="pointer-events-none absolute bottom-0 left-0" />
-      <SignupBanner />
-      <div className="relative z-10 min-h-0 flex-1 overflow-y-auto no-scrollbar px-5 pb-8">
-        <h2 className="text-[22px] font-semibold tracking-tight">{t("loginHero")}</h2>
-        <p className="mt-1 text-[13px] text-muted">Entre ton numéro, on t’envoie un code par SMS.</p>
-        <div className="relative mt-5">
-          <span className="mb-1.5 block text-[12px] font-medium text-muted">{t("phone")}</span>
-          <div className="flex h-12 items-center gap-1 rounded-2xl bg-[#12141c] px-2 ring-1 ring-white/8 focus-within:ring-accent/40">
-            <Phone className="ml-1 size-4 shrink-0 text-muted" />
-            <button
-              type="button"
-              className="flex h-full items-center gap-1 px-1 text-[14px] font-medium"
-              onClick={() => setDialOpen((v) => !v)}
-            >
-              <img src={country.flag} alt="" className="h-4 w-6 object-cover" />{country.dial}
-              <ChevronDown className="size-3.5 text-muted" />
-            </button>
-            <span className="h-5 w-px bg-white/10" />
-            <input
-              className="h-full min-w-0 flex-1 bg-transparent px-2 text-[15px] outline-none"
-              value={phone}
-              type="tel"
-              inputMode="tel"
-              autoComplete="tel-national"
-              aria-label="Numéro de téléphone"
-              placeholder="(514) 123-4567"
-              onChange={(e) => { setPhone(e.target.value); setErr(null); }}
-            />
-          </div>
-          {dialOpen ? (
-            <CountryMenu
-              lang={lang}
-              showDial
-              onPick={(c) => {
-                setCountry(c);
-                setDialOpen(false);
-              }}
-            />
-          ) : null}
-        </div>
-        <p className="mt-2 text-[12px] text-muted">Ton numéro reste privé sur WIPP.</p>
-        {err ? <p className="mt-2 text-[13px] text-danger">{err}</p> : null}
-        <AuthCta disabled={busy} onClick={() => void tryLogin()}>
-          {busy ? t("sending") : t("continue")}
-          <ArrowRight className="size-4" />
-        </AuthCta>
-        <button
-          type="button"
-          className="mx-auto mt-3 block text-[13px] text-muted"
-          onClick={() => push({ name: "phone-entry" })}
+      <div className="absolute top-[62.2%] left-[6%] h-[5.2%] w-[88%]">
+        <Btn
+          aria-label={`Pays : ${country.fr} (${country.dial})`}
+          aria-expanded={dialOpen}
+          onClick={() => setDialOpen((v) => !v)}
+          className="absolute! inset-y-0 left-0 h-full! w-[27%] justify-start gap-1 rounded-none! bg-transparent! px-2! text-[15px]! font-medium! text-wipp-fg!"
         >
-          Je n’ai pas de compte
-        </button>
+          <img src={country.flag} alt="" className="h-4 w-6 shrink-0 rounded-[2px] object-cover" />
+          <span>{country.dial}</span>
+          <ChevronDown className="size-3.5 text-wipp-muted" />
+        </Btn>
+        <input
+          aria-label="Numéro de téléphone"
+          type="tel"
+          inputMode="tel"
+          autoComplete="tel-national"
+          maxLength={25}
+          value={phone}
+          onChange={(e) => { setPhone(e.target.value); setErr(null); }}
+          className="absolute inset-y-0 right-[2%] w-[64%] bg-transparent text-[16px] text-wipp-fg outline-none placeholder:text-wipp-muted"
+          placeholder="(514) 123-4567"
+        />
+        {dialOpen ? (
+          <CountryMenu
+            lang={lang}
+            showDial
+            onPick={(c) => {
+              setCountry(c);
+              setDialOpen(false);
+            }}
+          />
+        ) : null}
       </div>
-    </div>
+      {err ? <p role="alert" className="absolute top-[68.5%] left-[8%] rounded bg-wipp-share-panel px-2 text-[12px] text-wipp-danger">{err}</p> : null}
+      <Btn aria-label={t("continue")} disabled={busy} onClick={() => void tryLogin()} className="absolute! top-[73.6%] left-[6%] h-[6.8%]! w-[88%] rounded-full! bg-transparent! text-transparent!" />
+      <Btn aria-label="Je n’ai pas encore de compte" onClick={() => push({ name: "phone-entry" })} className="absolute! top-[89%] left-[20%] h-[4%]! w-[60%] bg-transparent! p-0! text-transparent!" />
+    </main>
   );
 }
 
