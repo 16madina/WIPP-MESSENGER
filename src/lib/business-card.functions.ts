@@ -3,6 +3,16 @@ import { createClient } from "@supabase/supabase-js";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import type { Database } from "@/integrations/supabase/types";
+import { COUNTRIES } from "@/lib/countries";
+
+/** Déduit le pays (nom français) depuis le numéro E.164 du compte. */
+function countryFromPhone(phone: string | null | undefined): string | null {
+  if (!phone) return null;
+  const digits = phone.replace(/[^\d]/g, "");
+  const match = COUNTRIES.filter((c) => digits.startsWith(c.dial.replace(/[^\d]/g, "")))
+    .sort((a, b) => b.dial.length - a.dial.length)[0];
+  return match?.fr ?? null;
+}
 
 const cardInput = z.object({
   name: z.string().trim().min(2).max(80), category: z.string().trim().min(2).max(60), description: z.string().trim().max(500),
@@ -35,7 +45,9 @@ export const getMyBusinessCard = createServerFn({ method: "GET" }).middleware([r
   if (profileError || !profileId) throw new Error("Profil WIPP introuvable");
   const { data, error } = await context.supabase.from("wipp_business_cards").select("*").eq("owner_profile_id", profileId).maybeSingle();
   if (error) throw new Error(error.message);
-  return { profileId: String(profileId), card: data ? await present(data) : null };
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const { data: me } = await supabaseAdmin.from("wipp_profiles").select("phone_e164").eq("id", profileId).maybeSingle();
+  return { profileId: String(profileId), userCountry: countryFromPhone(me?.phone_e164), card: data ? await present(data) : null };
 });
 export const saveMyBusinessCard = createServerFn({ method: "POST" }).middleware([requireSupabaseAuth]).inputValidator((data) => cardInput.parse(data)).handler(async ({ data, context }) => {
   const { data: profileId, error: profileError } = await context.supabase.rpc("wipp_my_profile_id");
