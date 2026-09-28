@@ -1,7 +1,7 @@
 import { CallEvent } from "@/components/call/CallEvent";
 import { useEffect, useRef, useState } from "react";
 import {
-  ArrowForward,
+  Forward,
   CornerUpLeft,
   ListChecks,
   Pencil,
@@ -935,7 +935,7 @@ export function ConversationScreen({ chatId }: { chatId: string }) {
   const menuActions: MessageMenuAction[] = active ? [
     ...(!active.deletedForAll ? [{ key: "reply", label: "Répondre", icon: <CornerUpLeft size={19} />, onSelect: () => setReply(active) }] : []),
     ...(active.text && active.type === "text" && !active.deletedForAll ? [
-      { key: "forward", label: "Transférer", icon: <ArrowForward size={19} />, onSelect: () => setForwardMsg(active) },
+      { key: "forward", label: "Transférer", icon: <Forward size={19} />, onSelect: () => setForwardMsg(active) },
       { key: "copy", label: t("copyMsg"), icon: <Copy size={19} />, onSelect: () => { void navigator.clipboard.writeText(active.text ?? ""); } },
     ] : []),
     { key: "pin", label: active.pinned ? "Désépingler" : "Épingler", icon: <Pin size={19} />, onSelect: () => {
