@@ -72,7 +72,7 @@ import { cn } from "@/lib/utils";
 import { MentionPicker, MentionText, ReactionPills, ReactionsSheet, SystemEvent } from "@/components/chat/GroupBits";
 import { can, isAdmin, perms as groupPermsOf } from "@/lib/groups";
 
-const REACTS = ["❤️", "😂", "👍", "😮", "😢", "🔥"];
+const REACTS = ["moji-06", "moji-02", "moji-24", "moji-08", "moji-07", "moji-13"];
 const EMPTY_MSGS: Message[] = [];
 const seenFx = new Set<string>();
 
@@ -1177,8 +1177,9 @@ export function ConversationScreen({ chatId }: { chatId: string }) {
                     id={`msg-${m.id}`}
                     role={m.type === "scratch" ? "group" : "button"}
                     tabIndex={0}
-                    onPointerDown={(e) => {
+                     onPointerDown={(e) => {
                       if (m.type === "scratch" || m.type === "system" || m.deletedForAll) return;
+                       if (e.pointerType === "mouse" && e.button !== 0) return;
                       swipe.current = { id: m.id, x: e.clientX, y: e.clientY, el: e.currentTarget as HTMLElement, dx: 0 };
                     }}
                     onPointerMove={(e) => {
@@ -1186,7 +1187,8 @@ export function ConversationScreen({ chatId }: { chatId: string }) {
                       if (!g || g.id !== m.id) return;
                       const dx = e.clientX - g.x;
                       const dy = e.clientY - g.y;
-                      if (Math.abs(dy) > 24 && Math.abs(dy) > Math.abs(dx)) { swipe.current = null; g.el.style.transform = ""; return; }
+                       if (Math.abs(dy) > 12 && Math.abs(dy) > Math.abs(dx)) { swipe.current = null; g.el.style.transform = ""; return; }
+                       if (dx <= 0 || Math.abs(dx) < Math.abs(dy)) return;
                       g.dx = Math.max(0, Math.min(80, dx));
                       g.el.style.transition = "none";
                       g.el.style.transform = `translate3d(${g.dx}px,0,0)`;
@@ -1197,15 +1199,21 @@ export function ConversationScreen({ chatId }: { chatId: string }) {
                       if (!g) return;
                       g.el.style.transition = "transform 220ms cubic-bezier(.2,.9,.3,1.2)";
                       g.el.style.transform = "";
-                      if (g.dx > 56) {
+                       if (g.dx > 56) {
                         swallowClick.current = true;
                         setReply(m);
                         if (navigator.vibrate) navigator.vibrate(10);
+                        window.setTimeout(() => { swallowClick.current = false; }, 450);
                       }
                     }}
                     onPointerCancel={() => { const g = swipe.current; swipe.current = null; if (g) g.el.style.transform = ""; }}
+                     onClickCapture={(e) => {
+                       if (!swallowClick.current) return;
+                       swallowClick.current = false;
+                       e.preventDefault();
+                       e.stopPropagation();
+                     }}
                     onClick={(e) => {
-                      if (swallowClick.current) { swallowClick.current = false; return; }
                       if (m.type === "scratch") return;
                       if (mine && m.status === "failed") {
                         retryMessage(chatId, m.id);
@@ -1231,7 +1239,7 @@ export function ConversationScreen({ chatId }: { chatId: string }) {
                         (e.currentTarget as HTMLElement).click();
                       }
                     }}
-                    className={cn("mb-1 flex w-full", mine ? "justify-end" : "justify-start", isGroup && !mine && "gap-1.5", showName && "mt-2", hit && "rounded-2xl bg-accent/10")}
+                     className={cn("mb-1 flex w-full touch-pan-y", mine ? "justify-end" : "justify-start", isGroup && !mine && "gap-1.5", showName && "mt-2", hit && "rounded-2xl bg-accent/10")}
                   >
                     {isGroup && !mine ? (
                       <span className="mt-5 w-7 shrink-0">{showName ? <Avatar user={sender} size={28} /> : null}</span>
@@ -1888,7 +1896,7 @@ export function ConversationScreen({ chatId }: { chatId: string }) {
           anchor={activeAnchor}
           container={menuHost.current}
           actions={menuActions}
-          reactions={!active.deletedForAll ? { emojis: REACTS, onSelect: (emoji) => addReaction(chatId, active.id, emoji) } : undefined}
+           reactions={!active.deletedForAll ? { ids: REACTS, onSelect: (id) => addReaction(chatId, active.id, id) } : undefined}
           onClose={closeMessageMenu}
         />
       ) : null}

@@ -1,4 +1,5 @@
 # Roadmap
+- [x] Conversation : rapprocher les réactions WIPP du menu compact et permettre de répondre par balayage aux textes, photos et vidéos sans ouvrir le média.
 - [x] Moi : retirer les panneaux de test messagerie et liaison web, rapprocher Mon activité ; retirer les accès de démonstration du client sans toucher à la messagerie réelle. Liaison web conservée dans le code pour un futur Moi → Paramètres → Appareils liés.
 - [x] Drapeau et indicatif visibles sur la saisie du téléphone ; tous les pays regroupés par région dans la sélection.
 - [x] Menu de message compact dans la conversation, actions courantes visibles et « Plus… » pour les autres.

@@ -33,4 +33,4 @@
 - WIPP Touch (Migration D) : jeton opaque 60 s émis par src/lib/touch.functions.ts → fonctions SQL service_role wipp_touch_* ; détection = entrée native (web : bouton DEV « Capter »), demande/acceptation réelles aboutissant à wipp_connections. Pourquoi : aucune connexion par simple proximité, identité résolue côté serveur.
 - QR : QrCard génère un vrai QR (qrcode-generator, correction H) ; profil permanent résolu via wipp_public_profiles quand une session existe. Pourquoi : l'ancien motif décoratif n'était pas scannable.
 
-- Menu de message : MessageActionMenu reste ancré à la bulle et place les actions secondaires sous « Plus… ». Pourquoi : conversation visible et parcours de chat compact, sans feuille plein écran.
+- Menu de message : MessageActionMenu regroupe réactions du pack moji et actions près de la bulle ; « Plus… » contient le reste. Pourquoi : chat visible, réactions WIPP cohérentes.
