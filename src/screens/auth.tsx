@@ -394,7 +394,7 @@ export function LoginScreen() {
         ) : null}
       </div>
       {err ? <p role="alert" className="absolute top-[66.0%] left-[8%] z-10 rounded bg-wipp-share-panel px-1.5 text-[10px] text-wipp-danger">{err}</p> : null}
-       <div aria-hidden className="absolute top-[65.6%] left-[5%] h-[8.0%] w-[90%] rounded bg-wipp-share-panel" />
+       <div aria-hidden className="absolute top-[65.6%] left-[5%] h-[5.2%] w-[90%] rounded bg-wipp-share-panel" />
        <LegalCheckbox
         checked={accepted}
         onToggle={(value) => { setAccepted(value); if (value) setErr(null); }}
