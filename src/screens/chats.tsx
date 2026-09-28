@@ -193,26 +193,27 @@ export function ChatsScreen() {
         </div>
       ) : null}
       <div className="flex gap-4 overflow-x-auto no-scrollbar px-4 pt-1.5 pb-2">
-        <div className="flex w-16 shrink-0 flex-col items-center gap-1.5">
-          <span className="relative">
-            <button
-              type="button"
-              onClick={() =>
-                push(myStory ? { name: "stories", userId: "me" } : { name: "new-story" })
-              }
-              aria-label={t("yourStory")}
-            >
-              <Avatar user={me} size={56} ring={myStory ? "accent" : "none"} priority />
-            </button>
-            <button
-              type="button"
-              className="absolute right-0 bottom-0 flex size-5 items-center justify-center rounded-full bg-accent text-accent-fg outline-2 outline-bg"
-              onClick={() => push({ name: "new-story" })}
-              aria-label={t("addStory")}
-            >
-              <Plus className="size-3" strokeWidth={3} />
-            </button>
+        <button
+          type="button"
+          className="flex w-16 shrink-0 flex-col items-center gap-1.5"
+          onClick={() => push({ name: "new-story" })}
+          aria-label={t("addStory")}
+        >
+          <span className="flex size-14 items-center justify-center rounded-full border-2 border-dashed border-muted/60 text-muted active:scale-95">
+            <Plus className="size-6" strokeWidth={2.5} />
           </span>
+          <span className="w-full truncate text-center text-[11px] text-muted">{t("storyAddShort")}</span>
+        </button>
+        <div className="flex w-16 shrink-0 flex-col items-center gap-1.5">
+          <button
+            type="button"
+            onClick={() =>
+              push(myStory ? { name: "stories", userId: "me" } : { name: "new-story" })
+            }
+            aria-label={t("yourStory")}
+          >
+            <Avatar user={me} size={56} ring={myStory ? "accent" : "none"} priority />
+          </button>
           <span className="w-full truncate text-center text-[11px] text-muted">{t("yourStory")}</span>
         </div>
         {storyUsers.map((id) => {

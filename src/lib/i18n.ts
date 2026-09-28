@@ -267,6 +267,7 @@ const fr = {
   deleteCall: "Supprimer",
 
   yourStory: "Votre story",
+  storyAddShort: "Ajouter",
   stories: "Stories",
 
   listings: "Petites annonces",
@@ -1264,6 +1265,7 @@ const en: Record<keyof typeof fr, string> = {
   deleteCall: "Delete",
 
   yourStory: "Your story",
+  storyAddShort: "Add",
   stories: "Stories",
 
   listings: "Listings",
