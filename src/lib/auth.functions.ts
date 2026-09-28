@@ -11,7 +11,7 @@ const Phone = z.string().regex(/^\+[1-9]\d{6,14}$/);
 const Password = z.string().min(8).max(128);
 const Name = z.string().trim().min(1).max(40);
 const Username = z.string().trim().toLowerCase().regex(/^[a-z0-9_]{3,20}$/);
-const Country = z.enum(["CA", "SN", "CI", "ML", "GN", "FR", "US"]);
+const Country = z.string().regex(/^[A-Z]{2}$/);
 
 async function ctx() {
   const { createClient } = await import("@supabase/supabase-js");
