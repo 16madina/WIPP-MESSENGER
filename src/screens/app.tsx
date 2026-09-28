@@ -13,7 +13,6 @@ import {
   OnboardingScreen,
   OtpScreen,
   SetupScreen,
-  SignupScreen,
   SplashScreen,
 } from "./auth";
 import {
@@ -161,7 +160,7 @@ function ScreenSwitch({ screen }: { screen: Screen }) {
     case "signup-celebration":
       return <SignupCelebrationScreen username={screen.username} />;
     case "signup":
-      return <SignupScreen />;
+      return <PhoneEntryScreen />;
     case "login":
       return <LoginScreen />;
     case "otp":
