@@ -131,7 +131,6 @@ export function TabBar({ active }: { active: Screen["name"] }) {
     closeSheet();
     if (name === "nearby") {
       locateMe();
-      if (nearby === 0) setNearby(5);
     }
     window.setTimeout(() => push({ name }), 160);
   }
