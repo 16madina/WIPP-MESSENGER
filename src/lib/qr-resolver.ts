@@ -107,6 +107,11 @@ export async function resolveWippQr(raw: string): Promise<QrDestination> {
     );
     return chat ? { ok: true, kind: "group", token: id.value } : { ok: false, error: QR_ERRORS.groupMissing };
   }
-  const shop = st.shops.find((s) => s.handle?.toLowerCase() === id.value);
+  try {
+    const { getPublicBusinessCard } = await import("@/lib/business-card.functions");
+    const card = await getPublicBusinessCard({ data: { publicId: id.value } });
+    if (card) return { ok: true, kind: "business", shopId: `business:${card.publicId}` };
+  } catch { /* repli local */ }
+  const shop = st.shops.find((s) => s.handle?.toLowerCase() === id.value || s.qrToken?.toLowerCase() === id.value);
   return shop ? { ok: true, kind: "business", shopId: shop.id } : { ok: false, error: QR_ERRORS.shopMissing };
 }
