@@ -74,7 +74,7 @@ export function MessageActionMenu({ anchor, container, reactions, actions, onClo
         animate={{ opacity: 1, scale: 1 }}
         transition={wippMotion.lift}
       >
-        {expanded && <Btn variant="ghost" role="menuitem" className="h-11 w-full justify-start gap-3 rounded-none border-b border-wipp-separator px-4 text-[15px]" onClick={() => setExpanded(false)}><ArrowLeft size={18} /> Retour</Btn>}
+        {expanded && <Btn variant="ghost" role="menuitem" className="h-11 w-full justify-start gap-3 rounded-none border-b border-wipp-sep px-4 text-[15px]" onClick={() => setExpanded(false)}><ArrowLeft size={18} /> Retour</Btn>}
         <div className={expanded ? "max-h-[264px] overflow-y-auto overscroll-contain" : undefined}>
           {shown.map((action) => (
             <Btn
@@ -89,7 +89,7 @@ export function MessageActionMenu({ anchor, container, reactions, actions, onClo
             </Btn>
           ))}
         </div>
-        {!expanded && extra.length > 0 && <Btn variant="ghost" role="menuitem" className="h-11 w-full justify-start gap-3 rounded-none border-t border-wipp-separator px-4 text-[15px] text-wipp-fg" onClick={() => setExpanded(true)}><CircleEllipsis size={20} /> Plus…</Btn>}
+        {!expanded && extra.length > 0 && <Btn variant="ghost" role="menuitem" className="h-11 w-full justify-start gap-3 rounded-none border-t border-wipp-sep px-4 text-[15px] text-wipp-fg" onClick={() => setExpanded(true)}><CircleEllipsis size={20} /> Plus…</Btn>}
       </motion.div>
     </div>
   );
