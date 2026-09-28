@@ -26,3 +26,4 @@
 
 - [x] Compte admin Deena (+1 819 580 3940, code temporaire) + espace Admin dans Moi
 - [x] Carte professionnelle réelle : créer, modifier, afficher, QR business, partager et découvrir dans Explorer.
+- [x] Carte de boutique : rapprocher la présentation du modèle fourni, rendre le QR lisible et garder Modifier/Partager visibles pour le propriétaire, y compris après enregistrement.
