@@ -360,7 +360,7 @@ export function LoginScreen() {
     <main className="relative size-full overflow-hidden bg-wipp-bg text-wipp-fg" aria-label={t("loginHero")}>
       <img src={loginImage} alt="" draggable={false} className="pointer-events-none absolute inset-0 size-full object-fill" />
       <div id={RECAPTCHA_ID} className="pointer-events-none absolute bottom-0 left-0" />
-      <div className="absolute top-[62.2%] left-[6%] h-[5.2%] w-[88%]">
+      <div className="absolute top-[60.7%] left-[6%] z-10 h-[5.0%] w-[88%] rounded-xl bg-wipp-auth-input">
         <Btn
           aria-label={`Pays : ${country.fr} (${country.dial})`}
           aria-expanded={dialOpen}
@@ -393,16 +393,16 @@ export function LoginScreen() {
           />
         ) : null}
       </div>
-      {err ? <p role="alert" className="absolute top-[68.5%] left-[8%] rounded bg-wipp-share-panel px-2 text-[12px] text-wipp-danger">{err}</p> : null}
-       <div aria-hidden className="absolute top-[67.3%] left-[5%] h-[6.2%] w-[90%] rounded bg-wipp-share-panel" />
+      {err ? <p role="alert" className="absolute top-[66.0%] left-[8%] z-10 rounded bg-wipp-share-panel px-1.5 text-[10px] text-wipp-danger">{err}</p> : null}
+       <div aria-hidden className="absolute top-[65.6%] left-[5%] h-[5.2%] w-[90%] rounded bg-wipp-share-panel" />
        <LegalCheckbox
         checked={accepted}
         onToggle={(value) => { setAccepted(value); if (value) setErr(null); }}
         onOpenPolicy={() => push({ name: "legal", doc: "privacy" })}
         onOpenTerms={() => push({ name: "legal", doc: "terms" })}
-        className="absolute top-[67.8%] left-[6%] w-[88%] py-0"
+        className="absolute top-[67.6%] left-[6%] w-[88%] py-0"
       />
-      <AgeCheckbox checked={adult} onToggle={setAdult} onOpenAge={() => push({ name: "legal", doc: "age" })} className="absolute top-[71.2%] left-[6%] w-[88%] py-0" />
+      <AgeCheckbox checked={adult} onToggle={setAdult} onOpenAge={() => push({ name: "legal", doc: "age" })} className="absolute top-[71.3%] left-[6%] w-[88%] py-0" />
       <Btn
         aria-label={t("continue")}
         disabled={busy || !accepted || !adult}
