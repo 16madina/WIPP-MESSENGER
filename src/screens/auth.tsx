@@ -45,6 +45,7 @@ import {
   AuthShell,
   AuthSteps,
   AVATAR_PICKS,
+  AgeCheckbox,
   LegalCheckbox,
 } from "./auth-chrome";
 import { IntroSplash } from "./intro";
@@ -84,7 +85,7 @@ export function SignupScreen() {
 
   async function tryContinue() {
     const age = yearsOld(birthday);
-    if (age > 0 && age < 13) {
+    if (age > 0 && age < 18) {
       setTooYoung(true);
       setNeedAccept(false);
       return;
@@ -334,6 +335,7 @@ export function LoginScreen() {
   const [err, setErr] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [accepted, setAccepted] = useState(false);
+  const [adult, setAdult] = useState(false);
 
   async function tryLogin() {
     setErr(null);
@@ -396,14 +398,15 @@ export function LoginScreen() {
         checked={accepted}
         onToggle={(value) => { setAccepted(value); if (value) setErr(null); }}
         onOpenPolicy={() => push({ name: "legal", doc: "privacy" })}
-        singleLine
-        className="absolute top-[71.3%] left-[6%] w-[88%] py-0"
+        onOpenTerms={() => push({ name: "legal", doc: "terms" })}
+        className="absolute top-[68%] left-[6%] w-[88%] py-0"
       />
+      <AgeCheckbox checked={adult} onToggle={setAdult} onOpenAge={() => push({ name: "legal", doc: "age" })} className="absolute top-[71.2%] left-[6%] w-[88%] py-0" />
       <Btn
         aria-label={t("continue")}
-        disabled={busy || !accepted}
+        disabled={busy || !accepted || !adult}
         onClick={() => void tryLogin()}
-        className={accepted
+        className={accepted && adult
           ? "absolute! top-[73.6%] left-[6%] h-[6.8%]! w-[88%] rounded-full! bg-transparent! text-transparent!"
           : "absolute! top-[73.6%] left-[6%] h-[6.8%]! w-[88%] rounded-full! bg-wipp-auth-input! text-[16px]! font-semibold! text-wipp-muted! disabled:opacity-100!"}
       >

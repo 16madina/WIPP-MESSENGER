@@ -204,13 +204,13 @@ export function LegalCheckbox({
   checked,
   onToggle,
   onOpenPolicy,
-  singleLine,
+  onOpenTerms,
   className,
 }: {
   checked: boolean;
   onToggle: (checked: boolean) => void;
   onOpenPolicy?: () => void;
-  singleLine?: boolean;
+  onOpenTerms?: () => void;
   className?: string;
 }) {
   return (
@@ -221,7 +221,7 @@ export function LegalCheckbox({
           checked={checked}
           onChange={(e) => onToggle(e.target.checked)}
           className="peer absolute inset-0 opacity-0"
-          aria-label="J’accepte les politiques de confidentialité"
+           aria-label="J’accepte les conditions d’utilisation et les politiques de confidentialité"
         />
         <span
           className={cn(
@@ -232,8 +232,20 @@ export function LegalCheckbox({
           {checked ? <Check className="size-3 text-wipp-accent-fg" strokeWidth={3} /> : null}
         </span>
       </span>
-      <span className={cn("text-[10px] leading-[1.3] text-wipp-muted", singleLine && "whitespace-nowrap")}>
-        En continuant, tu acceptes les{" "}
+       <span className="text-[10px] leading-[1.3] text-wipp-muted">
+         En continuant, j’accepte les{" "}
+         <button
+           type="button"
+           className="min-h-0! min-w-0! font-medium text-wipp-accent underline underline-offset-2"
+           onClick={(e) => {
+             e.preventDefault();
+             e.stopPropagation();
+             onOpenTerms?.();
+           }}
+         >
+           conditions d’utilisation
+         </button>{" "}
+         et les{" "}
         <button
           type="button"
           className="min-h-0! min-w-0! font-medium text-wipp-accent underline underline-offset-2"
@@ -246,6 +258,40 @@ export function LegalCheckbox({
           politiques de confidentialité
         </button>
         .
+      </span>
+    </label>
+  );
+}
+
+export function AgeCheckbox({
+  checked,
+  onToggle,
+  onOpenAge,
+  className,
+}: {
+  checked: boolean;
+  onToggle: (checked: boolean) => void;
+  onOpenAge: () => void;
+  className?: string;
+}) {
+  return (
+    <label className={cn("flex cursor-pointer select-none items-center gap-2 py-0.5", className)}>
+      <span className="relative flex size-4 shrink-0 items-center justify-center">
+        <input
+          type="checkbox"
+          checked={checked}
+          onChange={(e) => onToggle(e.target.checked)}
+          className="peer absolute inset-0 opacity-0"
+          aria-label="Je reconnais avoir 18 ans et plus"
+        />
+        <span className={cn("flex size-4 items-center justify-center rounded-[5px] transition-colors", checked ? "bg-wipp-accent" : "bg-white/10 ring-1 ring-white/35")}>
+          {checked ? <Check className="size-3 text-wipp-accent-fg" strokeWidth={3} /> : null}
+        </span>
+      </span>
+      <span className="text-[10px] leading-[1.3] text-wipp-muted">Je reconnais avoir{" "}
+        <button type="button" className="min-h-0! min-w-0! font-medium text-wipp-accent underline underline-offset-2" onClick={(e) => { e.preventDefault(); e.stopPropagation(); onOpenAge(); }}>
+          18 ans et plus
+        </button>.
       </span>
     </label>
   );

@@ -324,6 +324,7 @@ export function MeScreen() {
               label={t("privacyPolicy")}
               onClick={() => push({ name: "legal", doc: "privacy" })}
             />
+            <Row icon={<BadgeCheck className="size-4" />} label="18 ans et plus" onClick={() => push({ name: "legal", doc: "age" })} />
             <Row
               icon={<UserPlus className="size-4" />}
               label={t("invite")}

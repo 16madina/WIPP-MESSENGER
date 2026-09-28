@@ -11,7 +11,7 @@ import welcomeImage from "@/assets/wipp-auth-welcome.png.asset.json";
 import phoneImage from "@/assets/wipp-auth-phone.png.asset.json";
 import smsImage from "@/assets/wipp-auth-sms-clean2.png";
 import profileImage from "@/assets/wipp-auth-profile-no-password.png";
-import { COUNTRIES, LegalCheckbox } from "./auth-chrome";
+import { AgeCheckbox, COUNTRIES, LegalCheckbox } from "./auth-chrome";
 import { DEFAULT_COUNTRY } from "@/lib/countries";
 import { CountryList } from "@/components/country-list";
 
@@ -43,6 +43,7 @@ export function PhoneEntryScreen() {
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const [accepted, setAccepted] = useState(false);
+  const [adult, setAdult] = useState(false);
 
   async function continueWithPhone() {
     const normalized = toE164(`${country.dial}${phone.replace(/\D/g, "").replace(/^0+/, "")}`);
@@ -93,13 +94,15 @@ export function PhoneEntryScreen() {
         checked={accepted}
         onToggle={(value) => { setAccepted(value); if (value) setError(""); }}
         onOpenPolicy={() => push({ name: "legal", doc: "privacy" })}
-        className="absolute top-[81.9%] left-[10%] w-[80%]"
+        onOpenTerms={() => push({ name: "legal", doc: "terms" })}
+        className="absolute top-[78.9%] left-[10%] w-[80%]"
       />
+      <AgeCheckbox checked={adult} onToggle={setAdult} onOpenAge={() => push({ name: "legal", doc: "age" })} className="absolute top-[83.4%] left-[10%] w-[80%]" />
       <Btn
         aria-label="Continuer"
-        disabled={busy || !accepted}
+        disabled={busy || !accepted || !adult}
         onClick={() => void continueWithPhone()}
-        className={accepted
+        className={accepted && adult
           ? "absolute! top-[87.1%] left-[5%] h-[6.6%]! w-[90%] rounded-full! bg-transparent! text-transparent!"
           : "absolute! top-[87.1%] left-[5%] h-[6.6%]! w-[90%] rounded-full! bg-wipp-auth-input! text-[15px]! font-semibold! text-wipp-muted! disabled:opacity-100!"}
       >
