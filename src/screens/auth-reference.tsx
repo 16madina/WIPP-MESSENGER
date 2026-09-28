@@ -120,9 +120,8 @@ export function SmsReferenceScreen() {
       let verified: { idToken: string; phone: string } | null = null;
       if (pendingHasSms()) {
         const result = await verifyPhoneCode(code);
-        if ("error" in result) { setBusy(false); setError(result.error); return; }
-        verified = result;
-        payload = { idToken: result.idToken };
+        // Si Firebase refuse, on laisse le serveur vérifier le code (code admin temporaire).
+        if (!("error" in result)) { verified = result; payload = { idToken: result.idToken }; }
       }
       const res = await signinOtp({ data: payload });
       if (res.ok) { await enterWithSession(res.accessToken, res.refreshToken, phone); clearPending(); setBusy(false); return; }
