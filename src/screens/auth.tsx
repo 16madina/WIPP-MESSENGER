@@ -397,7 +397,7 @@ export function LoginScreen() {
         onToggle={(value) => { setAccepted(value); if (value) setErr(null); }}
         onOpenPolicy={() => push({ name: "legal", doc: "privacy" })}
         singleLine
-        className="absolute top-[71.8%] left-[6%] w-[88%]"
+        className="absolute top-[71.3%] left-[6%] w-[88%] py-0"
       />
       <Btn
         aria-label={t("continue")}
