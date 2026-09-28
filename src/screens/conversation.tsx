@@ -1,6 +1,11 @@
 import { CallEvent } from "@/components/call/CallEvent";
 import { useEffect, useRef, useState } from "react";
 import {
+  Forward,
+  CornerUpLeft,
+  ListChecks,
+  Pencil,
+  Pin,
   Camera,
   Clock,
   Copy,
@@ -38,6 +43,7 @@ import { SurpriseReveal } from "@/components/native/SurpriseReveal";
 import type { Surprise } from "@/lib/surprise";
 import { WippSticker } from "@/components/wipp-sticker";
 import { MediaComposer } from "@/components/chat/MediaComposer";
+import { MessageActionMenu, type MessageMenuAction } from "@/components/chat/MessageActionMenu";
 import { MediaViewer } from "@/components/chat/MediaViewer";
 import { AutoLinkPreview, FileCard, GifMessage, LocationCard, MediaCard, ProgressRing, mediaItemsOf } from "@/components/chat/MessageMedia";
 import { fetchMediaUrl, useMediaUrl } from "@/components/chat/useMediaUrl";
@@ -266,6 +272,9 @@ export function ConversationScreen({ chatId }: { chatId: string }) {
   const recordStartedAt = useRef(0);
   const pausedAccumMs = useRef(0);
   const [active, setActive] = useState<Message | null>(null);
+  const [activeAnchor, setActiveAnchor] = useState<DOMRect | null>(null);
+  const menuHost = useRef<HTMLDivElement>(null);
+  const closeMessageMenu = () => { setActive(null); setActiveAnchor(null); };
   // Balayer une bulle vers la droite = répondre (geste natif). On bloque le clic qui suit le geste.
   const swipe = useRef<{ id: string; x: number; y: number; el: HTMLElement; dx: number } | null>(null);
   const swallowClick = useRef(false);
@@ -923,9 +932,33 @@ export function ConversationScreen({ chatId }: { chatId: string }) {
       })
     : stickerPool;
   const contacts = Object.values(users).filter((u) => u.connected);
+  const menuActions: MessageMenuAction[] = active ? [
+    ...(!active.deletedForAll ? [{ key: "reply", label: "Répondre", icon: <CornerUpLeft size={19} />, onSelect: () => setReply(active) }] : []),
+    ...(active.text && active.type === "text" && !active.deletedForAll ? [
+      { key: "forward", label: "Transférer", icon: <Forward size={19} />, onSelect: () => setForwardMsg(active) },
+      { key: "copy", label: t("copyMsg"), icon: <Copy size={19} />, onSelect: () => { void navigator.clipboard.writeText(active.text ?? ""); } },
+    ] : []),
+    { key: "pin", label: active.pinned ? "Désépingler" : "Épingler", icon: <Pin size={19} />, onSelect: () => {
+      if (chatId.startsWith("srv:")) void import("@/lib/messaging/client").then(({ pinServerMessage }) => pinServerMessage(chatId.slice(4), active.id, !active.pinned));
+      else localPatch(active.id, (x) => ({ ...x, pinned: !x.pinned }));
+    } },
+    { key: "delete", label: t("deleteMe"), icon: <Trash2 size={19} />, danger: true, onSelect: () => deleteMessage(chatId, active.id) },
+    ...(active.fromId === "me" && active.type === "text" && !active.deletedForAll && Date.now() - active.createdAt < 15 * 60 * 1000 ? [
+      { key: "edit", label: "Modifier", icon: <Pencil size={19} />, onSelect: () => { setEditing(active); setText(active.text ?? ""); } },
+    ] : []),
+    { key: "select", label: "Sélectionner", icon: <ListChecks size={19} />, onSelect: () => setSelected((ids) => ids.includes(active.id) ? ids : [...ids, active.id]) },
+    { key: "translate", label: t("translate"), icon: <Languages size={19} />, onSelect: () => translateMessage(chatId, active.id) },
+    ...(active.enc ? [{ key: "cipher", label: t("e2eCopyCipher"), icon: <Lock size={19} />, onSelect: () => { if (active.enc) void navigator.clipboard.writeText(`${active.enc.iv}.${active.enc.ct}`); } }] : []),
+    ...(active.fromId === "me" && !active.deletedForAll ? [{ key: "delete-all", label: "Supprimer pour tout le monde", icon: <Trash2 size={19} />, danger: true, onSelect: () => {
+      if (chatId.startsWith("srv:")) void import("@/lib/messaging/client").then(({ tombstoneServerMessage }) => tombstoneServerMessage(chatId.slice(4), active.id));
+      else localPatch(active.id, (x) => ({ ...x, deletedForAll: true, text: "", pinned: false, reactions: [] }));
+    } }] : []),
+    ...(active.fromId !== "me" ? [{ key: "report", label: t("report"), icon: <Shield size={19} />, onSelect: () => setReportMsgId(active.id) }] : []),
+  ] : [];
+
 
   return (
-    <div className="relative flex h-full flex-col bg-transparent">
+    <div ref={menuHost} className="relative flex h-full flex-col bg-transparent">
       {burst && burst !== "shake" ? (
         <div className={cn("pointer-events-none absolute inset-0 z-20 overflow-hidden", `cast-fx-${burst}`)} aria-hidden>
           {burst === "hearts" || burst === "heartwave" || burst === "moment-love"
@@ -1165,7 +1198,7 @@ export function ConversationScreen({ chatId }: { chatId: string }) {
                       }
                     }}
                     onPointerCancel={() => { const g = swipe.current; swipe.current = null; if (g) g.el.style.transform = ""; }}
-                    onClick={() => {
+                    onClick={(e) => {
                       if (swallowClick.current) { swallowClick.current = false; return; }
                       if (m.type === "scratch") return;
                       if (mine && m.status === "failed") {
@@ -1182,6 +1215,7 @@ export function ConversationScreen({ chatId }: { chatId: string }) {
                         return;
                       }
                       if (m.type === "sticker" || m.type === "video") return;
+                      setActiveAnchor(e.currentTarget.getBoundingClientRect());
                       setActive(m);
                     }}
                     onKeyDown={(e) => {
@@ -1250,7 +1284,11 @@ export function ConversationScreen({ chatId }: { chatId: string }) {
                             size={isEmojiSticker(m.stickerId) ? 72 : 148}
                             animated
                             onceKey={m.id}
-                            onLongPress={() => setActive(m)}
+                            onLongPress={() => {
+                              const node = document.getElementById(`msg-${m.id}`);
+                              if (node) setActiveAnchor(node.getBoundingClientRect());
+                              setActive(m);
+                            }}
                           />
                         ) : null}
                         {m.type === "scratch" ? (
@@ -1838,184 +1876,16 @@ export function ConversationScreen({ chatId }: { chatId: string }) {
           )}
         </>
       )}
-      <Sheet open={Boolean(active)} onClose={() => setActive(null)}>
-        {active ? (
-          <div className="grid gap-1">
-            {!active.deletedForAll ? (
-            <div className="mb-2 flex justify-center gap-2">
-              {REACTS.map((e) => (
-                <button
-                  key={e}
-                  type="button"
-                  className="press flex size-10 items-center justify-center rounded-full bg-surface-2 text-lg"
-                  onClick={() => {
-                    addReaction(chatId, active.id, e);
-                    setActive(null);
-                  }}
-                >
-                  {e}
-                </button>
-              ))}
-            </div>
-            ) : null}
-            {!active.deletedForAll ? (
-            <button
-              type="button"
-              className="flex h-12 items-center gap-3 rounded-lg px-2"
-              onClick={() => {
-                setReply(active);
-                setActive(null);
-              }}
-            >
-              Répondre
-            </button>
-            ) : null}
-            {active.text && active.type === "text" && !active.deletedForAll ? (
-              <button
-                type="button"
-                className="flex h-12 items-center gap-3 rounded-lg px-2"
-                onClick={() => {
-                  if (active.text) navigator.clipboard.writeText(active.text);
-                  setActive(null);
-                }}
-              >
-                <Copy className="size-4" /> {t("copyMsg")}
-              </button>
-            ) : null}
-            {active.fromId === "me" && active.type === "text" && !active.deletedForAll && Date.now() - active.createdAt < 15 * 60 * 1000 ? (
-              <button
-                type="button"
-                className="flex h-12 items-center gap-3 rounded-lg px-2"
-                onClick={() => {
-                  setEditing(active);
-                  setText(active.text ?? "");
-                  setActive(null);
-                }}
-              >
-                Modifier
-              </button>
-            ) : null}
-            {active.text && active.type === "text" && !active.deletedForAll ? (
-            <button
-              type="button"
-              className="flex h-12 items-center gap-3 rounded-lg px-2"
-              onClick={() => {
-                setForwardMsg(active);
-                setActive(null);
-              }}
-            >
-              Transférer
-            </button>
-            ) : null}
-            {!chatId.startsWith("srv:") && !active.deletedForAll ? (
-              <button
-                type="button"
-                className="flex h-12 items-center gap-3 rounded-lg px-2"
-                onClick={() => {
-                  localPatch(active.id, (x) => ({ ...x, pinned: !x.pinned }));
-                  setActive(null);
-                }}
-              >
-                {active.pinned ? "Désépingler" : "Épingler"}
-              </button>
-            ) : null}
-            {chatId.startsWith("srv:") ? (
-              <button
-                type="button"
-                className="flex h-12 items-center gap-3 rounded-lg px-2"
-                onClick={() => {
-                  void import("@/lib/messaging/client").then(async ({ pinServerMessage }) => {
-                    await pinServerMessage(chatId.slice(4), active.id, !active.pinned);
-                  });
-                  setActive(null);
-                }}
-              >
-                {active.pinned ? "Désépingler" : "Épingler"}
-              </button>
-            ) : null}
-            <button
-              type="button"
-              className="flex h-12 items-center gap-3 rounded-lg px-2"
-              onClick={() => {
-                setSelected((ids) => (ids.includes(active.id) ? ids : [...ids, active.id]));
-                setActive(null);
-              }}
-            >
-              Sélectionner
-            </button>
-            <button
-              type="button"
-              className="flex h-12 items-center gap-3 rounded-lg px-2"
-              onClick={() => {
-                translateMessage(chatId, active.id);
-                setActive(null);
-              }}
-            >
-              <Languages className="size-4" /> {t("translate")}
-            </button>
-            {active.enc ? (
-              <button
-                type="button"
-                className="flex h-12 items-center gap-3 rounded-lg px-2"
-                onClick={() => {
-                  navigator.clipboard.writeText(`${active.enc!.iv}.${active.enc!.ct}`);
-                  setActive(null);
-                }}
-              >
-                <Lock className="size-4" /> {t("e2eCopyCipher")}
-              </button>
-            ) : null}
-            <button
-              type="button"
-              className="flex h-12 items-center gap-3 rounded-lg px-2 text-danger"
-              onClick={() => {
-                deleteMessage(chatId, active.id);
-                setActive(null);
-              }}
-            >
-              <Trash2 className="size-4" /> {t("deleteMe")}
-            </button>
-            {active.fromId === "me" && !chatId.startsWith("srv:") && !active.deletedForAll ? (
-              <button
-                type="button"
-                className="flex h-12 items-center gap-3 rounded-lg px-2 text-danger"
-                onClick={() => {
-                  localPatch(active.id, (x) => ({ ...x, deletedForAll: true, text: "", pinned: false, reactions: [] }));
-                  setActive(null);
-                }}
-              >
-                Supprimer pour tout le monde
-              </button>
-            ) : null}
-            {active.fromId === "me" && chatId.startsWith("srv:") ? (
-              <button
-                type="button"
-                className="flex h-12 items-center gap-3 rounded-lg px-2 text-danger"
-                onClick={() => {
-                  void import("@/lib/messaging/client").then(async ({ tombstoneServerMessage }) => {
-                    await tombstoneServerMessage(chatId.slice(4), active.id);
-                  });
-                  setActive(null);
-                }}
-              >
-                Supprimer pour tout le monde
-              </button>
-            ) : null}
-            {active.fromId !== "me" ? (
-              <button
-                type="button"
-                className="flex h-12 items-center gap-3 rounded-lg px-2"
-                onClick={() => {
-                  setActive(null);
-                  setReportMsgId(active.id);
-                }}
-              >
-                {t("report")}
-              </button>
-            ) : null}
-          </div>
-        ) : null}
-      </Sheet>
+      {active && activeAnchor ? (
+        <MessageActionMenu
+          key={active.id}
+          anchor={activeAnchor}
+          container={menuHost.current}
+          actions={menuActions}
+          reactions={!active.deletedForAll ? { emojis: REACTS, onSelect: (emoji) => addReaction(chatId, active.id, emoji) } : undefined}
+          onClose={closeMessageMenu}
+        />
+      ) : null}
       <Sheet open={Boolean(forwardMsg)} onClose={() => setForwardMsg(null)} title="Transférer">
         <div className="grid gap-1">
           {srvChats.filter((c) => c.id.startsWith("srv:") && c.id !== chatId).map((c) => {

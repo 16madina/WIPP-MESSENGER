@@ -1,4 +1,5 @@
 # Roadmap
+- [x] Menu de message compact dans la conversation, actions courantes visibles et « Plus… » pour les autres.
 - [x] Accueil et saisie du téléphone selon les images fournies ; « Continuer » envoie le SMS Firebase.
 - [x] Vérification SMS puis profil (nom, prénom, pays conservé, photo, pseudo unique, sans mot de passe) selon les deux nouvelles images. SMS réel à vérifier lorsque Firebase est disponible.
 - [x] Création réussie : récompense plein écran automatique, puis Chats ; accueil de connexion uniquement si la liste est vide.
