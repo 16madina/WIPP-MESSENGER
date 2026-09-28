@@ -38,7 +38,7 @@ export interface NearbyDiscoveryProvider {
 export const webNearbyDiscovery: NearbyDiscoveryProvider = {
   kind: "simulated",
   scan(onFound) {
-    const id = window.setTimeout(() => onFound(["ines", "maya", "julien"]), 1800);
+    const id = window.setTimeout(() => onFound(["samira", "julien", "maya", "alex", "lea", "ines"]), 3600);
     return () => window.clearTimeout(id);
   },
 };
