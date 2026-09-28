@@ -3,6 +3,7 @@ import {
   Bell,
   BellOff,
   Camera,
+  ChevronRight,
   Clock,
   Hash,
   Lock,
