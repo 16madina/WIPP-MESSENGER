@@ -211,7 +211,7 @@ export type Screen =
   | { name: "help" }
   | { name: "blocked" }
   | { name: "delete-account" }
-  | { name: "legal"; doc: "privacy" | "terms" }
+  | { name: "legal"; doc: "privacy" | "terms" | "age" }
   | { name: "stories"; userId: string }
   | { name: "global-search" }
   | { name: "new-group" }
