@@ -1797,7 +1797,24 @@ export function ConversationScreen({ chatId }: { chatId: string }) {
                     })}
                   </div>
                   <div className="min-h-0 flex-1 overflow-y-auto no-scrollbar">
-                    {stickerTab === "recent" && !stickerQuery ? (
+                    {familyHint && !stickerQuery ? (
+                      <p className="mb-2 px-1 text-[12px] leading-snug text-muted">{familyHint}</p>
+                    ) : null}
+                    {stickerQuery ? (
+                      <div className="grid grid-cols-4 gap-1.5">
+                        {shownStickers.map((s) => (
+                          <button
+                            key={s.id}
+                            type="button"
+                            className="press flex aspect-square items-center justify-center rounded-2xl bg-navy/40"
+                            aria-label={lang === "fr" ? s.labelFr : s.labelEn}
+                            onClick={() => sendSticker(s.id, lang === "fr" ? s.labelFr : s.labelEn)}
+                          >
+                            <WippSticker id={s.id} size={s.pack === "moji" ? 52 : 64} />
+                          </button>
+                        ))}
+                      </div>
+                    ) : stickerTab === "recent" ? (
                       recentStickerIds.filter(isStickerId).length ? (
                         <div className="grid grid-cols-4 gap-1.5">
                           {recentStickerIds.filter(isStickerId).map((id) => (
@@ -1813,38 +1830,11 @@ export function ConversationScreen({ chatId }: { chatId: string }) {
                           ))}
                         </div>
                       ) : (
-                        <p className="px-2 py-8 text-center text-[13px] text-muted">{t("stickerRecentEmpty")}</p>
+                        <p className="px-2 py-8 text-center text-[13px] text-muted">{"Aucun sticker récent"}</p>
                       )
-                    ) : stickerTab === "gif" && !stickerQuery ? (
-                      <div className="grid grid-cols-3 gap-1.5">
-                        <button
-                          type="button"
-                          className="press flex aspect-square flex-col items-center justify-center gap-1 rounded-2xl bg-navy/40 text-[12px] font-semibold ring-1 ring-dashed ring-hair"
-                          onClick={() => gifRef.current?.click()}
-                        >
-                          <Plus className="size-5" />
-                          Importer un GIF
-                        </button>
-                        {gifs.map((g) => (
-                          <button
-                            key={g.id}
-                            type="button"
-                            aria-label="Envoyer ce GIF"
-                            className="press aspect-square overflow-hidden rounded-2xl bg-navy/40"
-                            onClick={() => sendGif(g.url)}
-                          >
-                            <img src={g.url} alt="GIF" className="size-full object-cover" draggable={false} />
-                          </button>
-                        ))}
-                        {!gifs.length ? (
-                          <p className="col-span-2 self-center px-2 text-[12px] leading-snug text-muted">
-                            Tes GIF restent sur ton téléphone. Importe-en un pour commencer.
-                          </p>
-                        ) : null}
-                      </div>
-                    ) : (
-                      <div className="grid grid-cols-4 gap-1.5">
-                        {shownStickers.map((s) => (
+                    ) : stickerTab === "moji" ? (
+                      <div className="grid grid-cols-5 gap-1.5">
+                        {stickersInPack("moji").map((s) => (
                           <button
                             key={s.id}
                             type="button"
@@ -1852,54 +1842,116 @@ export function ConversationScreen({ chatId }: { chatId: string }) {
                             aria-label={lang === "fr" ? s.labelFr : s.labelEn}
                             onClick={() => sendSticker(s.id, lang === "fr" ? s.labelFr : s.labelEn)}
                           >
-                            <WippSticker id={s.id} size={64} />
+                            <WippSticker id={s.id} size={48} />
+                          </button>
+                        ))}
+                      </div>
+                    ) : stickerTab === "wippie" ? (
+                      <div>
+                        <div className="no-scrollbar mb-2 flex gap-1.5 overflow-x-auto">
+                          {wippiePacks.map((pack) => (
+                            <button
+                              key={pack.id}
+                              type="button"
+                              className={cn(
+                                "min-h-11 shrink-0 rounded-full px-2.5 text-[11px] font-semibold",
+                                wippiePack === pack.id ? "bg-accent text-accent-fg" : "bg-navy/50 text-muted",
+                              )}
+                              onClick={() => setWippiePack(pack.id)}
+                            >
+                              {pack.label}
+                            </button>
+                          ))}
+                        </div>
+                        <div className="grid grid-cols-4 gap-1.5">
+                          {wippieStickers(wippiePack).map((s) => (
+                            <button
+                              key={s.id}
+                              type="button"
+                              className="press flex aspect-square items-center justify-center rounded-2xl bg-navy/40"
+                              aria-label={lang === "fr" ? s.labelFr : s.labelEn}
+                              onClick={() => sendSticker(s.id, lang === "fr" ? s.labelFr : s.labelEn)}
+                            >
+                              <WippSticker id={s.id} size={64} />
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    ) : stickerTab === "moment" ? (
+                      <div className="grid grid-cols-2 gap-2">
+                        <button
+                          type="button"
+                          className="press col-span-2 rounded-2xl bg-navy p-3 text-left ring-1 ring-accent"
+                          onClick={() => { setPickStickers(false); setSurprise(true); }}
+                        >
+                          <p className="text-[15px] font-bold text-accent">{"Carte à gratter"}</p>
+                          <p className="mt-0.5 text-[12px] text-muted">{"Gratte pour découvrir la surprise."}</p>
+                        </button>
+                        {(
+                          [
+                            { name: "Message cadeau", hint: "Un message à dévoiler" },
+                            { name: "Message confettis", hint: "Une surprise qui éclate" },
+                            { name: "Message compte à rebours", hint: "Une surprise à attendre" },
+                            { name: "Message secret", hint: "Un message à débloquer" },
+                          ] as const
+                        ).map((item) => (
+                          <div key={item.name} className="rounded-2xl bg-navy p-3 ring-1 ring-hair">
+                            <p className="text-[13px] font-bold">{item.name.replace("Message ", "")}</p>
+                            <p className="mt-0.5 text-[11px] text-muted">{item.hint}</p>
+                            <p className="mt-2 text-[10px] font-semibold text-accent">{"Bientôt"}</p>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-2 gap-2">
+                        {stickersInPack("ani").map((s) => (
+                          <button
+                            key={s.id}
+                            type="button"
+                            className="press flex aspect-square items-center justify-center overflow-hidden rounded-2xl bg-navy/40"
+                            aria-label={lang === "fr" ? s.labelFr : s.labelEn}
+                            onClick={() => sendSticker(s.id, lang === "fr" ? s.labelFr : s.labelEn)}
+                          >
+                            {s.id === "ani-bisou" ? (
+                              <AniClip loop className="size-full" />
+                            ) : s.id === "ani-stop" ? (
+                              <AniStop loop className="size-full" />
+                            ) : s.anim && s.playMs ? (
+                              <PopAlpha src={s.anim} poster={s.src} loop tray className="size-full" />
+                            ) : (
+                              <WippSticker id={s.id} size={96} />
+                            )}
                           </button>
                         ))}
                       </div>
                     )}
                   </div>
                   <div className="mt-2 flex items-center justify-around rounded-2xl bg-navy/50 py-1.5">
-                    <button
-                      type="button"
-                      aria-label={t("recents")}
-                      className={cn(
-                        "flex size-10 items-center justify-center rounded-full",
-                        stickerTab === "recent" ? "bg-accent text-accent-fg" : "text-fg",
-                      )}
-                      onClick={() => setStickerTab("recent")}
-                    >
-                      <Clock className="size-5" />
-                    </button>
-                    <button
-                      type="button"
-                      aria-label={t("stickerEmoji")}
-                      className={cn("flex size-10 items-center justify-center", stickerTab === "emoji" ? "text-accent" : "text-fg")}
-                      onClick={() => setStickerTab("emoji")}
-                    >
-                      <Smile className="size-6" />
-                    </button>
-                    <button
-                      type="button"
-                      aria-label={t("stickerTabGif")}
-                      className={cn(
-                        "flex h-8 items-center rounded-lg px-2 text-[12px] font-bold ring-1 ring-hair",
-                        stickerTab === "gif" ? "text-accent ring-accent" : "text-fg",
-                      )}
-                      onClick={() => setStickerTab("gif")}
-                    >
-                      GIF
-                    </button>
-                    <button
-                      type="button"
-                      aria-label="Plus"
-                      className="flex size-10 items-center justify-center rounded-full ring-1 ring-hair"
-                      onClick={() => {
-                        setPickStickers(false);
-                        setAttach(true);
-                      }}
-                    >
-                      <Plus className="size-5" />
-                    </button>
+                    {(
+                      [
+                        { id: "recent" as const, label: "Récents", icon: Clock },
+                        { id: "moji" as const, label: "Wippmoji", icon: Smile },
+                        { id: "wippie" as const, label: "Wippie", icon: User },
+                        { id: "pop" as const, label: "WIPP Moments", icon: Sparkles },
+                        { id: "moment" as const, label: "Surprises", icon: Gift },
+                      ] as const
+                    ).map((tab) => (
+                      <button
+                        key={tab.id}
+                        type="button"
+                        aria-label={tab.label}
+                        className={cn(
+                          "flex size-10 items-center justify-center rounded-full",
+                          stickerTab === tab.id && !stickerQuery ? "bg-accent text-accent-fg" : "text-fg",
+                        )}
+                        onClick={() => {
+                          setStickerQuery("");
+                          setStickerTab(tab.id);
+                        }}
+                      >
+                        <tab.icon className="size-5" />
+                      </button>
+                    ))}
                   </div>
                 </div>
               ) : null}
