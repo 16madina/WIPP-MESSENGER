@@ -68,17 +68,8 @@ export function MeScreen() {
   const chats = useWgoStore((s) => s.chats);
   const listings = useWgoStore((s) => s.listings);
   const lifestyle = useWgoStore((s) => s.lifestyle);
-  const serverConnected = useWgoStore((s) => s.serverConnected);
-  const serverUsername = useWgoStore((s) => s.serverUsername);
-  const syncServerInbox = useWgoStore((s) => s.syncServerInbox);
-  const openServerDm = useWgoStore((s) => s.openServerDm);
   const [pick, setPick] = useState(false);
   const [hint, setHint] = useState(false);
-  const [serverBusy, setServerBusy] = useState(false);
-  const [serverErr, setServerErr] = useState("");
-  const [peerUser, setPeerUser] = useState("lea");
-  const [linkCode, setLinkCode] = useState("");
-  const [linkOk, setLinkOk] = useState("");
   const [aboutOpen, setAboutOpen] = useState(false);
 
   useEffect(() => {
@@ -222,120 +213,9 @@ export function MeScreen() {
             </div>
           </div>
 
-          <div className="mt-4 rounded-2xl bg-surface p-3.5 ring-1 ring-hair">
-            <div className="flex items-center gap-2">
-              <span
-                className={cn(
-                  "size-2.5 rounded-full",
-                  serverConnected ? "bg-emerald-400" : "bg-danger",
-                )}
-              />
-              <p className="text-[13px] font-semibold">Serveur messagerie</p>
-              <span className="ml-auto text-[11px] text-muted">
-                {serverConnected ? `@${serverUsername ?? "…"}` : "hors ligne"}
-              </span>
-            </div>
-            <p className="mt-1.5 text-[12px] leading-snug text-muted">
-              Comptes @username réels + chats 1:1 synchronisés. Mot de passe démo&nbsp;:
-              <span className="text-fg"> wipp-demo</span>
-            </p>
-            <div className="mt-3 flex gap-2">
-              <button
-                type="button"
-                disabled={serverBusy}
-                className="press h-10 flex-1 rounded-full bg-accent text-[12px] font-semibold text-accent-fg disabled:opacity-50"
-                onClick={() => {
-                  setServerBusy(true);
-                  setServerErr("");
-                  setLinkOk("");
-                  void syncServerInbox()
-                    .then(() => {
-                      const name =
-                        useWgoStore.getState().serverUsername ||
-                        useWgoStore.getState().me.username ||
-                        "compte";
-                      setLinkOk(`Serveur connecté — @${name}`);
-                    })
-                    .catch((e: Error) => setServerErr(e.message))
-                    .finally(() => setServerBusy(false));
-                }}
-              >
-                {serverBusy ? "…" : serverConnected ? "Actualiser" : "Connecter"}
-              </button>
-              <input
-                value={peerUser}
-                onChange={(e) => setPeerUser(e.target.value.replace(/^@/, ""))}
-                placeholder="@lea"
-                className="h-10 w-[38%] rounded-full bg-surface-2 px-3 text-[12px] outline-none ring-1 ring-hair"
-              />
-              <button
-                type="button"
-                disabled={serverBusy || !peerUser.trim()}
-                className="press h-10 rounded-full bg-navy px-3 text-[12px] font-semibold text-paper disabled:opacity-50"
-                onClick={() => {
-                  setServerBusy(true);
-                  setServerErr("");
-                  setLinkOk("");
-                  void openServerDm(peerUser.trim())
-                    .then(() => setLinkOk(`Conversation ouverte avec @${peerUser.trim()}`))
-                    .catch((e: Error) => setServerErr(e.message))
-                    .finally(() => setServerBusy(false));
-                }}
-              >
-                Écrire
-              </button>
-            </div>
-            {serverErr ? (
-              <p className="mt-2 text-[11px] text-danger">{serverErr}</p>
-            ) : linkOk ? (
-              <p className="mt-2 text-[11px] text-emerald-400">{linkOk}</p>
-            ) : (
-              <p className="mt-2 text-[11px] text-muted">Essaye @lea ou @samira</p>
-            )}
-            <div className="mt-3 border-t border-hair pt-3">
-              <p className="text-[12px] font-medium">Lier le site web</p>
-              <p className="mt-0.5 text-[11px] text-muted">
-                Ouvre <a className="text-accent underline" href="/connect" target="_blank" rel="noreferrer">/connect</a> sur
-                un ordi, puis entre le code ici.
-              </p>
-              <div className="mt-2 flex gap-2">
-                <input
-                  value={linkCode}
-                  onChange={(e) => setLinkCode(e.target.value.toUpperCase())}
-                  placeholder="ABCD-EFGH"
-                  className="h-10 flex-1 rounded-full bg-surface-2 px-3 text-[12px] tracking-widest outline-none ring-1 ring-hair"
-                />
-                <button
-                  type="button"
-                  disabled={serverBusy || linkCode.replace(/[^A-Z0-9]/g, "").length < 8}
-                  className="press h-10 rounded-full bg-accent px-3 text-[12px] font-semibold text-accent-fg disabled:opacity-50"
-                  onClick={() => {
-                    setServerBusy(true);
-                    setServerErr("");
-                    setLinkOk("");
-                    void (async () => {
-                      try {
-                        await syncServerInbox();
-                        const { claimWebLinkCode } = await import("@/lib/messaging/client");
-                        const res = await claimWebLinkCode(linkCode.replace(/[^A-Z0-9]/g, ""));
-                        setLinkOk(`Web lié à @${res.profile.username}`);
-                        setLinkCode("");
-                      } catch (e) {
-                        setServerErr(e instanceof Error ? e.message : "Échec du lien");
-                      } finally {
-                        setServerBusy(false);
-                      }
-                    })();
-                  }}
-                >
-                  Lier
-                </button>
-              </div>
-            </div>
-          </div>
         </div>
 
-        <div className="mt-5 px-4">
+        <div className="mt-4 px-4">
           <div className="mb-2 flex items-end justify-between">
             <h2 className="text-[13px] font-medium text-muted">{t("myActivity")}</h2>
             <button

@@ -1,4 +1,6 @@
 # Roadmap
+- [x] Moi : retirer les panneaux de test messagerie et liaison web, rapprocher Mon activité ; retirer les accès de démonstration du client sans toucher à la messagerie réelle.
+- [ ] Liaison web : proposer ultérieurement depuis Moi → Paramètres → Appareils liés (logique conservée).
 - [x] Drapeau et indicatif visibles sur la saisie du téléphone ; tous les pays regroupés par région dans la sélection.
 - [x] Menu de message compact dans la conversation, actions courantes visibles et « Plus… » pour les autres.
 - [x] Accueil et saisie du téléphone selon les images fournies ; « Continuer » envoie le SMS Firebase.
