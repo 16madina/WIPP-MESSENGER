@@ -181,6 +181,87 @@ export type Database = {
           },
         ]
       }
+      wipp_business_cards: {
+        Row: {
+          address: string | null
+          business_phone: string | null
+          category: string
+          city: string
+          country: string
+          cover_url: string | null
+          created_at: string
+          description: string
+          hours: string | null
+          id: string
+          is_published: boolean
+          logo_url: string | null
+          name: string
+          owner_profile_id: string
+          photo_urls: string[]
+          public_id: string
+          show_address: boolean
+          updated_at: string
+          website: string | null
+        }
+        Insert: {
+          address?: string | null
+          business_phone?: string | null
+          category: string
+          city?: string
+          country?: string
+          cover_url?: string | null
+          created_at?: string
+          description?: string
+          hours?: string | null
+          id?: string
+          is_published?: boolean
+          logo_url?: string | null
+          name: string
+          owner_profile_id: string
+          photo_urls?: string[]
+          public_id?: string
+          show_address?: boolean
+          updated_at?: string
+          website?: string | null
+        }
+        Update: {
+          address?: string | null
+          business_phone?: string | null
+          category?: string
+          city?: string
+          country?: string
+          cover_url?: string | null
+          created_at?: string
+          description?: string
+          hours?: string | null
+          id?: string
+          is_published?: boolean
+          logo_url?: string | null
+          name?: string
+          owner_profile_id?: string
+          photo_urls?: string[]
+          public_id?: string
+          show_address?: boolean
+          updated_at?: string
+          website?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wipp_business_cards_owner_profile_id_fkey"
+            columns: ["owner_profile_id"]
+            isOneToOne: true
+            referencedRelation: "wipp_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "wipp_business_cards_owner_profile_id_fkey"
+            columns: ["owner_profile_id"]
+            isOneToOne: true
+            referencedRelation: "wipp_public_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       wipp_call_invites: {
         Row: {
           answered_at: string | null
