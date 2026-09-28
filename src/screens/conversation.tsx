@@ -1744,7 +1744,7 @@ export function ConversationScreen({ chatId }: { chatId: string }) {
                           key={tab.id}
                           type="button"
                           className={cn(
-                            "h-8 shrink-0 rounded-full px-3 text-[12px] font-semibold",
+                            "min-h-11 shrink-0 rounded-full px-3 text-[12px] font-semibold",
                             on ? "bg-accent text-accent-fg" : "bg-navy/50 text-muted",
                           )}
                           onClick={() => {

@@ -1,5 +1,5 @@
 # Roadmap
-- [ ] Reprendre sans omission le contenu, les formats et les sous-onglets Stickers du bouton émojis de wipp-grok dans WIPP, sans changer les autres onglets.
+- [x] Rendre accessibles tous les packs Stickers disponibles dans le projet (Wippmojis, classiques, Elle, Lui, Fun, Fun 2, WIPP, Scènes, Général, AniWipp), avec leurs formats animés conservés, sans changer les autres onglets. Le dépôt privé wipp-grok n'est pas accessible pour comparer d'éventuels contenus supplémentaires.
 - [x] Conversation : rapprocher les réactions WIPP du menu compact et permettre de répondre par balayage aux textes, photos et vidéos sans ouvrir le média.
 - [x] Moi : retirer les panneaux de test messagerie et liaison web, rapprocher Mon activité ; retirer les accès de démonstration du client sans toucher à la messagerie réelle. Liaison web conservée dans le code pour un futur Moi → Paramètres → Appareils liés.
 - [x] Drapeau et indicatif visibles sur la saisie du téléphone ; tous les pays regroupés par région dans la sélection.
