@@ -88,6 +88,7 @@ export function PhoneEntryScreen() {
         className="absolute top-[69.1%] left-[10.6%] h-[6%] w-[78.8%] rounded-lg bg-wipp-auth-input px-4 text-[18px] text-wipp-fg outline-none placeholder:text-wipp-muted"
         placeholder="(514) 123-4567"
       />
+      {error ? <p role="alert" className="absolute top-[85.3%] left-[10%] z-10 rounded bg-wipp-share-panel px-2 text-[10px] text-wipp-danger">{error}</p> : null}
       <LegalCheckbox
         checked={accepted}
         onToggle={(value) => { setAccepted(value); if (value) setError(""); }}

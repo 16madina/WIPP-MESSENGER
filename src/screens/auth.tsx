@@ -396,7 +396,8 @@ export function LoginScreen() {
         checked={accepted}
         onToggle={(value) => { setAccepted(value); if (value) setErr(null); }}
         onOpenPolicy={() => push({ name: "legal", doc: "privacy" })}
-        className="absolute top-[71.9%] left-[6%] w-[88%]"
+        singleLine
+        className="absolute top-[71.8%] left-[6%] w-[88%]"
       />
       <Btn
         aria-label={t("continue")}
@@ -404,7 +405,7 @@ export function LoginScreen() {
         onClick={() => void tryLogin()}
         className={accepted
           ? "absolute! top-[73.6%] left-[6%] h-[6.8%]! w-[88%] rounded-full! bg-transparent! text-transparent!"
-          : "absolute! top-[73.6%] left-[6%] h-[6.8%]! w-[88%] rounded-full! bg-wipp-auth-input! text-[16px]! font-semibold! text-wipp-muted!"}
+          : "absolute! top-[73.6%] left-[6%] h-[6.8%]! w-[88%] rounded-full! bg-wipp-auth-input! text-[16px]! font-semibold! text-wipp-muted! disabled:opacity-100!"}
       >
         {t("continue")}
       </Btn>
