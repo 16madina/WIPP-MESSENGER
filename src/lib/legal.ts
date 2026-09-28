@@ -3,7 +3,7 @@ import type { Lang } from "./types";
 export const LEGAL_VERSION = "2026-09-21";
 export const LEGAL_CONTACT = "lazoneclient@gmail.com";
 
-export type LegalDocId = "privacy" | "terms";
+export type LegalDocId = "privacy" | "terms" | "age";
 
 export type LegalSection = {
   title: string;
@@ -120,7 +120,7 @@ const privacyFr: LegalDocument = {
     {
       title: "13. Mineurs",
       paragraphs: [
-        "WIPP n’est pas destiné aux enfants de moins de 13 ans. Au Québec, les renseignements d’un mineur de moins de 14 ans ne sont pas recueillis auprès de lui sans le titulaire de l’autorité parentale, sauf exception légale. Un compte créé en violation de ces règles peut être supprimé.",
+        "WIPP est réservé aux personnes de 18 ans et plus. Une personne mineure ne peut pas créer de compte. Un compte créé en violation de cette règle peut être supprimé.",
       ],
     },
     {
@@ -151,7 +151,7 @@ const termsFr: LegalDocument = {
     {
       title: "2. Admissibilité",
       paragraphs: [
-        "Vous déclarez avoir l’âge légal requis dans votre territoire, et au moins 13 ans. Au Québec, un mineur de moins de 14 ans ne s’inscrit pas sans le titulaire de l’autorité parentale. Un compte, une personne. Informations exactes. Vous protégez l’accès à votre appareil.",
+        "Vous déclarez avoir au moins 18 ans pour utiliser WIPP. Les personnes de moins de 18 ans ne peuvent pas créer de compte, même avec une autorisation parentale. Un compte, une personne. Informations exactes. Vous protégez l’accès à votre appareil.",
       ],
     },
     {
@@ -332,7 +332,7 @@ const privacyEn: LegalDocument = {
     {
       title: "13. Minors",
       paragraphs: [
-        "WIPP is not for children under 13. In Québec, personal information of a minor under 14 is not collected from them without the holder of parental authority, except as the law allows. An account that breaks these rules may be deleted.",
+        "WIPP is for people aged 18 and over. Minors cannot create an account. An account that breaks this rule may be deleted.",
       ],
     },
     {
@@ -361,7 +361,7 @@ const termsEn: LegalDocument = {
     {
       title: "2. Eligibility",
       paragraphs: [
-        "You state that you are old enough in your territory, and at least 13. In Québec, a minor under 14 does not sign up without the holder of parental authority. One person, one account. Accurate information. You keep your device secure.",
+        "You confirm that you are at least 18 to use WIPP. People under 18 cannot create an account, even with parental consent. One person, one account. Accurate information. You keep your device secure.",
       ],
     },
     {
@@ -439,9 +439,31 @@ const termsEn: LegalDocument = {
   ],
 };
 
+const ageFr: LegalDocument = {
+  title: "18 ans et plus",
+  updated: "28 septembre 2026",
+  intro: "WIPP est réservé aux personnes de 18 ans et plus.",
+  sections: [
+    { title: "Âge minimum", paragraphs: ["Pour créer un compte et utiliser WIPP, tu dois avoir au moins 18 ans. Une autorisation parentale ne remplace pas cette condition."] },
+    { title: "Confirmation lors de l’accès", paragraphs: ["Avant de continuer avec ton numéro de téléphone, tu dois confirmer avoir 18 ans et plus. Si tu n’as pas encore 18 ans, ne crée pas de compte et n’utilise pas WIPP."] },
+    { title: "Comptes non admissibles", paragraphs: ["WIPP peut désactiver ou supprimer un compte dont le titulaire ne respecte pas l’âge minimum, conformément aux Conditions d’utilisation."] },
+  ],
+};
+
+const ageEn: LegalDocument = {
+  title: "Ages 18 and over",
+  updated: "28 September 2026",
+  intro: "WIPP is for people aged 18 and over.",
+  sections: [
+    { title: "Minimum age", paragraphs: ["You must be at least 18 to create an account and use WIPP. Parental permission does not replace this requirement."] },
+    { title: "Confirmation before continuing", paragraphs: ["Before continuing with your phone number, you must confirm you are 18 or older. If you are under 18, do not create an account or use WIPP."] },
+    { title: "Ineligible accounts", paragraphs: ["WIPP may disable or delete an account if its owner does not meet the minimum age, in accordance with the Terms of Use."] },
+  ],
+};
+
 const DOCS: Record<Lang, Record<LegalDocId, LegalDocument>> = {
-  fr: { privacy: privacyFr, terms: termsFr },
-  en: { privacy: privacyEn, terms: termsEn },
+  fr: { privacy: privacyFr, terms: termsFr, age: ageFr },
+  en: { privacy: privacyEn, terms: termsEn, age: ageEn },
 };
 
 export function legalDoc(lang: Lang, id: LegalDocId): LegalDocument {

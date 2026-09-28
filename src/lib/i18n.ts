@@ -782,9 +782,9 @@ const fr = {
   privacyPolicy: "Politique de confidentialité",
   legalAcceptLead: "J’ai lu et j’accepte les",
   legalAnd: "et la",
-  legalAcceptAge: "Je confirme avoir l’âge requis dans mon territoire.",
+  legalAcceptAge: "Je reconnais avoir 18 ans et plus.",
   legalNeedAccept: "Cochez pour créer le compte.",
-  legalTooYoung: "WIPP n’est pas destiné aux moins de 13 ans.",
+  legalTooYoung: "WIPP est réservé aux personnes de 18 ans et plus.",
   legalUpdated: "Mise à jour",
   legalContact: "Questions :",
   legalCloseHint: "Fermez pour revenir à l’inscription.",
@@ -869,7 +869,7 @@ const fr = {
   communityRules: "Règles de la communauté",
   childSafety: "Sécurité des mineurs",
   childSafetyBody:
-    "WIPP n’est pas pour les moins de 13 ans. Signale tout contenu impliquant un mineur. Nous coopérons avec les autorités lorsque la loi l’exige.",
+    "WIPP est réservé aux personnes de 18 ans et plus. Signale tout contenu impliquant un mineur. Nous coopérons avec les autorités lorsque la loi l’exige.",
   supportMail: "Écrire au support",
   webDelete: "Supprimer le compte depuis le web",
   reportAlsoBlock: "Bloquer aussi cette personne",
@@ -878,7 +878,7 @@ const fr = {
   testLock: "Tester le verrouillage",
   agePolicy: "Âge minimum",
   agePolicyBody:
-    "WIPP est réservé aux 13 ans et plus. Au Québec, le consentement parental peut s’appliquer jusqu’à 14 ans. Les faux âges entraînent la suppression du compte.",
+    "WIPP est réservé aux 18 ans et plus. Une autorisation parentale ne remplace pas cet âge minimum. Un compte créé avec un âge inexact peut être supprimé.",
   communityRulesBody:
     "Pas de harcèlement, haine, spam, arnaques, nudité non consentie, ni contenu impliquant des mineurs. Signale. Bloque. On examine chaque signalement et on peut retirer un compte.",
   guidelinesContact: "Pour un signalement urgent :",
@@ -1778,9 +1778,9 @@ const en: Record<keyof typeof fr, string> = {
   privacyPolicy: "Privacy Policy",
   legalAcceptLead: "I have read and accept the",
   legalAnd: "and the",
-  legalAcceptAge: "I confirm I am old enough in my territory.",
+  legalAcceptAge: "I confirm I am 18 or older.",
   legalNeedAccept: "Check the box to create an account.",
-  legalTooYoung: "WIPP is not for children under 13.",
+  legalTooYoung: "WIPP is for people aged 18 and over.",
   legalUpdated: "Updated",
   legalContact: "Questions:",
   legalCloseHint: "Close to return to sign-up.",
@@ -1864,7 +1864,7 @@ const en: Record<keyof typeof fr, string> = {
   communityRules: "Community guidelines",
   childSafety: "Child safety",
   childSafetyBody:
-    "WIPP is not for children under 13. Report any content involving a minor. We cooperate with authorities when the law requires it.",
+    "WIPP is for people aged 18 and over. Report any content involving a minor. We cooperate with authorities when the law requires it.",
   supportMail: "Email support",
   webDelete: "Delete account on the web",
   reportAlsoBlock: "Also block this person",
@@ -1873,7 +1873,7 @@ const en: Record<keyof typeof fr, string> = {
   testLock: "Try lock screen",
   agePolicy: "Minimum age",
   agePolicyBody:
-    "WIPP is for ages 13 and up. In Québec, parental consent may apply until 14. Fake ages lead to account deletion.",
+    "WIPP is for ages 18 and up. Parental permission does not replace this minimum age. An account created with an inaccurate age may be deleted.",
   communityRulesBody:
     "No harassment, hate, spam, scams, non-consensual nudity, or content involving minors. Report. Block. We review every report and can remove an account.",
   guidelinesContact: "For an urgent report:",

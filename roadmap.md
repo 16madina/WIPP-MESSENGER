@@ -31,6 +31,6 @@
 - [x] Explorer : afficher les boutiques publiées dans la recherche générale et dans Boutique, avec un message si le chargement échoue.
 
 ## En cours (28 sept.)
-- [ ] Consentement : conditions et confidentialité liées, confirmation distincte 18+ avec règle consultable ; accès depuis Moi.
+- [x] Consentement : conditions et confidentialité liées, confirmation distincte 18+ avec règle consultable ; accès depuis Moi.
 - [x] Conversations Boutiques : contexte pro sur la conversation, filtres, en-têtes, « Écrire sur WIPP », recherche « Rechercher une boutique »
 - [x] Petites annonces : bouton + et « Créer une annonce » dans Explorer, formulaire marketplace (neuf/utilisé…), annonces visibles dans Moi → Mes annonces

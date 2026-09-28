@@ -242,7 +242,7 @@ export function SignupScreen() {
         {needAccept ? <p className="mt-2 text-[13px] text-danger">{t("legalNeedAccept")}</p> : null}
         {tooYoung ? <p className="mt-2 text-[13px] text-danger">{t("legalTooYoung")}</p> : null}
         {err ? <p className="mt-2 text-[13px] text-danger">{err}</p> : null}
-        <AuthCta disabled={busy} onClick={() => void tryContinue()}>
+        <AuthCta disabled={busy || !accepted} onClick={() => void tryContinue()}>
           {busy ? t("sending") : t("continue")}
           <ArrowRight className="size-4" />
         </AuthCta>
