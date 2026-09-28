@@ -117,6 +117,21 @@ export function ExploreScreen() {
   const t = useT();
   const push = useWgoStore((s) => s.push);
   const [hub, setHub] = useState<Hub>("home");
+  const [businessCards, setBusinessCards] = useState<SavedBusinessCard[]>([]);
+  const [cardsLoading, setCardsLoading] = useState(true);
+  const [cardsError, setCardsError] = useState(false);
+  useEffect(() => {
+    let active = true;
+    setCardsLoading(true);
+    void listPublicBusinessCards().then((cards) => {
+      if (active) { setBusinessCards(cards); setCardsError(false); }
+    }).catch(() => {
+      if (active) setCardsError(true);
+    }).finally(() => {
+      if (active) setCardsLoading(false);
+    });
+    return () => { active = false; };
+  }, [hub]);
   const [cat, setCat] = useState<(typeof CATS)[number]>("all");
   const [q, setQ] = useState("");
   const query = q.trim();
@@ -168,11 +183,11 @@ export function ExploreScreen() {
           />
         </div>
         {hub === "listings" && !searching ? <ListingFilters cat={cat} setCat={setCat} /> : null}
-        {searching ? <ExploreSearch q={query} /> : null}
+        {searching ? <ExploreSearch q={query} businessCards={businessCards} cardsLoading={cardsLoading} cardsError={cardsError} /> : null}
         {!searching && hub === "home" ? <ExploreHome go={setHub} /> : null}
         {!searching && hub === "listings" ? <ListingsPane cat={cat} /> : null}
         {!searching && hub === "utilities" ? <UtilitiesPane /> : null}
-        {!searching && hub === "shops" ? <ShopsPane /> : null}
+        {!searching && hub === "shops" ? <ShopsPane businessCards={businessCards} cardsLoading={cardsLoading} cardsError={cardsError} /> : null}
         {!searching && hub === "lifestyle" ? <LifestylePane /> : null}
       </div>
     </div>
@@ -436,7 +451,7 @@ function RailTitle({
   );
 }
 
-function ExploreSearch({ q }: { q: string }) {
+function ExploreSearch({ q, businessCards, cardsLoading, cardsError }: { q: string; businessCards: SavedBusinessCard[]; cardsLoading: boolean; cardsError: boolean }) {
   const t = useT();
   const lang = useWgoStore((s) => s.language);
   const geo = useWgoStore((s) => s.geo);
@@ -460,6 +475,7 @@ function ExploreSearch({ q }: { q: string }) {
     }))
     .filter((x) => x.n > 0)
     .sort((a, b) => b.n - a.n || a.meters - b.meters);
+  const foundBusinessCards = matchingBusinessCards(businessCards, q);
 
   const foundPh = PHARMACIES.map((p) => ({
     item: p,
@@ -482,11 +498,19 @@ function ExploreSearch({ q }: { q: string }) {
     .sort((a, b) => b.n - a.n || a.meters - b.meters);
 
   const empty =
-    !foundListings.length && !foundShops.length && !foundPh.length && !foundEvents.length;
+    !foundListings.length && !foundShops.length && !foundBusinessCards.length && !foundPh.length && !foundEvents.length;
 
   return (
     <div className="px-4">
-      {empty ? <p className="py-16 text-center text-[14px] text-muted">{t("searchNoResults")}</p> : null}
+      {empty && !cardsLoading && !cardsError ? <p className="py-16 text-center text-[14px] text-muted">{t("searchNoResults")}</p> : null}
+      {cardsError ? <p role="alert" className="py-3 text-[13px] text-muted">Impossible de charger les boutiques pour le moment.</p> : null}
+
+      {foundBusinessCards.length ? (
+        <section className="mb-5">
+          <h2 className="mb-2 text-[13px] font-semibold text-muted uppercase">{t("resultsShops")}</h2>
+          <BusinessCardResults cards={foundBusinessCards} />
+        </section>
+      ) : null}
 
       {foundShops.length ? (
         <section className="mb-5">
@@ -941,7 +965,26 @@ function shopCatLabel(cat: ShopCategory, t: (k: I18nKey) => string) {
   return t(SHOP_CAT_KEYS[cat]);
 }
 
-function ShopsPane() {
+function matchingBusinessCards(cards: SavedBusinessCard[], q: string) {
+  const toks = tokens(q);
+  if (!toks.length) return cards;
+  return cards.map((card) => ({ card, score: scoreBlob(`${card.name} ${card.category} ${card.description} ${card.city} ${card.country}`, toks) }))
+    .filter(({ score }) => score > 0)
+    .sort((a, b) => b.score - a.score)
+    .map(({ card }) => card);
+}
+
+function BusinessCardResults({ cards }: { cards: SavedBusinessCard[] }) {
+  const push = useWgoStore((s) => s.push);
+  return <>{cards.map((card) => (
+    <button key={card.id} type="button" onClick={() => push({ name: "business-card-view", publicId: card.publicId })} className="press mb-2 w-full overflow-hidden rounded-2xl glass-card text-left">
+      {card.coverUrl ? <SmartImg src={card.coverUrl} alt="" className="h-28 w-full object-cover" /> : <div className="flex h-28 items-center justify-center bg-navy"><Store className="size-9 text-accent" /></div>}
+      <div className="p-3"><p className="truncate text-[16px] font-semibold">{card.name}</p><p className="mt-0.5 text-[12px] text-muted">{card.category} · {card.city}</p><p className="mt-2 text-[12px] font-semibold text-navy">Voir la carte</p></div>
+    </button>
+  ))}</>;
+}
+
+function ShopsPane({ businessCards, cardsLoading, cardsError }: { businessCards: SavedBusinessCard[]; cardsLoading: boolean; cardsError: boolean }) {
   const t = useT();
   const lang = useWgoStore((s) => s.language);
   const geo = useWgoStore((s) => s.geo);
@@ -950,8 +993,6 @@ function ShopsPane() {
   const mine = shops.find((s) => s.ownerId === "me");
   const [cat, setCat] = useState<ShopCategory | "all">("all");
   const [q, setQ] = useState("");
-  const [businessCards, setBusinessCards] = useState<SavedBusinessCard[]>([]);
-  useEffect(() => { void listPublicBusinessCards().then(setBusinessCards).catch(() => setBusinessCards([])); }, []);
   const toks = tokens(q);
 
   const rows = useMemo(() => {
@@ -1001,13 +1042,9 @@ function ShopsPane() {
         {mine ? t("myCard") : t("createCard")}
       </Btn>
       <div className="mt-4">
-        {businessCards.filter((card) => `${card.name} ${card.category} ${card.description} ${card.city}`.toLowerCase().includes(q.trim().toLowerCase())).map((card) => (
-          <button key={card.id} type="button" onClick={() => push({ name: "business-card-view", publicId: card.publicId })} className="press mb-2 w-full overflow-hidden rounded-2xl glass-card text-left">
-            {card.coverUrl ? <SmartImg src={card.coverUrl} alt="" className="h-28 w-full object-cover" /> : <div className="flex h-28 items-center justify-center bg-navy"><Store className="size-9 text-accent" /></div>}
-            <div className="p-3"><p className="truncate text-[16px] font-semibold">{card.name}</p><p className="mt-0.5 text-[12px] text-muted">{card.category} · {card.city}</p><p className="mt-2 text-[12px] font-semibold text-navy">Voir la carte</p></div>
-          </button>
-        ))}
-        {rows.length === 0 && businessCards.length === 0 ? (
+        <BusinessCardResults cards={matchingBusinessCards(businessCards, q)} />
+        {cardsError ? <p role="alert" className="py-3 text-[13px] text-muted">Impossible de charger les boutiques pour le moment.</p> : null}
+        {rows.length === 0 && matchingBusinessCards(businessCards, q).length === 0 && !cardsLoading && !cardsError ? (
           <p className="py-10 text-center text-[14px] text-muted">{t("noShops")}</p>
         ) : (
           rows.map((s) => (
