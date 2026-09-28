@@ -3,6 +3,7 @@ import {
   Bell,
   BellOff,
   Camera,
+  ChevronRight,
   Clock,
   Hash,
   Lock,
@@ -246,19 +247,21 @@ export function ChatsScreen() {
           );
         })}
       </div>
-      {pending > 0 ? (
-        <button
-          type="button"
-          onClick={() => push({ name: "requests" })}
-          className="mx-4 mb-2 flex w-[calc(100%-2rem)] min-h-[60px] items-center gap-3 rounded-xl glass-card px-3 py-2"
-        >
-          <span className="flex size-9 items-center justify-center rounded-full bg-accent/20 text-accent-fg">
-            <UserPlus className="size-4 text-navy" />
-          </span>
-          <span className="flex-1 text-left text-[14px] font-medium">{t("requests")}</span>
-          <Badge>{pending}</Badge>
-        </button>
-      ) : null}
+      <button
+        type="button"
+        onClick={() => push({ name: "requests" })}
+        className={
+          pending > 0
+            ? "mx-4 flex h-10 w-[calc(100%-2rem)] shrink-0 items-center gap-2 text-wipp-fg"
+            : "mx-4 flex h-10 w-[calc(100%-2rem)] shrink-0 items-center gap-2 text-muted"
+        }
+      >
+        <UserPlus className={pending > 0 ? "size-[18px] text-wipp-accent" : "size-[18px]"} />
+        <span className={pending > 0 ? "text-[14px] font-medium" : "text-[14px]"}>{t("requests")}</span>
+        <span className="flex-1" />
+        {pending > 0 ? <Badge>{pending}</Badge> : null}
+        <ChevronRight className={pending > 0 ? "size-4 text-muted" : "size-4 text-muted/60"} />
+      </button>
       <div className="flex h-11 items-center gap-2 overflow-x-auto no-scrollbar px-4">
         <Chip active={filter === "all"} onClick={() => setFilter("all")}>
           {t("chatsAll")}
