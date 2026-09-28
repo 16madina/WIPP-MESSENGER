@@ -2344,6 +2344,7 @@ export const useWgoStore = create<WgoState>()(
         intros: s.intros,
         codeChatTtl: s.codeChatTtl,
         shops: s.shops,
+        listings: s.listings,
         lifestyle: s.lifestyle,
         identity: s.identity,
         deviceKeys: s.deviceKeys,
