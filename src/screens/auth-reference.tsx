@@ -3,8 +3,9 @@ import { ImagePlus, Pencil } from "lucide-react";
 import { Btn } from "@/components/ui";
 import { useWgoStore } from "@/lib/store";
 import { toE164 } from "@/lib/firebase-phone";
-import { RECAPTCHA_ID, clearPending, getVerifiedSignup, pendingPhone, setVerifiedSignup, startPhoneCode, verifyPhoneCode } from "@/lib/auth-flow";
-import { signupPhone, usernameAvailable } from "@/lib/auth.functions";
+import { RECAPTCHA_ID, clearPending, getVerifiedSignup, pendingHasSms, pendingMode, pendingPhone, setVerifiedSignup, startPhoneCode, verifyPhoneCode } from "@/lib/auth-flow";
+import { signinOtp, signupPhone, usernameAvailable } from "@/lib/auth.functions";
+import { enterWithSession } from "@/lib/enter-session";
 import { supabase } from "@/integrations/supabase/client";
 import welcomeImage from "@/assets/wipp-auth-welcome.png.asset.json";
 import phoneImage from "@/assets/wipp-auth-phone.png.asset.json";
@@ -108,9 +109,28 @@ export function SmsReferenceScreen() {
     return () => window.clearTimeout(timer);
   }, [seconds]);
 
+  const signin = pendingMode() === "signin";
+  const [noAccount, setNoAccount] = useState<{ idToken: string; phone: string } | null>(null);
+
   async function validate() {
     if (code.length !== 6 || busy) return;
-    setBusy(true); setError("");
+    setBusy(true); setError(""); setNoAccount(null);
+    if (signin) {
+      let payload: { idToken: string } | { phone: string; code: string } = { phone, code };
+      let verified: { idToken: string; phone: string } | null = null;
+      if (pendingHasSms()) {
+        const result = await verifyPhoneCode(code);
+        if ("error" in result) { setBusy(false); setError(result.error); return; }
+        verified = result;
+        payload = { idToken: result.idToken };
+      }
+      const res = await signinOtp({ data: payload });
+      if (res.ok) { await enterWithSession(res.accessToken, res.refreshToken, phone); clearPending(); setBusy(false); return; }
+      setBusy(false);
+      setError(res.error);
+      if ("noAccount" in res && verified) setNoAccount(verified);
+      return;
+    }
     const result = await verifyPhoneCode(code);
     setBusy(false);
     if ("error" in result) { setError(result.error); return; }
@@ -121,7 +141,7 @@ export function SmsReferenceScreen() {
 
   async function resend() {
     setBusy(true); setError("");
-    const result = await startPhoneCode(phone, "signup");
+    const result = await startPhoneCode(phone, signin ? "signin" : "signup");
     setBusy(false);
     if (result) { setError(result); return; }
     setCode(""); setSeconds(45);
@@ -137,7 +157,7 @@ export function SmsReferenceScreen() {
     </div>
     <input ref={input} type="text" inputMode="numeric" autoComplete="one-time-code" pattern="[0-9]*" maxLength={6} value={code} onChange={(e) => { setCode(e.target.value.replace(/\D/g, "").slice(0, 6)); setError(""); }} aria-label="Code SMS" className="absolute top-[60.1%] left-[7%] h-[8.5%] w-[86%] bg-transparent text-center text-[32px] text-wipp-fg outline-none" />
     <Btn aria-label="Saisir le code SMS" onClick={() => input.current?.focus()} className="absolute! top-[60%] left-[7%] h-[9%]! w-[86%] bg-transparent! opacity-0" />
-    {error ? <p role="alert" className="absolute top-[70%] left-[8%] bg-wipp-share-panel px-2 text-[12px] text-wipp-danger">{error}</p> : null}
+    {error ? <p role="alert" className="absolute top-[70%] left-[8%] flex items-center gap-2 bg-wipp-share-panel px-2 text-[12px] text-wipp-danger">{error}{noAccount ? <Btn variant="ghost" onClick={() => { useWgoStore.setState((s) => ({ pendingSignup: { ...s.pendingSignup, phone: noAccount.phone } })); setVerifiedSignup(noAccount); push({ name: "profile-reference" }); }} className="h-11! min-h-0! px-2! text-wipp-accent!">Créer un compte</Btn> : null}</p> : null}
     <Btn aria-label="Renvoyer le code" disabled={seconds > 0 || busy} onClick={() => void resend()} className="absolute! top-[73%] left-[19%] h-[5%]! w-[62%] bg-transparent! opacity-0" />
     <span className="absolute top-[73.6%] left-[27%] pointer-events-none text-[13px] text-wipp-accent">{seconds > 0 ? `Renvoyer le code dans 00:${String(seconds).padStart(2, "0")}` : "Renvoyer le code"}</span>
     <Btn aria-label="Continuer" disabled={busy || code.length !== 6} onClick={() => void validate()} className="absolute! top-[79.2%] left-[5%] h-[6.7%]! w-[90%] rounded-full! bg-transparent! text-transparent!" />

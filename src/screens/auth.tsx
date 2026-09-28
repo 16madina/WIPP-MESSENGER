@@ -325,70 +325,30 @@ function formatBday(iso: string, lang: Lang) {
 export function LoginScreen() {
   const t = useT();
   const lang = useWgoStore((s) => s.language);
-  const replace = useWgoStore((s) => s.replace);
   const push = useWgoStore((s) => s.push);
-  const completeSetup = useWgoStore((s) => s.completeSetup);
   const [country, setCountry] = useState(DEFAULT_COUNTRY);
   const [phone, setPhone] = useState("");
-  const [password, setPassword] = useState("");
   const [dialOpen, setDialOpen] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
-  async function enterWithSession(accessToken: string, refreshToken: string) {
-    await supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken });
-    const { data: u } = await supabase.auth.getUser();
-    let displayName = "";
-    let username = "";
-    if (u.user) {
-      const { data: p } = await supabase
-        .from("wipp_public_profiles")
-        .select("display_name,username")
-        .eq("id", (await supabase.rpc("wipp_my_profile_id" as never)).data ?? "")
-        .maybeSingle();
-      displayName = p?.display_name ?? "";
-      username = p?.username ?? "";
-    }
-    const [firstName, ...rest] = displayName.split(" ");
-    completeSetup({
-      firstName: firstName ?? "",
-      lastName: rest.join(" "),
-      displayName,
-      // Le QR permanent et le lien public doivent refléter le vrai @pseudo du compte.
-      ...(username ? { username } : {}),
-      phone: `${country.dial} ${phone}`,
-    });
-  }
-
   async function tryLogin() {
-    setBusy(true);
     setErr(null);
     const { toE164 } = await import("@/lib/firebase-phone");
-    const e164 = toE164(`${country.dial}${phone}`);
+    const e164 = toE164(`${country.dial}${phone.replace(/\D/g, "").replace(/^0+/, "")}`);
     if (!e164) {
-      setBusy(false);
-      setErr(t("loginError"));
+      setErr("Entre un numéro de téléphone valide.");
       return;
     }
-    const res = await signinPhone({ data: { phone: e164, password } });
-    if (!res.ok) {
-      setBusy(false);
-      setErr(res.error);
-      return;
-    }
-    await enterWithSession(res.accessToken, res.refreshToken);
-  }
-
-  async function forgot() {
     setBusy(true);
-    setErr(null);
-    const smsErr = await startPhoneCode(`${country.dial}${phone}`, "reset");
+    const smsErr = await startPhoneCode(e164, "signin");
     setBusy(false);
     if (smsErr) {
       setErr(smsErr);
       return;
     }
-    push({ name: "otp" });
+    useWgoStore.setState((s) => ({ pendingSignup: { ...s.pendingSignup, phone: e164, country: country.id } }));
+    push({ name: "sms-reference" });
   }
 
   return (
@@ -397,7 +357,7 @@ export function LoginScreen() {
       <SignupBanner />
       <div className="relative z-10 min-h-0 flex-1 overflow-y-auto no-scrollbar px-5 pb-8">
         <h2 className="text-[22px] font-semibold tracking-tight">{t("loginHero")}</h2>
-        <p className="mt-1 text-[13px] text-muted">{t("loginSub")}</p>
+        <p className="mt-1 text-[13px] text-muted">Entre ton numéro, on t’envoie un code par SMS.</p>
         <div className="relative mt-5">
           <span className="mb-1.5 block text-[12px] font-medium text-muted">{t("phone")}</span>
           <div className="flex h-12 items-center gap-1 rounded-2xl bg-[#12141c] px-2 ring-1 ring-white/8 focus-within:ring-accent/40">
@@ -414,8 +374,12 @@ export function LoginScreen() {
             <input
               className="h-full min-w-0 flex-1 bg-transparent px-2 text-[15px] outline-none"
               value={phone}
+              type="tel"
               inputMode="tel"
-              onChange={(e) => setPhone(e.target.value)}
+              autoComplete="tel-national"
+              aria-label="Numéro de téléphone"
+              placeholder="(514) 123-4567"
+              onChange={(e) => { setPhone(e.target.value); setErr(null); }}
             />
           </div>
           {dialOpen ? (
@@ -429,29 +393,12 @@ export function LoginScreen() {
             />
           ) : null}
         </div>
-        <div className="relative mt-3">
-          <AuthField label={t("password")} icon={<Lock className="size-4" />}>
-            <input
-              type="password"
-              className="h-full w-full bg-transparent text-[15px] outline-none"
-              value={password}
-              autoComplete="current-password"
-              onChange={(e) => setPassword(e.target.value)}
-            />
-          </AuthField>
-        </div>
+        <p className="mt-2 text-[12px] text-muted">Ton numéro reste privé sur WIPP.</p>
         {err ? <p className="mt-2 text-[13px] text-danger">{err}</p> : null}
         <AuthCta disabled={busy} onClick={() => void tryLogin()}>
           {busy ? t("sending") : t("continue")}
           <ArrowRight className="size-4" />
         </AuthCta>
-        <button
-          type="button"
-          className="mx-auto mt-4 block text-[13px] font-medium text-accent"
-          onClick={() => void forgot()}
-        >
-          {t("forgotPassword")}
-        </button>
         <button
           type="button"
           className="mx-auto mt-3 block text-[13px] text-muted"

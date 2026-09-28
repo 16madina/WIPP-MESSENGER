@@ -4,7 +4,7 @@
 import type { ConfirmationResult } from "firebase/auth";
 import { confirmSmsCode, sendSmsCode, toE164 } from "./firebase-phone";
 
-export type AuthMode = "signup" | "reset";
+export type AuthMode = "signup" | "reset" | "signin";
 
 type Pending = {
   confirmation: ConfirmationResult | null;
@@ -34,6 +34,8 @@ export async function startPhoneCode(
     return null;
   } catch (err) {
     console.warn("[wipp] sms send failed", err);
+    // Connexion : on laisse passer vers l'écran du code (le serveur décide seul).
+    if (mode === "signin") { pending = { confirmation: null, phone, mode }; return null; }
     return "Envoi du SMS impossible. Réessaie dans un instant.";
   }
 }
@@ -44,6 +46,10 @@ export function pendingPhone(): string | null {
 
 export function pendingPassword(): string | undefined {
   return pending?.password;
+}
+
+export function pendingHasSms(): boolean {
+  return Boolean(pending?.confirmation);
 }
 
 export function pendingMode(): AuthMode | null {
