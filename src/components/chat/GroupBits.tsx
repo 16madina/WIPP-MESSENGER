@@ -1,6 +1,8 @@
 import { Fragment } from "react";
 import { Avatar } from "@/components/avatar";
 import { Sheet } from "@/components/ui";
+import { WippSticker } from "@/components/wipp-sticker";
+import { stickerById } from "@/lib/stickers";
 import { useWgoStore } from "@/lib/store";
 import type { Message, User } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -93,14 +95,14 @@ export function ReactionPills({ m, mine, onOpen }: { m: Message; mine: boolean; 
         <button
           key={emoji}
           type="button"
-          aria-label={`Réactions ${emoji}`}
+          aria-label={`Réactions ${stickerById(emoji)?.labelFr ?? emoji}`}
           onClick={(e) => {
             e.stopPropagation();
             onOpen();
           }}
           className={cn("hairline flex min-h-6 items-center gap-0.5 rounded-full bg-surface px-1.5 text-[12px]", meReacted.has(emoji) && "ring-1 ring-accent")}
         >
-          {emoji}
+          {stickerById(emoji) ? <WippSticker id={emoji} size={24} /> : emoji}
           {n > 1 ? <span className="tabular-nums text-muted">{n}</span> : null}
         </button>
       ))}
@@ -120,7 +122,7 @@ export function ReactionsSheet({ m, onClose }: { m: Message | null; onClose: () 
         {[...groups].map(([emoji, ids]) => (
           <div key={emoji} className="mb-3">
             <p className="mb-1 text-[13px] font-semibold">
-              {emoji} <span className="text-muted">{ids.length}</span>
+              {stickerById(emoji) ? <WippSticker id={emoji} size={32} /> : emoji} <span className="text-muted">{ids.length}</span>
             </p>
             {ids.map((id) => {
               const u = id === "me" ? me : users[id];

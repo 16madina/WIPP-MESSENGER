@@ -2,6 +2,8 @@ import { useState, type ReactNode } from "react";
 import { ArrowLeft, CircleEllipsis } from "lucide-react";
 import { motion } from "framer-motion";
 import { Btn } from "@/components/ui";
+import { WippSticker } from "@/components/wipp-sticker";
+import { stickerById } from "@/lib/stickers";
 import { layout, motion as wippMotion } from "@/theme/theme";
 
 export type MessageMenuAction = {
@@ -15,7 +17,7 @@ export type MessageMenuAction = {
 type Props = {
   anchor: DOMRect;
   container: HTMLElement | null;
-  reactions?: { emojis: string[]; onSelect: (emoji: string) => void };
+  reactions?: { ids: string[]; onSelect: (id: string) => void };
   actions: MessageMenuAction[];
   onClose: () => void;
 };
@@ -37,10 +39,12 @@ export function MessageActionMenu({ anchor, container, reactions, actions, onClo
   const reactionHeight = reactions ? 48 + gap : 0;
   const bubbleBottom = anchor.bottom - bounds.top;
   const bubbleTop = anchor.top - bounds.top;
-  const below = bubbleBottom + gap + menuHeight <= bounds.height - 24;
-  const idealTop = below ? bubbleBottom + gap : bubbleTop - menuHeight - gap;
-  const top = Math.max(56, Math.min(idealTop, bounds.height - menuHeight - 12));
-  const reactionTop = Math.max(54, Math.min(bubbleTop - reactionHeight, top - reactionHeight));
+  const clusterHeight = menuHeight + reactionHeight;
+  const below = bubbleBottom + gap + clusterHeight <= bounds.height - 100;
+  const idealClusterTop = below ? bubbleBottom + gap : bubbleTop - clusterHeight - gap;
+  const clusterTop = Math.max(56, Math.min(idealClusterTop, bounds.height - clusterHeight - 100));
+  const reactionTop = clusterTop;
+  const top = clusterTop + reactionHeight;
   const run = (action: MessageMenuAction) => {
     onClose();
     action.onSelect();
@@ -59,8 +63,8 @@ export function MessageActionMenu({ anchor, container, reactions, actions, onClo
           animate={{ opacity: 1, scale: 1 }}
           transition={wippMotion.lift}
         >
-          {reactions.emojis.map((emoji) => (
-            <Btn key={emoji} variant="ghost" className="h-11 min-h-11 min-w-0 flex-1 rounded-full px-0 text-[24px]" aria-label={`Réagir avec ${emoji}`} onClick={() => { onClose(); reactions.onSelect(emoji); }}>{emoji}</Btn>
+          {reactions.ids.map((id) => (
+            <Btn key={id} variant="ghost" className="h-11 min-h-11 min-w-0 flex-1 rounded-full px-0" aria-label={`Réagir avec ${stickerById(id)?.labelFr ?? id}`} onClick={() => { onClose(); reactions.onSelect(id); }}><WippSticker id={id} size={36} /></Btn>
           ))}
         </motion.div>
       )}
