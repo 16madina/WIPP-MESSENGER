@@ -9,7 +9,7 @@ import { enterWithSession } from "@/lib/enter-session";
 import { supabase } from "@/integrations/supabase/client";
 import welcomeImage from "@/assets/wipp-auth-welcome.png.asset.json";
 import phoneImage from "@/assets/wipp-auth-phone.png.asset.json";
-import smsImage from "@/assets/wipp-auth-sms.png.asset.json";
+import smsImage from "@/assets/wipp-auth-sms-clean.png";
 import profileImage from "@/assets/wipp-auth-profile-no-password.png";
 import { COUNTRIES } from "./auth-chrome";
 import { DEFAULT_COUNTRY } from "@/lib/countries";
