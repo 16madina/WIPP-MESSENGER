@@ -236,7 +236,7 @@ export function LegalCheckbox({
         En continuant, tu acceptes les{" "}
         <button
           type="button"
-          className="font-medium text-wipp-accent underline underline-offset-2"
+          className="min-h-0! min-w-0! font-medium text-wipp-accent underline underline-offset-2"
           onClick={(e) => {
             e.preventDefault();
             e.stopPropagation();
