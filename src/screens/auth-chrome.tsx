@@ -5,6 +5,7 @@ import { haptic } from "@/lib/haptics";
 import { useT, useWgoStore } from "@/lib/store";
 import type { Lang } from "@/lib/types";
 import { cn } from "@/lib/utils";
+export { COUNTRIES } from "@/lib/countries";
 
 export function AuthLockup({ align = "left" }: { align?: "left" | "center" }) {
   const t = useT();
@@ -189,16 +190,6 @@ export function AuthCta({
     </button>
   );
 }
-
-export const COUNTRIES = [
-  { id: "CA", dial: "+1", fr: "Canada", en: "Canada" },
-  { id: "SN", dial: "+221", fr: "Sénégal", en: "Senegal" },
-  { id: "CI", dial: "+225", fr: "Côte d’Ivoire", en: "Côte d’Ivoire" },
-  { id: "ML", dial: "+223", fr: "Mali", en: "Mali" },
-  { id: "GN", dial: "+224", fr: "Guinée", en: "Guinea" },
-  { id: "FR", dial: "+33", fr: "France", en: "France" },
-  { id: "US", dial: "+1", fr: "États-Unis", en: "United States" },
-] as const;
 
 export const AVATAR_PICKS = [
   "/avatars/deena.jpg",

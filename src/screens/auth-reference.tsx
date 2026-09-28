@@ -11,6 +11,8 @@ import phoneImage from "@/assets/wipp-auth-phone.png.asset.json";
 import smsImage from "@/assets/wipp-auth-sms.png.asset.json";
 import profileImage from "@/assets/wipp-auth-profile-no-password.png";
 import { COUNTRIES } from "./auth-chrome";
+import { DEFAULT_COUNTRY } from "@/lib/countries";
+import { CountryList } from "@/components/country-list";
 
 /** The supplied artwork includes the logo, photograph and copy; live controls sit over it. */
 function Artwork({ src }: { src: string }) {
@@ -34,7 +36,7 @@ export function WelcomeScreen() {
 export function PhoneEntryScreen() {
   const pop = useWgoStore((s) => s.pop);
   const push = useWgoStore((s) => s.push);
-  const [country, setCountry] = useState<(typeof COUNTRIES)[number]>(COUNTRIES[0]);
+  const [country, setCountry] = useState(DEFAULT_COUNTRY);
   const [phone, setPhone] = useState("");
   const [menuOpen, setMenuOpen] = useState(false);
   const [error, setError] = useState("");
@@ -64,17 +66,13 @@ export function PhoneEntryScreen() {
         aria-label={`Pays : ${country.fr} (${country.dial})`}
         aria-expanded={menuOpen}
         onClick={() => setMenuOpen((open) => !open)}
-        className="absolute! top-[59%] left-[10%] h-[5.5%]! w-[80%] justify-between rounded-lg! bg-transparent! px-3! text-transparent!"
+        className="absolute! top-[59%] left-[10%] h-[5.5%]! w-[80%] justify-start rounded-lg! bg-wipp-auth-input! px-3! text-wipp-fg!"
       >
-        {country.id !== "CA" ? <span className="rounded-md bg-wipp-auth-input px-2 text-wipp-fg">{country.fr} ({country.dial})</span> : null}
+        <img src={country.flag} alt="" className="h-4 w-6 shrink-0 object-cover" /><span className="truncate">{country.fr}</span><span className="ml-auto shrink-0 text-wipp-muted">{country.dial} ▾</span>
       </Btn>
       {menuOpen ? (
-        <div className="absolute top-[65%] left-[10%] z-20 max-h-[27%] w-[80%] overflow-y-auto rounded-lg border border-wipp-glass-border bg-wipp-share-panel shadow-lift">
-          {COUNTRIES.map((item) => (
-            <Btn key={item.id} variant="ghost" className="w-full justify-between rounded-none! px-4! text-left text-wipp-fg!" onClick={() => { setCountry(item); setMenuOpen(false); setError(""); }}>
-              <span>{item.fr}</span><span className="text-wipp-muted">{item.dial}</span>
-            </Btn>
-          ))}
+        <div className="absolute top-[65%] left-[10%] z-20 flex max-h-[33%] w-[80%] flex-col overflow-hidden rounded-lg border border-wipp-glass-border bg-wipp-share-panel shadow-lift">
+          <CountryList onPick={(item) => { setCountry(item); setMenuOpen(false); setError(""); }} />
         </div>
       ) : null}
       <input
@@ -134,7 +132,7 @@ export function SmsReferenceScreen() {
     <div id={RECAPTCHA_ID} className="absolute bottom-0 left-0" />
     <Btn aria-label="Retour" onClick={pop} className="absolute! top-[8%] left-[4%] h-[6%]! w-[12%] bg-transparent! opacity-0" />
     <div className="absolute top-[40%] left-[8%] flex h-[5.5%] max-w-[80%] items-center gap-2 rounded-lg bg-wipp-auth-input px-3 text-[14px] font-semibold text-wipp-fg">
-      <span>{pending.country === "CA" ? "🇨🇦" : "📱"}</span><span>{phone}</span>
+       {COUNTRIES.find((item) => item.id === pending.country)?.flag ? <img src={COUNTRIES.find((item) => item.id === pending.country)?.flag} alt="" className="h-4 w-6 object-cover" /> : null}<span>{phone}</span>
       <Btn variant="ghost" aria-label="Modifier mon numéro" onClick={pop} className="h-11! min-h-0! px-1! text-wipp-accent!"><Pencil className="size-4" /></Btn>
     </div>
     <input ref={input} type="text" inputMode="numeric" autoComplete="one-time-code" pattern="[0-9]*" maxLength={6} value={code} onChange={(e) => { setCode(e.target.value.replace(/\D/g, "").slice(0, 6)); setError(""); }} aria-label="Code SMS" className="absolute top-[60.1%] left-[7%] h-[8.5%] w-[86%] bg-transparent text-center text-[32px] text-wipp-fg outline-none" />
@@ -199,7 +197,7 @@ export function ProfileReferenceScreen() {
     if (availability !== "available" || checkedUsername !== username) { setError("Vérifie la disponibilité du pseudo."); return; }
     setBusy(true); setError("");
     try {
-      const result = await signupPhone({ data: { idToken: verified.idToken, firstName: firstName.trim(), lastName: lastName.trim(), username, country: country as "CA" | "SN" | "CI" | "ML" | "GN" | "FR" | "US", avatar } });
+       const result = await signupPhone({ data: { idToken: verified.idToken, firstName: firstName.trim(), lastName: lastName.trim(), username, country, avatar } });
       if (!result.ok) { setError(result.error); return; }
       const session = await supabase.auth.setSession({ access_token: result.accessToken, refresh_token: result.refreshToken });
       if (session.error) { setError("Compte créé, mais connexion impossible. Réessaie."); return; }
@@ -223,7 +221,7 @@ export function ProfileReferenceScreen() {
       <input aria-label="Nom" autoComplete="family-name" maxLength={40} value={lastName} onChange={(e) => setLastName(e.target.value)} placeholder="Nom" className="absolute top-[53.8%] left-[52%] h-[4.4%] w-[37%] bg-wipp-auth-input px-2 text-[15px] text-wipp-fg outline-none placeholder:text-wipp-muted" />
       <input aria-label="Ton WIPP" autoComplete="username" maxLength={20} value={username} onChange={(e) => { setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, "")); setAvailability(null); }} placeholder="@pseudo" className="absolute top-[61.6%] left-[10%] h-[4.3%] w-[60%] bg-wipp-auth-input px-2 text-[15px] text-wipp-fg outline-none placeholder:text-wipp-muted" />
       <span aria-live="polite" className={`absolute top-[62.7%] right-[10%] text-[11px] ${availability === "taken" ? "text-wipp-danger" : "text-wipp-success"}`}>{checkedUsername === username && availability === "available" ? "✓ Disponible" : checkedUsername === username && availability === "taken" ? "Déjà utilisé" : ""}</span>
-      <div className="absolute top-[72.1%] left-[11%] w-[78%] truncate bg-wipp-auth-input text-[14px] text-wipp-fg">{countryLabel?.fr ?? country} ({countryLabel?.dial ?? ""})</div>
+       <div className="absolute top-[72.1%] left-[11%] flex w-[78%] items-center gap-2 truncate bg-wipp-auth-input text-[14px] text-wipp-fg">{countryLabel ? <img src={countryLabel.flag} alt="" className="h-4 w-6 object-cover" /> : null}{countryLabel?.fr ?? country} ({countryLabel?.dial ?? ""})</div>
       {error ? <p role="alert" className="absolute top-[88%] left-[8%] z-10 max-w-[84%] rounded bg-wipp-share-panel p-2 text-[12px] text-wipp-danger">{error}</p> : null}
       <Btn aria-label="Continuer" disabled={busy} onClick={() => void finish()} className="absolute! top-[89.4%] left-[6%] h-[6.1%]! w-[88%] rounded-full! bg-transparent! text-transparent!" />
     </div>
