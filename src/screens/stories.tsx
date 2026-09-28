@@ -57,14 +57,8 @@ export function StoriesScreen({ userId }: { userId: string }) {
     if (i > stories.length - 1) setI(Math.max(0, stories.length - 1));
   }, [i, stories.length]);
 
-  useEffect(() => {
-    if (!item || viewsOpen || reportOpen || manageOpen) return;
-    const id = window.setTimeout(() => {
-      if (i < stories.length - 1) setI((n) => n + 1);
-      else pop();
-    }, storyViewMs(item));
-    return () => window.clearTimeout(id);
-  }, [i, item, stories.length, pop, viewsOpen, reportOpen, manageOpen]);
+  // Pas de passage automatique : la story reste affichée tant qu'on ne la ferme
+  // pas ou qu'on ne touche pas « suivant ».
 
   useStoryAudio(item?.music?.src, { paused: !item?.music || viewsOpen || reportOpen, muted, loop: true });
 
