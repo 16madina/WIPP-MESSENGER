@@ -47,6 +47,7 @@ import {
   AVATAR_PICKS,
 } from "./auth-chrome";
 import { IntroSplash } from "./intro";
+import loginImage from "@/assets/wipp-auth-login.png";
 import { LegalOverlay } from "./legal";
 import { OnboardingScreen } from "./onboarding";
 
