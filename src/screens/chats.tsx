@@ -351,8 +351,8 @@ export function ChatsScreen() {
                     <span className="flex items-center gap-1.5">
                       <span className="truncate text-[16px] font-medium">{title}</span>
                       {shop ? (
-                        <span className="shrink-0 rounded-full bg-navy px-1.5 py-0.5 text-[10px] font-medium text-accent">
-                          {t("shopContext")}
+                        <span className="max-w-[45%] shrink truncate rounded-full bg-navy px-1.5 py-0.5 text-[10px] font-medium text-accent">
+                          {mineShop ? `${shop.name} · Professionnel` : "Professionnel"}
                         </span>
                       ) : null}
                       {peer && verifiedIds.includes(peer.id) ? (

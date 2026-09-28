@@ -563,8 +563,10 @@ export function ConversationScreen({ chatId }: { chatId: string }) {
         ? chat.left ? "Vous ne faites plus partie de ce groupe" : `${chat.participantIds.length} participants`
         : shop
           ? mineShop
-            ? `${t("shopContext")} · ${shop.name}`
-            : `${t("shopContext")} · ${t(SHOP_CAT_KEYS[shop.category])}`
+            ? `${shop.name} · Professionnel`
+            : shop.id.startsWith("business:")
+              ? "Professionnel"
+              : `${t("shopContext")} · ${t(SHOP_CAT_KEYS[shop.category])}`
           : formatLastSeen(peer?.lastSeen, Boolean(peer?.online), lang);
 
   async function startVoice() {
