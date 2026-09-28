@@ -11,7 +11,7 @@ import welcomeImage from "@/assets/wipp-auth-welcome.png.asset.json";
 import phoneImage from "@/assets/wipp-auth-phone.png.asset.json";
 import smsImage from "@/assets/wipp-auth-sms-clean2.png";
 import profileImage from "@/assets/wipp-auth-profile-no-password.png";
-import { COUNTRIES } from "./auth-chrome";
+import { COUNTRIES, LegalCheckbox } from "./auth-chrome";
 import { DEFAULT_COUNTRY } from "@/lib/countries";
 import { CountryList } from "@/components/country-list";
 
@@ -42,6 +42,7 @@ export function PhoneEntryScreen() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+  const [accepted, setAccepted] = useState(false);
 
   async function continueWithPhone() {
     const normalized = toE164(`${country.dial}${phone.replace(/\D/g, "").replace(/^0+/, "")}`);
@@ -87,8 +88,23 @@ export function PhoneEntryScreen() {
         className="absolute top-[69.1%] left-[10.6%] h-[6%] w-[78.8%] rounded-lg bg-wipp-auth-input px-4 text-[18px] text-wipp-fg outline-none placeholder:text-wipp-muted"
         placeholder="(514) 123-4567"
       />
-      {error ? <p role="alert" className="absolute top-[83%] left-[10%] rounded bg-wipp-share-panel px-2 text-[12px] text-wipp-danger">{error}</p> : null}
-       <Btn aria-label="Continuer" disabled={busy} onClick={() => void continueWithPhone()} className="absolute! top-[87.1%] left-[5%] h-[6.6%]! w-[90%] rounded-full! bg-transparent! text-transparent!" />
+      {error ? <p role="alert" className="absolute top-[85.3%] left-[10%] z-10 rounded bg-wipp-share-panel px-2 text-[10px] text-wipp-danger">{error}</p> : null}
+      <LegalCheckbox
+        checked={accepted}
+        onToggle={(value) => { setAccepted(value); if (value) setError(""); }}
+        onOpenPolicy={() => push({ name: "legal", doc: "privacy" })}
+        className="absolute top-[81.9%] left-[10%] w-[80%]"
+      />
+      <Btn
+        aria-label="Continuer"
+        disabled={busy || !accepted}
+        onClick={() => void continueWithPhone()}
+        className={accepted
+          ? "absolute! top-[87.1%] left-[5%] h-[6.6%]! w-[90%] rounded-full! bg-transparent! text-transparent!"
+          : "absolute! top-[87.1%] left-[5%] h-[6.6%]! w-[90%] rounded-full! bg-wipp-auth-input! text-[15px]! font-semibold! text-wipp-muted! disabled:opacity-100!"}
+      >
+        Continuer
+      </Btn>
     </main>
   );
 }

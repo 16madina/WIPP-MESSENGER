@@ -45,6 +45,7 @@ import {
   AuthShell,
   AuthSteps,
   AVATAR_PICKS,
+  LegalCheckbox,
 } from "./auth-chrome";
 import { IntroSplash } from "./intro";
 import loginImage from "@/assets/wipp-auth-login.png";
@@ -332,6 +333,7 @@ export function LoginScreen() {
   const [dialOpen, setDialOpen] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [accepted, setAccepted] = useState(false);
 
   async function tryLogin() {
     setErr(null);
@@ -390,7 +392,23 @@ export function LoginScreen() {
         ) : null}
       </div>
       {err ? <p role="alert" className="absolute top-[68.5%] left-[8%] rounded bg-wipp-share-panel px-2 text-[12px] text-wipp-danger">{err}</p> : null}
-      <Btn aria-label={t("continue")} disabled={busy} onClick={() => void tryLogin()} className="absolute! top-[73.6%] left-[6%] h-[6.8%]! w-[88%] rounded-full! bg-transparent! text-transparent!" />
+      <LegalCheckbox
+        checked={accepted}
+        onToggle={(value) => { setAccepted(value); if (value) setErr(null); }}
+        onOpenPolicy={() => push({ name: "legal", doc: "privacy" })}
+        singleLine
+        className="absolute top-[71.3%] left-[6%] w-[88%] py-0"
+      />
+      <Btn
+        aria-label={t("continue")}
+        disabled={busy || !accepted}
+        onClick={() => void tryLogin()}
+        className={accepted
+          ? "absolute! top-[73.6%] left-[6%] h-[6.8%]! w-[88%] rounded-full! bg-transparent! text-transparent!"
+          : "absolute! top-[73.6%] left-[6%] h-[6.8%]! w-[88%] rounded-full! bg-wipp-auth-input! text-[16px]! font-semibold! text-wipp-muted! disabled:opacity-100!"}
+      >
+        {t("continue")}
+      </Btn>
       <Btn aria-label="Je n’ai pas encore de compte" onClick={() => push({ name: "phone-entry" })} className="absolute! top-[89%] left-[20%] h-[4%]! w-[60%] bg-transparent! p-0! text-transparent!" />
     </main>
   );

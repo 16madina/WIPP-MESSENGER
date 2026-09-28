@@ -198,3 +198,55 @@ export const AVATAR_PICKS = [
   "/avatars/lea.jpg",
   "/avatars/sofia.jpg",
 ] as const;
+
+/** Compact consent checkbox for the artwork-based phone screens. */
+export function LegalCheckbox({
+  checked,
+  onToggle,
+  onOpenPolicy,
+  singleLine,
+  className,
+}: {
+  checked: boolean;
+  onToggle: (checked: boolean) => void;
+  onOpenPolicy?: () => void;
+  singleLine?: boolean;
+  className?: string;
+}) {
+  return (
+    <label className={cn("flex cursor-pointer select-none items-start gap-2 py-0.5", className)}>
+      <span className="relative mt-px flex size-4 shrink-0 items-center justify-center">
+        <input
+          type="checkbox"
+          checked={checked}
+          onChange={(e) => onToggle(e.target.checked)}
+          className="peer absolute inset-0 opacity-0"
+          aria-label="J’accepte les politiques de confidentialité"
+        />
+        <span
+          className={cn(
+            "flex size-4 items-center justify-center rounded-[5px] transition-colors",
+            checked ? "bg-wipp-accent" : "bg-white/10 ring-1 ring-white/35",
+          )}
+        >
+          {checked ? <Check className="size-3 text-wipp-accent-fg" strokeWidth={3} /> : null}
+        </span>
+      </span>
+      <span className={cn("text-[10px] leading-[1.3] text-wipp-muted", singleLine && "whitespace-nowrap")}>
+        En continuant, tu acceptes les{" "}
+        <button
+          type="button"
+          className="min-h-0! min-w-0! font-medium text-wipp-accent underline underline-offset-2"
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            onOpenPolicy?.();
+          }}
+        >
+          politiques de confidentialité
+        </button>
+        .
+      </span>
+    </label>
+  );
+}
