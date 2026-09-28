@@ -9,7 +9,7 @@ import { enterWithSession } from "@/lib/enter-session";
 import { supabase } from "@/integrations/supabase/client";
 import welcomeImage from "@/assets/wipp-auth-welcome.png.asset.json";
 import phoneImage from "@/assets/wipp-auth-phone.png.asset.json";
-import smsImage from "@/assets/wipp-auth-sms.png.asset.json";
+import smsImage from "@/assets/wipp-auth-sms-clean.png";
 import profileImage from "@/assets/wipp-auth-profile-no-password.png";
 import { COUNTRIES } from "./auth-chrome";
 import { DEFAULT_COUNTRY } from "@/lib/countries";
@@ -148,18 +148,27 @@ export function SmsReferenceScreen() {
   }
 
   return <main className="relative size-full overflow-hidden bg-wipp-bg text-wipp-fg" aria-label="Vérifie ton numéro">
-    <Artwork src={smsImage.url} />
+    <Artwork src={smsImage} />
     <div id={RECAPTCHA_ID} className="absolute bottom-0 left-0" />
     <Btn aria-label="Retour" onClick={pop} className="absolute! top-[8%] left-[4%] h-[6%]! w-[12%] bg-transparent! opacity-0" />
     <div className="absolute top-[40%] left-[8%] flex h-[5.5%] max-w-[80%] items-center gap-2 rounded-lg bg-wipp-auth-input px-3 text-[14px] font-semibold text-wipp-fg">
        {COUNTRIES.find((item) => item.id === pending.country)?.flag ? <img src={COUNTRIES.find((item) => item.id === pending.country)?.flag} alt="" className="h-4 w-6 object-cover" /> : null}<span>{phone}</span>
       <Btn variant="ghost" aria-label="Modifier mon numéro" onClick={pop} className="h-11! min-h-0! px-1! text-wipp-accent!"><Pencil className="size-4" /></Btn>
     </div>
-    <input ref={input} type="text" inputMode="numeric" autoComplete="one-time-code" pattern="[0-9]*" maxLength={6} value={code} onChange={(e) => { setCode(e.target.value.replace(/\D/g, "").slice(0, 6)); setError(""); }} aria-label="Code SMS" className="absolute top-[60.1%] left-[7%] h-[8.5%] w-[86%] bg-transparent text-center text-[32px] text-wipp-fg outline-none" />
-    <Btn aria-label="Saisir le code SMS" onClick={() => input.current?.focus()} className="absolute! top-[60%] left-[7%] h-[9%]! w-[86%] bg-transparent! opacity-0" />
+    <input ref={input} type="text" inputMode="numeric" autoComplete="one-time-code" pattern="[0-9]*" maxLength={6} value={code} onChange={(e) => { setCode(e.target.value.replace(/\D/g, "").slice(0, 6)); setError(""); }} aria-label="Code SMS" className="absolute top-[60.1%] left-[7%] h-[8.5%] w-[86%] opacity-0" />
+    <Btn aria-label="Saisir le code SMS" onClick={() => input.current?.focus()} className="absolute! top-[60%] left-[7%] h-[9%]! w-[86%] bg-transparent! p-0!">
+      <span className="flex size-full items-stretch justify-between">
+        {Array.from({ length: 6 }, (_, i) => (
+          <span key={i} className="flex w-[13.5%] items-center justify-center rounded-xl text-[28px] font-semibold text-wipp-fg">
+            {code[i] ?? ""}
+          </span>
+        ))}
+      </span>
+    </Btn>
     {error ? <p role="alert" className="absolute top-[70%] left-[8%] flex items-center gap-2 bg-wipp-share-panel px-2 text-[12px] text-wipp-danger">{error}{noAccount ? <Btn variant="ghost" onClick={() => { useWgoStore.setState((s) => ({ pendingSignup: { ...s.pendingSignup, phone: noAccount.phone } })); setVerifiedSignup(noAccount); push({ name: "profile-reference" }); }} className="h-11! min-h-0! px-2! text-wipp-accent!">Créer un compte</Btn> : null}</p> : null}
-    <Btn aria-label="Renvoyer le code" disabled={seconds > 0 || busy} onClick={() => void resend()} className="absolute! top-[73%] left-[19%] h-[5%]! w-[62%] bg-transparent! opacity-0" />
-    <span className="absolute top-[73.6%] left-[27%] pointer-events-none text-[13px] text-wipp-accent">{seconds > 0 ? `Renvoyer le code dans 00:${String(seconds).padStart(2, "0")}` : "Renvoyer le code"}</span>
+    <Btn aria-label="Renvoyer le code" disabled={seconds > 0 || busy} onClick={() => void resend()} className="absolute! top-[73%] left-[19%] h-[5%]! w-[62%] bg-transparent! p-0! text-[13px]! text-wipp-accent!">
+      {seconds > 0 ? `Renvoyer le code dans 00:${String(seconds).padStart(2, "0")}` : "Renvoyer le code"}
+    </Btn>
     <Btn aria-label="Continuer" disabled={busy || code.length !== 6} onClick={() => void validate()} className="absolute! top-[79.2%] left-[5%] h-[6.7%]! w-[90%] rounded-full! bg-transparent! text-transparent!" />
     <Btn aria-label="Modifier mon numéro" onClick={pop} className="absolute! top-[88%] left-[22%] h-[5%]! w-[56%] bg-transparent! opacity-0" />
   </main>;
