@@ -3,8 +3,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { adminFlags, adminResolveFlag, adminStats, adminUsers } from "@/lib/admin.functions";
 import { Header, StatusBar } from "@/components/ui";
 import { useWgoStore } from "@/lib/store";
+import { AdminPush } from "@/components/admin-push";
 
-type Tab = "stats" | "users" | "moderation";
+type Tab = "stats" | "users" | "moderation" | "push";
 async function token() { return (await supabase.auth.getSession()).data.session?.access_token ?? ""; }
 
 export function AdminScreen() {
@@ -41,7 +42,7 @@ export function AdminScreen() {
       <StatusBar />
       <Header title="Admin" onBack={pop} />
       <div className="flex gap-2 px-4 pb-3">
-        {([["stats", "Statistiques"], ["users", "Utilisateurs"], ["moderation", "Modération"]] as const).map(([k, l]) => (
+        {([["stats", "Statistiques"], ["users", "Utilisateurs"], ["moderation", "Modération"], ["push", "Notifs"]] as const).map(([k, l]) => (
           <button key={k} onClick={() => setTab(k)} className={`h-10 flex-1 rounded-full text-[13px] font-medium ${tab === k ? "bg-accent text-accent-fg" : "bg-surface text-muted"}`}>{l}</button>
         ))}
       </div>
@@ -68,6 +69,7 @@ export function AdminScreen() {
             </div>
           </>
         ) : null}
+        {tab === "push" ? <AdminPush token={token} /> : null}
         {tab === "moderation" ? (
           flags.length === 0 ? <p className="mt-8 text-center text-[13px] text-muted">Aucun signalement pour l'instant.</p> : (
             <div className="space-y-2">
