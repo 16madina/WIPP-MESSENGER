@@ -37,6 +37,7 @@ import { GallerySheet } from "@/components/gallery";
 import { WippWordmark } from "@/components/logo";
 import { Btn, Field, Header, Row, Section, StatusBar, Toggle } from "@/components/ui";
 import { ProtectionSettings } from "@/components/protection-settings";
+import { useNearbyVisibility } from "@/components/nearby-visibility";
 import { LEGAL_CONTACT } from "@/lib/legal";
 import { shortFp } from "@/lib/crypto";
 import { TAKEN_USERNAMES } from "@/lib/seed";
@@ -526,6 +527,7 @@ export function PrivacyScreen() {
   const setEphemeralCalls = useWgoStore((s) => s.setEphemeralCalls);
   const [open, setOpen] = useState<PrivacyAudienceKey | null>(null);
   const [wippPane, setWippPane] = useState(false);
+  const nearbyVis = useNearbyVisibility();
   const [, setVaultTick] = useState(0);
   const labelFor = (v: PrivacyAudience) =>
     v === "everyone" ? t("everyone") : v === "contacts" ? t("contacts") : t("nobody");
@@ -645,6 +647,18 @@ export function PrivacyScreen() {
           </Section>
           <p className="px-6 pt-3 text-[13px] leading-relaxed text-muted">{t("readReceiptsHint")}</p>
           <p className="px-6 pt-2 text-[13px] leading-relaxed text-muted">{t("ephemeralCallsHint")}</p>
+        </div>
+        <div className="mt-4">
+          <Section title="Visibilité à proximité">
+            <Row
+              label="Visibilité à proximité"
+              value={nearbyVis.visible ? (nearbyVis.minutesLeft ? `${nearbyVis.minutesLeft} min` : "Activée") : "Désactivée"}
+              trailing={<Toggle checked={nearbyVis.visible} onChange={(on) => nearbyVis.setNearby(on ? -1 : 0)} />}
+            />
+          </Section>
+          <p className="px-6 pt-3 text-[13px] leading-relaxed text-muted">
+            Permets aux utilisateurs WIPP proches de te découvrir. Jamais ta distance ni ton numéro. Sans effet sur WIPP Touch.
+          </p>
         </div>
         <ProtectionSettings />
         </>
