@@ -14,7 +14,7 @@ export const COUNTRIES: Country[] = worldCountries
     dial: item.idd.root + (item.idd.suffixes.length === 1 ? item.idd.suffixes[0] : ""),
     fr: item.translations?.fra?.common ?? item.name.common,
     en: item.name.common,
-    flag: item.flag,
+    flag: `/flags/${item.cca2.toLowerCase()}.svg`,
     region: item.region,
   }))
   .sort((a, b) => regionOrder.indexOf(a.region) - regionOrder.indexOf(b.region) || a.fr.localeCompare(b.fr, "fr"));

@@ -23,7 +23,7 @@ export function CountryList({ onPick, language = "fr" }: { onPick: (country: Cou
         return <div key={country.id}>
           {heading ? <div className="sticky top-0 z-10 bg-wipp-share-panel px-4 py-2 text-[11px] font-bold uppercase text-wipp-muted">{language === "fr" ? REGION_NAMES[country.region] : country.region}</div> : null}
           <Btn variant="ghost" className="w-full min-w-0 justify-between rounded-none! px-4! text-left text-wipp-fg!" onClick={() => onPick(country)}>
-            <span className="flex min-w-0 items-center gap-2"><span aria-hidden="true" className="shrink-0 text-[22px]">{country.flag}</span><span className="truncate">{language === "fr" ? country.fr : country.en}</span></span>
+            <span className="flex min-w-0 items-center gap-2"><img src={country.flag} alt="" className="h-4 w-6 shrink-0 object-cover" /><span className="truncate">{language === "fr" ? country.fr : country.en}</span></span>
             <span className="shrink-0 text-[13px] text-wipp-muted">{country.dial}</span>
           </Btn>
         </div>;

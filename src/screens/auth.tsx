@@ -154,7 +154,7 @@ export function SignupScreen() {
               className="flex h-full w-full items-center justify-between text-left text-[15px]"
               onClick={() => setCountryOpen((v) => !v)}
             >
-              <span className="truncate">{country.flag} {lang === "fr" ? country.fr : country.en}</span>
+              <span className="flex items-center gap-2 truncate"><img src={country.flag} alt="" className="h-4 w-6 object-cover" />{lang === "fr" ? country.fr : country.en}</span>
               <ChevronDown className="size-4 text-muted" />
             </button>
           </AuthField>
@@ -177,7 +177,7 @@ export function SignupScreen() {
               className="flex h-full items-center gap-1 px-1 text-[14px] font-medium"
               onClick={() => setDialOpen((v) => !v)}
             >
-              <span aria-hidden="true" className="text-[20px]">{country.flag}</span>{country.dial}
+              <img src={country.flag} alt="" className="h-4 w-6 object-cover" />{country.dial}
               <ChevronDown className="size-3.5 text-muted" />
             </button>
             <span className="h-5 w-px bg-white/10" />
@@ -443,7 +443,7 @@ export function LoginScreen() {
               className="flex h-full items-center gap-1 px-1 text-[14px] font-medium"
               onClick={() => setDialOpen((v) => !v)}
             >
-              <span aria-hidden="true" className="text-[20px]">{country.flag}</span>{country.dial}
+              <img src={country.flag} alt="" className="h-4 w-6 object-cover" />{country.dial}
               <ChevronDown className="size-3.5 text-muted" />
             </button>
             <span className="h-5 w-px bg-white/10" />
