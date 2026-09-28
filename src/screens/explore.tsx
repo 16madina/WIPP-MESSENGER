@@ -1,4 +1,4 @@
-import { useMemo, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import {
   AtSign,
   Bookmark,
@@ -33,6 +33,8 @@ import { seedPharmacies } from "@/lib/seed";
 import { useT, useWgoStore } from "@/lib/store";
 import type { LifestyleItem, LifestyleKind, Listing, Pharmacy, Shop, ShopCategory } from "@/lib/types";
 import { cn } from "@/lib/utils";
+import { listPublicBusinessCards } from "@/lib/business-card.functions";
+import type { SavedBusinessCard } from "@/lib/business-card";
 import { NoPhoneBadge } from "./connect-extras";
 
 const CATS = ["all", "auto", "home", "goods", "jobs", "services"] as const;
@@ -948,6 +950,8 @@ function ShopsPane() {
   const mine = shops.find((s) => s.ownerId === "me");
   const [cat, setCat] = useState<ShopCategory | "all">("all");
   const [q, setQ] = useState("");
+  const [businessCards, setBusinessCards] = useState<SavedBusinessCard[]>([]);
+  useEffect(() => { void listPublicBusinessCards().then(setBusinessCards).catch(() => setBusinessCards([])); }, []);
   const toks = tokens(q);
 
   const rows = useMemo(() => {
@@ -997,7 +1001,13 @@ function ShopsPane() {
         {mine ? t("myCard") : t("createCard")}
       </Btn>
       <div className="mt-4">
-        {rows.length === 0 ? (
+        {businessCards.filter((card) => `${card.name} ${card.category} ${card.description} ${card.city}`.toLowerCase().includes(q.trim().toLowerCase())).map((card) => (
+          <button key={card.id} type="button" onClick={() => push({ name: "business-card-view", publicId: card.publicId })} className="press mb-2 w-full overflow-hidden rounded-2xl glass-card text-left">
+            {card.coverUrl ? <SmartImg src={card.coverUrl} alt="" className="h-28 w-full object-cover" /> : <div className="flex h-28 items-center justify-center bg-navy"><Store className="size-9 text-accent" /></div>}
+            <div className="p-3"><p className="truncate text-[16px] font-semibold">{card.name}</p><p className="mt-0.5 text-[12px] text-muted">{card.category} · {card.city}</p><p className="mt-2 text-[12px] font-semibold text-navy">Voir la carte</p></div>
+          </button>
+        ))}
+        {rows.length === 0 && businessCards.length === 0 ? (
           <p className="py-10 text-center text-[14px] text-muted">{t("noShops")}</p>
         ) : (
           rows.map((s) => (

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Camera, Check, Clock, Copy, Globe, ImagePlus, MapPin, MessageCircle, Monitor, Pencil, QrCode, Search, Share2, Smartphone, Sparkles, Store, Tag } from "lucide-react";
+import { Check, Clock, Copy, Globe, ImagePlus, MapPin, MessageCircle, Monitor, Pencil, QrCode, Share2, Smartphone, Store, Tag } from "lucide-react";
 import { Avatar } from "@/components/avatar";
 import { QrCard } from "@/components/qr-card";
 import { SmartImg } from "@/components/smart-img";
@@ -15,7 +15,6 @@ export function BusinessCardScreen() {
   const push = useWgoStore((s) => s.push);
   const [card, setCard] = useState<SavedBusinessCard | null | undefined>(undefined);
   const [error, setError] = useState("");
-  useEffect(() => { void getMyBusinessCard({ headers: undefined } as never).catch(() => null); }, []);
   useEffect(() => { void (async () => {
     try { const result = await getMyBusinessCard({ headers: await authHeaders() } as never); setCard(result.card); }
     catch { setCard(null); setError("Connecte-toi pour créer ta carte professionnelle."); }
