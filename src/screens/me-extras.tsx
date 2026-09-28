@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Check, Clock, Copy, Globe, ImagePlus, MapPin, MessageCircle, Monitor, Pencil, QrCode, Share2, Smartphone, Store, Tag } from "lucide-react";
+import { Camera, Check, Clock, Copy, Globe, ImagePlus, MapPin, MessageCircle, Monitor, Pencil, QrCode, Share2, Smartphone, Store, Tag } from "lucide-react";
 import { Avatar } from "@/components/avatar";
 import { QrCard } from "@/components/qr-card";
 import { SmartImg } from "@/components/smart-img";
