@@ -2,7 +2,7 @@ import { emojiFromStickerId, isEmojiSticker } from "./emoji";
 
 export type StickerDef = {
   id: string;
-  pack: "elle" | "lui" | "fun" | "fun2" | "sig" | "moji" | "scene" | "general" | "ani";
+  pack: "elle" | "lui" | "fun" | "fun2" | "sig" | "moji" | "mojiClassic" | "scene" | "general" | "ani";
   src: string;
   anim?: string;
   loopSoft?: boolean;
@@ -195,6 +195,14 @@ const ANI: StickerDef[] = [
   { id: "ani-bisou", pack: "ani", src: "/stickers/aniwipp/bisou-poster.png", anim: "/stickers/aniwipp/bisou.webm", labelFr: "Bisou", labelEn: "Kiss" },
 ];
 
+// Le pack PNG original reste accessible à côté des Wippmojis WebP animés.
+const MOJI_CLASSIC: StickerDef[] = MOJI.slice(0, 30).map((sticker, index) => ({
+  ...sticker,
+  id: `moji-classic-${String(index + 1).padStart(2, "0")}`,
+  pack: "mojiClassic",
+  src: `/stickers/moji/moji-${String(index + 1).padStart(2, "0")}.png`,
+}));
+
 const SCENE: StickerDef[] = [
   { id: "scene-01", pack: "scene", src: "/stickers/scene/scene-01.png", motion: "sc-parfait", fx: "ring", sound: "crystal", labelFr: "Parfait !", labelEn: "Perfect!" },
   { id: "scene-02", pack: "scene", src: "/stickers/scene/scene-02.png", motion: "sc-boss", fx: "crown", sound: "boss", bubble: "crown", labelFr: "T’es un boss !", labelEn: "You’re the boss!" },
@@ -260,12 +268,13 @@ export const STICKER_PACKS = {
   fun2: { id: "fun2" as const, labelFr: "#2", labelEn: "#2", stickers: FUN2 },
   sig: { id: "sig" as const, labelFr: "WIPP", labelEn: "WIPP", stickers: SIG },
   moji: { id: "moji" as const, labelFr: "Emoji", labelEn: "Emoji", stickers: MOJI },
+  mojiClassic: { id: "mojiClassic" as const, labelFr: "Classiques", labelEn: "Classics", stickers: MOJI_CLASSIC },
   scene: { id: "scene" as const, labelFr: "Scènes", labelEn: "Scenes", stickers: SCENE },
   general: { id: "general" as const, labelFr: "Général", labelEn: "General", stickers: GEN },
   ani: { id: "ani" as const, labelFr: "AniWipp", labelEn: "AniWipp", stickers: ANI },
 };
 
-export const WIPP_STICKERS = [...ELLE, ...LUI, ...FUN, ...FUN2, ...SIG, ...MOJI, ...SCENE, ...GEN, ...ANI];
+export const WIPP_STICKERS = [...ELLE, ...LUI, ...FUN, ...FUN2, ...SIG, ...MOJI, ...MOJI_CLASSIC, ...SCENE, ...GEN, ...ANI];
 
 export type StickerId = string;
 export type StickerPackId = keyof typeof STICKER_PACKS;
