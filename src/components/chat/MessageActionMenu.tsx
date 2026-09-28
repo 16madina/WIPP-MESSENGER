@@ -28,18 +28,18 @@ export function MessageActionMenu({ anchor, container, reactions, actions, onClo
   const width = Math.min(284, bounds.width - 32);
   const left = Math.max(16, Math.min(anchor.left - bounds.left, bounds.width - width - 16));
   const rowHeight = layout.menuItemHeight;
-  const primaryKeys = ["reply", "forward", "copy", "pin", "delete"];
+  const primaryKeys = ["copy", "share"];
   const primary = primaryKeys.map((key) => actions.find((a) => a.key === key)).filter((a): a is MessageMenuAction => Boolean(a));
   const extra = actions.filter((a) => !primary.some((p) => p.key === a.key));
   const shown = expanded ? extra : primary;
-  const menuHeight = (expanded ? Math.min(extra.length, 6) + 1 : primary.length + (extra.length ? 1 : 0)) * rowHeight;
+  const menuHeight = (expanded ? Math.min(extra.length, 5) + 1 : primary.length + (extra.length ? 1 : 0)) * rowHeight;
   const gap = 8;
   const reactionHeight = reactions ? 48 + gap : 0;
   const bubbleBottom = anchor.bottom - bounds.top;
   const bubbleTop = anchor.top - bounds.top;
   const below = bubbleBottom + gap + menuHeight <= bounds.height - 24;
   const idealTop = below ? bubbleBottom + gap : bubbleTop - menuHeight - gap;
-  const top = Math.max(60 + reactionHeight, Math.min(idealTop, bounds.height - menuHeight - 20));
+  const top = Math.max(56, Math.min(idealTop, bounds.height - menuHeight - 12));
   const reactionTop = Math.max(54, Math.min(bubbleTop - reactionHeight, top - reactionHeight));
   const run = (action: MessageMenuAction) => {
     onClose();
@@ -74,7 +74,7 @@ export function MessageActionMenu({ anchor, container, reactions, actions, onClo
         transition={wippMotion.lift}
       >
         {expanded && <Btn variant="ghost" role="menuitem" className="h-11 w-full justify-start gap-3 rounded-none border-b border-wipp-sep px-4 text-[15px]" onClick={() => setExpanded(false)}><ArrowLeft size={18} /> Retour</Btn>}
-        <div className={expanded ? "max-h-[264px] overflow-y-auto overscroll-contain" : undefined}>
+        <div className={expanded ? "max-h-[220px] overflow-y-auto overscroll-contain" : undefined}>
           {shown.map((action) => (
             <Btn
               key={action.key}

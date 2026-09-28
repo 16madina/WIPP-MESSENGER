@@ -23,6 +23,7 @@ import {
   Plus,
   Search,
   Send,
+  Share2,
   Shield,
   ShieldCheck,
   Smile,
@@ -937,6 +938,11 @@ export function ConversationScreen({ chatId }: { chatId: string }) {
     ...(active.text && active.type === "text" && !active.deletedForAll ? [
       { key: "forward", label: "Transférer", icon: <Forward size={19} />, onSelect: () => setForwardMsg(active) },
       { key: "copy", label: t("copyMsg"), icon: <Copy size={19} />, onSelect: () => { void navigator.clipboard.writeText(active.text ?? ""); } },
+      { key: "share", label: "Partager", icon: <Share2 size={19} />, onSelect: () => {
+        const text = active.text ?? "";
+        if (navigator.share) void navigator.share({ text }).catch(() => undefined);
+        else void navigator.clipboard.writeText(text).catch(() => undefined);
+      } },
     ] : []),
     { key: "pin", label: active.pinned ? "Désépingler" : "Épingler", icon: <Pin size={19} />, onSelect: () => {
       if (chatId.startsWith("srv:")) void import("@/lib/messaging/client").then(({ pinServerMessage }) => pinServerMessage(chatId.slice(4), active.id, !active.pinned));
