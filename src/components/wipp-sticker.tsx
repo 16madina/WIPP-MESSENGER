@@ -183,8 +183,8 @@ function StickerClip({
   );
 }
 
-const playedMoments = new Set<string>();
 const playedAni = new Set<string>();
+const playedMoments = new Set<string>();
 
 function AniStopSticker({
   size,
@@ -197,12 +197,14 @@ function AniStopSticker({
   onceKey?: string;
   onLongPress?: () => void;
 }) {
-  const [playKey, setPlayKey] = useState(0);
+  function replay() {
+    window.dispatchEvent(new CustomEvent("wipp-ani-stop"));
+  }
 
   useEffect(() => {
     if (!animated || !onceKey || playedAni.has(onceKey)) return;
     playedAni.add(onceKey);
-    setPlayKey((n) => n + 1);
+    replay();
   }, [animated, onceKey]);
 
   if (!animated) {
@@ -221,24 +223,20 @@ function AniStopSticker({
       aria-label="Stop !"
       onClick={(e) => {
         e.stopPropagation();
-        setPlayKey((n) => n + 1);
+        replay();
       }}
       onContextMenu={(e) => {
         e.preventDefault();
         onLongPress?.();
       }}
     >
-      {playKey > 0 ? (
-        <AniStop cue playKey={playKey} />
-      ) : (
-        <img
-          src="/stickers/aniwipp/stop-full.png"
-          alt=""
-          draggable={false}
-          className="size-full object-contain"
-          style={{ width: size, height: size }}
-        />
-      )}
+      <img
+        src="/stickers/aniwipp/stop-full.png"
+        alt=""
+        draggable={false}
+        className="size-full object-contain"
+        style={{ width: size, height: size }}
+      />
     </button>
   );
 }
@@ -254,19 +252,82 @@ function AniBisouSticker({
   onceKey?: string;
   onLongPress?: () => void;
 }) {
-  const [playKey, setPlayKey] = useState(0);
+  function replay() {
+    window.dispatchEvent(new CustomEvent("wipp-ani-bisou"));
+  }
 
   useEffect(() => {
     if (!animated || !onceKey || playedAni.has(onceKey)) return;
     playedAni.add(onceKey);
-    setPlayKey((n) => n + 1);
+    replay();
   }, [animated, onceKey]);
 
   if (!animated) {
     return (
+      <div className="size-full" style={{ width: size, height: size }}>
+        <AniClip loop />
+      </div>
+    );
+  }
+
+  return (
+    <button
+      type="button"
+      className="relative shrink-0 cursor-pointer"
+      style={{ width: size, height: size }}
+      aria-label="Bisou"
+      onClick={(e) => {
+        e.stopPropagation();
+        replay();
+      }}
+      onContextMenu={(e) => {
+        e.preventDefault();
+        onLongPress?.();
+      }}
+    >
       <img
         src="/stickers/aniwipp/bisou-poster.png"
         alt=""
+        draggable={false}
+        className="size-full object-contain"
+        style={{ width: size, height: size }}
+      />
+    </button>
+  );
+}
+
+function PopCharacterSticker({
+  id,
+  label,
+  poster,
+  size,
+  animated,
+  onceKey,
+  onLongPress,
+}: {
+  id: string;
+  label: string;
+  poster: string;
+  size: number;
+  animated?: boolean;
+  onceKey?: string;
+  onLongPress?: () => void;
+}) {
+  function replay() {
+    window.dispatchEvent(new CustomEvent("wipp-pop-play", { detail: id }));
+  }
+
+  useEffect(() => {
+    if (!animated || !onceKey || playedAni.has(onceKey)) return;
+    playedAni.add(onceKey);
+    replay();
+  }, [animated, onceKey, id]);
+
+  if (!animated) {
+    return (
+      <img
+        src={poster}
+        alt={label}
         draggable={false}
         className="size-full object-contain"
         style={{ width: size, height: size }}
@@ -279,27 +340,23 @@ function AniBisouSticker({
       type="button"
       className="relative shrink-0 cursor-pointer"
       style={{ width: size, height: size }}
-      aria-label="Bisou"
+      aria-label={label}
       onClick={(e) => {
         e.stopPropagation();
-        setPlayKey((n) => n + 1);
+        replay();
       }}
       onContextMenu={(e) => {
         e.preventDefault();
         onLongPress?.();
       }}
     >
-      {playKey > 0 ? (
-        <AniClip cue playKey={playKey} />
-      ) : (
-        <img
-          src="/stickers/aniwipp/bisou-poster.png"
-          alt=""
-          draggable={false}
-          className="size-full object-contain"
-          style={{ width: size, height: size }}
-        />
-      )}
+      <img
+        src={poster}
+        alt=""
+        draggable={false}
+        className="size-full object-contain"
+        style={{ width: size, height: size }}
+      />
     </button>
   );
 }
@@ -355,7 +412,7 @@ function CastSticker({
       role={replay ? "button" : undefined}
       tabIndex={replay ? 0 : undefined}
       aria-label={row.labelFr}
-      className={cn("relative shrink-0", replay && "cursor-pointer", className)}
+      className={cn("relative shrink-0", replay ? "cursor-pointer" : "pointer-events-none", className)}
       style={{ width: size, height: size }}
       onClick={
         replay
@@ -436,6 +493,19 @@ export function WippSticker({
   }
   if (row.id === "ani-bisou") {
     return <AniBisouSticker size={size} animated={animated} onceKey={onceKey} onLongPress={onLongPress} />;
+  }
+  if (row.playMs && row.anim) {
+    return (
+      <PopCharacterSticker
+        id={row.id}
+        label={row.labelFr}
+        poster={row.src}
+        size={size}
+        animated={animated}
+        onceKey={onceKey}
+        onLongPress={onLongPress}
+      />
+    );
   }
   if (row.motion) {
     return <CastSticker row={row} size={size} className={className} onLongPress={onLongPress} onceKey={onceKey} />;

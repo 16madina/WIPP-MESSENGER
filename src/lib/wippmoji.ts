@@ -26,8 +26,8 @@ export type WippItem = {
 const WIPP_POP_ASSETS: Record<string, string> = {};
 
 function categoryOf(s: StickerDef): WippCategory {
-  if (s.pack === "moji" || s.pack === "general") return "wippmoji";
-  if (s.pack === "elle" || s.pack === "lui" || s.pack === "fun" || s.pack === "fun2") return "wippie";
+  if (s.pack === "moji") return "wippmoji";
+  if (s.pack === "femme" || s.pack === "homme" || s.pack === "comique" || s.pack === "emo") return "wippie";
   return "sticker";
 }
 

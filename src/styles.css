@@ -3056,3 +3056,31 @@ img, svg { -webkit-user-drag: none; }
 .call-mini{animation:call-drop .35s cubic-bezier(.2,.9,.25,1.2) both}
 @keyframes call-drop{from{opacity:0;transform:translateY(-16px)}to{opacity:1;transform:none}}
 @media (prefers-reduced-motion:reduce){.call-wave,.call-accept,.call-spinner,.call-root,.call-mini,.call-dots::after{animation:none}}
+
+/* Transparent WIPP Moments imported from the sticker picker. */
+.pop-alpha {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: transparent;
+  pointer-events: none;
+}
+.pop-alpha img {
+  height: 92%;
+  width: auto;
+  max-width: 96%;
+  object-fit: contain;
+  background: transparent;
+  display: block;
+}
+.pop-alpha.is-tray {
+  align-items: center;
+}
+.pop-alpha.is-tray img {
+  height: 100%;
+  width: 100%;
+  max-width: none;
+}
