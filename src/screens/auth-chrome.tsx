@@ -227,7 +227,7 @@ export function LegalCheckbox({
             checked ? "bg-wipp-accent" : "bg-white/10 ring-1 ring-white/35",
           )}
         >
-          {checked ? <Check className="size-3 text-wipp-ink" strokeWidth={3} /> : null}
+          {checked ? <Check className="size-3 text-wipp-accent-fg" strokeWidth={3} /> : null}
         </span>
       </span>
       <span className="text-[11px] leading-[1.35] text-wipp-muted">
