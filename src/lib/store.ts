@@ -302,6 +302,9 @@ type WgoState = ReturnType<typeof fresh> & {
     photos: string[];
   }) => string;
   openShopChat: (shopId: string) => string;
+  openBusinessChat: (publicId: string) => Promise<void>;
+  syncBusinessContexts: () => Promise<void>;
+  createListing: (data: Omit<Listing, "id" | "sellerId" | "distance" | "createdAt">) => string;
   createLifestyle: (data: {
     kind: LifestyleKind;
     title: string;
@@ -462,6 +465,7 @@ export const useWgoStore = create<WgoState>()(
             serverUsername: profile.username,
             serverConnected: true,
           }));
+          void get().syncBusinessContexts();
         } catch (err) {
           console.warn("[wipp] server sync failed", err);
           set({ serverConnected: false });
@@ -488,6 +492,58 @@ export const useWgoStore = create<WgoState>()(
             mergeServerMessagesIntoState(st, chat.id, synced.messages, synced.meServerId),
           );
           const dec = await decryptMergedMessages(get(), localId, get().identity);
+          if (Object.keys(dec).length) set(() => dec);
+        }
+        get().push({ name: "conversation", chatId: localId });
+      },
+
+      syncBusinessContexts: async () => {
+        try {
+          const [{ listBusinessChatContexts }, { authHeaders }, { toLocalChatId }] = await Promise.all([
+            import("@/lib/chats.functions"),
+            import("@/lib/business-card"),
+            import("@/lib/messaging/sync"),
+          ]);
+          const ctx = await listBusinessChatContexts({ headers: await authHeaders() } as never);
+          set((st) => {
+            const shops = [...st.shops];
+            const byChat = new Map<string, string>();
+            for (const c of ctx) {
+              const localId = toLocalChatId(c.chatId);
+              const chat = st.chats.find((x) => x.id === localId);
+              const peerId = chat?.participantIds.find((id) => id !== "me") ?? "";
+              const shopId = `business:${c.publicId}`;
+              const shop = businessShop(c, shopId, c.ownerIsMe ? "me" : peerId);
+              const i = shops.findIndex((x) => x.id === shopId);
+              if (i >= 0) shops[i] = { ...shops[i], ...shop };
+              else shops.push(shop);
+              byChat.set(localId, shopId);
+            }
+            return {
+              shops,
+              chats: st.chats.map((c) => (byChat.has(c.id) ? { ...c, shopId: byChat.get(c.id) } : c)),
+            };
+          });
+        } catch (err) {
+          console.warn("[wipp] business contexts failed", err);
+        }
+      },
+
+      openBusinessChat: async (publicId) => {
+        const [{ openBusinessChat }, { authHeaders }, sync] = await Promise.all([
+          import("@/lib/chats.functions"),
+          import("@/lib/business-card"),
+          import("@/lib/messaging/sync"),
+        ]);
+        await get().ensureCrypto();
+        const { chatId } = await openBusinessChat({ data: { publicId }, headers: await authHeaders() } as never);
+        await get().syncServerInbox();
+        await get().syncBusinessContexts();
+        const localId = sync.toLocalChatId(chatId);
+        const synced = await sync.syncChatMessages(localId);
+        if (synced && "messages" in synced) {
+          set((st) => sync.mergeServerMessagesIntoState(st, chatId, synced.messages, synced.meServerId));
+          const dec = await sync.decryptMergedMessages(get(), localId, get().identity);
           if (Object.keys(dec).length) set(() => dec);
         }
         get().push({ name: "conversation", chatId: localId });
@@ -2263,6 +2319,13 @@ export const useWgoStore = create<WgoState>()(
         return chat.id;
       },
 
+      createListing: (data) => {
+        const item: Listing = { ...data, id: uid("l"), sellerId: "me", distance: "0 km", createdAt: Date.now() };
+        set((st) => ({ listings: [item, ...st.listings] }));
+        get().replace({ name: "listing", listingId: item.id });
+        return item.id;
+      },
+
       createLifestyle: (data) => {
         const geo = get().geo;
         const item: LifestyleItem = {
@@ -2336,6 +2399,7 @@ export const useWgoStore = create<WgoState>()(
         intros: s.intros,
         codeChatTtl: s.codeChatTtl,
         shops: s.shops,
+        listings: s.listings,
         lifestyle: s.lifestyle,
         identity: s.identity,
         deviceKeys: s.deviceKeys,
@@ -2374,4 +2438,22 @@ export function useUser(id: string | undefined): User | MeProfile | undefined {
   if (!id) return undefined;
   if (id === "me") return me;
   return users[id];
+}
+
+const BIZ_CAT: Array<[RegExp, ShopCategory]> = [
+  [/ongl|nail/i, "nails"], [/coiff|hair|barb/i, "hair"], [/beaut|esth|spa|mode|fashion/i, "beauty"],
+  [/restau|food|traiteur/i, "restaurant"], [/plomb/i, "plumbing"], [/immo/i, "realty"],
+  [/boulang|pâtiss|patiss/i, "bakery"], [/caf/i, "cafe"], [/bijou|jewel/i, "jewelry"], [/maison|déco|deco/i, "home"],
+];
+function businessShop(
+  c: { name: string; category: string; city: string; logoUrl: string | null; publicId: string },
+  id: string,
+  ownerId: string,
+): Shop {
+  return {
+    id, name: c.name, ownerId, handle: c.publicId, bio: "", address: "", city: c.city, country: "", phone: "",
+    lat: 0, lng: 0, hours: "", plan: "vitrine", image: c.logoUrl ?? "", logo: c.logoUrl ?? undefined, photos: [],
+    code: "", qrToken: "", tags: [c.category],
+    category: BIZ_CAT.find(([r]) => r.test(c.category))?.[1] ?? "services",
+  };
 }

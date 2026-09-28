@@ -247,6 +247,7 @@ export function mergeServerChatsIntoState(
       manuallyUnreadAt: sc.manuallyUnreadAt ?? null,
       archived: vault ? Boolean(prev?.archived) : Boolean(sc.archivedAt),
       isRequest: false,
+      shopId: prev?.shopId,
     });
   }
   const chats = [

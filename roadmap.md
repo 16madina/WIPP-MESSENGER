@@ -29,3 +29,7 @@
 - [x] Carte de boutique : rapprocher la présentation du modèle fourni, rendre le QR lisible et garder Modifier/Partager visibles pour le propriétaire, y compris après enregistrement.
 - [x] Carte de boutique : trois actions Modifier, partage natif et téléchargement du QR ; logo WIPP fourni sous l'invitation à scanner.
 - [x] Explorer : afficher les boutiques publiées dans la recherche générale et dans Boutique, avec un message si le chargement échoue.
+
+## En cours (28 sept.)
+- [x] Conversations Boutiques : contexte pro sur la conversation, filtres, en-têtes, « Écrire sur WIPP », recherche « Rechercher une boutique »
+- [x] Petites annonces : bouton + et « Créer une annonce » dans Explorer, formulaire marketplace (neuf/utilisé…), annonces visibles dans Moi → Mes annonces

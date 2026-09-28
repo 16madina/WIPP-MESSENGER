@@ -1258,8 +1258,8 @@ export function MyActivityScreen({ kind }: { kind: "listings" | "events" | "save
         ))}
         {kind === "listings" ? (
           <div className="px-4 pt-4">
-            <Btn variant="secondary" className="w-full" onClick={() => push({ name: "explore" })}>
-              {t("hubListings")}
+            <Btn className="w-full" onClick={() => push({ name: "create-listing" })}>
+              Créer une annonce
             </Btn>
           </div>
         ) : null}

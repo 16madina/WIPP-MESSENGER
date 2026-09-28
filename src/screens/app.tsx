@@ -72,6 +72,7 @@ const PharmacyScreen = lazy(() => loadExplore().then((m) => ({ default: m.Pharma
 const ShopScreen = lazy(() => loadExplore().then((m) => ({ default: m.ShopScreen })));
 const CreateShopScreen = lazy(() => loadExplore().then((m) => ({ default: m.CreateShopScreen })));
 const LifestyleScreen = lazy(() => loadExplore().then((m) => ({ default: m.LifestyleScreen })));
+const CreateListingScreen = lazy(() => loadExplore().then((m) => ({ default: m.CreateListingScreen })));
 const CreateLifestyleScreen = lazy(() =>
   loadExplore().then((m) => ({ default: m.CreateLifestyleScreen })),
 );
@@ -281,6 +282,8 @@ function ScreenSwitch({ screen }: { screen: Screen }) {
       return <LifestyleScreen itemId={screen.itemId} />;
     case "create-lifestyle":
       return <CreateLifestyleScreen />;
+    case "create-listing":
+      return <CreateListingScreen />;
     case "e2e-info":
       return <E2eInfoScreen chatId={screen.chatId} />;
     default:

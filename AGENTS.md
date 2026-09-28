@@ -34,3 +34,5 @@
 - QR : QrCard génère un vrai QR (qrcode-generator, correction H) ; profil permanent résolu via wipp_public_profiles quand une session existe. Pourquoi : l'ancien motif décoratif n'était pas scannable.
 
 - Menu de message : MessageActionMenu regroupe réactions du pack moji et actions près de la bulle ; « Plus… » contient le reste. Pourquoi : chat visible, réactions WIPP cohérentes.
+- Conversations Boutiques : une seule conversation 1:1 avec `wipp_chats.business_card_id/business_owner_id` (écrits uniquement par openBusinessChat côté serveur, trigger de garde) ; l'app mappe ce contexte en boutique `business:<publicId>` sur `chat.shopId`. Pourquoi : pas de seconde messagerie, filtres existants réutilisés.
+- Petites annonces : créées localement via `createListing` du store (persistées sur l'appareil) en attendant une table serveur. Pourquoi : aucune table d'annonces dans le Supabase WiPP.
