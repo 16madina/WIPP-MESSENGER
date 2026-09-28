@@ -1198,7 +1198,7 @@ export function ConversationScreen({ chatId }: { chatId: string }) {
                       }
                     }}
                     onPointerCancel={() => { const g = swipe.current; swipe.current = null; if (g) g.el.style.transform = ""; }}
-                    onClick={() => {
+                    onClick={(e) => {
                       if (swallowClick.current) { swallowClick.current = false; return; }
                       if (m.type === "scratch") return;
                       if (mine && m.status === "failed") {
@@ -1215,6 +1215,7 @@ export function ConversationScreen({ chatId }: { chatId: string }) {
                         return;
                       }
                       if (m.type === "sticker" || m.type === "video") return;
+                      setActiveAnchor(e.currentTarget.getBoundingClientRect());
                       setActive(m);
                     }}
                     onKeyDown={(e) => {
@@ -1283,7 +1284,11 @@ export function ConversationScreen({ chatId }: { chatId: string }) {
                             size={isEmojiSticker(m.stickerId) ? 72 : 148}
                             animated
                             onceKey={m.id}
-                            onLongPress={() => setActive(m)}
+                            onLongPress={() => {
+                              const node = document.getElementById(`msg-${m.id}`);
+                              if (node) setActiveAnchor(node.getBoundingClientRect());
+                              setActive(m);
+                            }}
                           />
                         ) : null}
                         {m.type === "scratch" ? (
