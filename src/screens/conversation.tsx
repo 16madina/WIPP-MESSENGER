@@ -950,6 +950,15 @@ export function ConversationScreen({ chatId }: { chatId: string }) {
     { id: "comique", label: "Wippie Comique" },
     { id: "emo", label: "WippEMO" },
   ];
+  const familyHint = stickerTab === "moji"
+    ? "Les visages jaunes et noirs WIPP. Uniquement des emojis."
+    : stickerTab === "wippie"
+      ? "Personnages complets. Ils restent dans la conversation."
+      : stickerTab === "pop"
+        ? "Ils sortent de la bulle et bougent en grand dans le chat."
+        : stickerTab === "moment"
+          ? "Cadeaux : carte à gratter, confettis, compte à rebours."
+          : "";
   const shownStickers = stickerQuery.trim()
     ? WIPP_STICKERS.filter((s) => {
         const q = stickerQuery.trim().toLowerCase();
