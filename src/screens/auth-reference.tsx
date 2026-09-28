@@ -114,7 +114,7 @@ export function SmsReferenceScreen() {
     const result = await verifyPhoneCode(code);
     setBusy(false);
     if ("error" in result) { setError(result.error); return; }
-    if (result.phone !== pending.phone || result.idToken === "test-mode") { setError("Vérification impossible. Recommence."); return; }
+    if (result.phone !== pending.phone) { setError("Vérification impossible. Recommence."); return; }
     setVerifiedSignup(result);
     push({ name: "profile-reference" });
   }

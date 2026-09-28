@@ -101,52 +101,6 @@ export const signinPhone = createServerFn({ method: "POST" })
     return signIn(email, data.password);
   });
 
-/** TEMPORAIRE : indique si le mode démo est activé côté serveur. */
-export const devLoginAvailable = createServerFn({ method: "GET" }).handler(async () => !!process.env["WIPP_DEV_LOGIN"]);
-
-/** TEMPORAIRE (développement) : connexion sans SMS à un compte démo. À retirer avant publication. */
-export const devSignin = createServerFn({ method: "POST" }).handler(async (): Promise<Result> => {
-  if (!process.env["WIPP_DEV_LOGIN"]) return { ok: false, error: "Mode démo désactivé" };
-  const { admin, signIn } = await ctx();
-  const id = "u_demo";
-  const email = `${id}@users.wipp.app`;
-  const password = "wipp-demo-" + (process.env["SUPABASE_SERVICE_ROLE_KEY"] ?? "").slice(0, 8);
-  const { data: p } = await admin.from("wipp_profiles").select("id, auth_user_id").eq("id", id).maybeSingle();
-  if (!p) {
-    const { data: c, error } = await admin.auth.admin.createUser({ email, password, email_confirm: true });
-    if (error || !c.user) return { ok: false, error: "Création du compte démo impossible" };
-    const { error: pErr } = await admin.from("wipp_profiles").insert({ id, username: id, display_name: "Compte démo", password_hash: "", auth_user_id: c.user.id });
-    if (pErr) return { ok: false, error: "Création du profil démo impossible" };
-  }
-  return signIn(email, password);
-});
-
-/**
- * REMOVE BEFORE PRODUCTION — connexion DEV aux comptes de test wipp_test_a / wipp_test_b.
- * Aucun mot de passe dans le navigateur : un mot de passe aléatoire est posé côté serveur à
- * chaque appel puis oublié. Refusé si WIPP_DEV_LOGIN absent ou sur les domaines publiés.
- */
-const TEST_ACCOUNTS = { a: "wipp_test_a", b: "wipp_test_b" } as const;
-export const devSigninTest = createServerFn({ method: "POST" })
-  .inputValidator(parse(z.object({ who: z.enum(["a", "b"]) }), "Compte inconnu"))
-  .handler(async ({ data }): Promise<Result> => {
-    if (!process.env["WIPP_DEV_LOGIN"]) return { ok: false, error: "Mode test désactivé" };
-    const { getRequestHeader } = await import("@tanstack/react-start/server");
-    const host = (getRequestHeader("x-forwarded-host") ?? getRequestHeader("host") ?? "").toLowerCase();
-    if (/(^|\.)wippapp\.com$|wipp-connect-chat\.lovable\.app$/.test(host.split(":")[0])) return { ok: false, error: "Indisponible" };
-    const { admin, signIn, emailOf } = await ctx();
-    const { data: p } = await admin.from("wipp_profiles").select("auth_user_id").eq("username", TEST_ACCOUNTS[data.who]).maybeSingle();
-    if (!p?.auth_user_id) return { ok: false, error: "Compte de test absent" };
-    const email = await emailOf(p.auth_user_id);
-    if (!email) return { ok: false, error: "Compte de test absent" };
-    const b = crypto.getRandomValues(new Uint8Array(24));
-    const password = btoa(String.fromCharCode(...b));
-    const { error } = await admin.auth.admin.updateUserById(p.auth_user_id, { password });
-    if (error) return { ok: false, error: "Connexion impossible" };
-    return signIn(email, password);
-  });
-
-
 /** Mot de passe oublié : le numéro est re-vérifié par SMS, puis nouveau mot de passe. */
 export const resetPasswordPhone = createServerFn({ method: "POST" })
   .inputValidator(parse(z.object({ idToken: z.string().min(20), password: Password }), "Mot de passe (8 caractères min.) invalide"))
