@@ -204,15 +204,17 @@ export function LegalCheckbox({
   checked,
   onToggle,
   onOpenPolicy,
+  singleLine,
   className,
 }: {
   checked: boolean;
   onToggle: (checked: boolean) => void;
   onOpenPolicy?: () => void;
+  singleLine?: boolean;
   className?: string;
 }) {
   return (
-    <label className={cn("flex cursor-pointer select-none items-start gap-2 py-1", className)}>
+    <label className={cn("flex cursor-pointer select-none items-start gap-2 py-0.5", className)}>
       <span className="relative mt-px flex size-4 shrink-0 items-center justify-center">
         <input
           type="checkbox"
@@ -230,7 +232,7 @@ export function LegalCheckbox({
           {checked ? <Check className="size-3 text-wipp-accent-fg" strokeWidth={3} /> : null}
         </span>
       </span>
-      <span className="text-[11px] leading-[1.35] text-wipp-muted">
+      <span className={cn("text-[10px] leading-[1.3] text-wipp-muted", singleLine && "whitespace-nowrap")}>
         En continuant, tu acceptes les{" "}
         <button
           type="button"
