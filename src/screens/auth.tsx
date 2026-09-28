@@ -26,9 +26,7 @@ import {
   pendingPassword,
   pendingPhone,
   startPhoneCode,
-  startTestCode,
   setVerifiedSignup,
-  isTestPhone,
   verifyPhoneCode,
 } from "@/lib/auth-flow";
 import { resetPasswordPhone, signinPhone } from "@/lib/auth.functions";
@@ -97,18 +95,14 @@ export function SignupScreen() {
       return;
     }
     setNeedAccept(false);
-    // REMOVE BEFORE PRODUCTION — mode démo.
-    const isTest = isTestPhone(phone);
-    if (!isTest && password.length < 8) {
+    if (password.length < 8) {
       setWeakPassword(true);
       return;
     }
     setWeakPassword(false);
     setBusy(true);
     setErr(null);
-    const smsErr = isTest
-      ? (startTestCode(phone.trim(), "signup", password), null)
-      : await startPhoneCode(`${country.dial}${phone}`, "signup", password);
+    const smsErr = await startPhoneCode(`${country.dial}${phone}`, "signup", password);
     setBusy(false);
     if (smsErr) {
       setErr(smsErr);
@@ -392,13 +386,6 @@ export function LoginScreen() {
   async function tryLogin() {
     setBusy(true);
     setErr(null);
-    // REMOVE BEFORE PRODUCTION — mode démo.
-    if (isTestPhone(phone)) {
-      startTestCode(phone.trim(), "signup");
-      setBusy(false);
-      push({ name: "otp" });
-      return;
-    }
     const { toE164 } = await import("@/lib/firebase-phone");
     const e164 = toE164(`${country.dial}${phone}`);
     if (!e164) {
@@ -488,24 +475,6 @@ export function LoginScreen() {
         >
           {t("forgotPassword")}
         </button>
-        {import.meta.env.DEV ? (
-          /* REMOVE BEFORE PRODUCTION — accès DEV aux comptes de test (aucun mot de passe côté navigateur). */
-          <div className="mt-4 grid grid-cols-2 gap-2" aria-label="Comptes de test (dev)">
-            {(["a", "b"] as const).map((who) => (
-              <button key={who} type="button" disabled={busy}
-                className="h-11 rounded-xl bg-surface text-[12px] text-muted hairline"
-                onClick={async () => {
-                  setBusy(true); setErr(null);
-                  const { devSigninTest } = await import("@/lib/auth.functions");
-                  const res = await devSigninTest({ data: { who } });
-                  if (!res.ok) { setBusy(false); setErr(res.error); return; }
-                  await enterWithSession(res.accessToken, res.refreshToken);
-                }}>
-                DEV · wipp_test_{who}
-              </button>
-            ))}
-          </div>
-        ) : null}
         <button
           type="button"
           className="mx-auto mt-3 block text-[13px] text-muted"
@@ -526,9 +495,7 @@ export function OtpScreen() {
   const pending = useWgoStore((s) => s.pendingSignup);
   const phone = pendingPhone() ?? pending.phone ?? "";
   const mode = pendingMode() ?? "signup";
-  // REMOVE BEFORE PRODUCTION — mode démo.
-  const isTest = isTestPhone(phone);
-  const codeLen = isTest ? 4 : 6;
+  const codeLen = 6;
   const [code, setCode] = useState("");
   const [err, setErr] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -542,13 +509,6 @@ export function OtpScreen() {
     if ("error" in res) {
       setBusy(false);
       setErr(res.error);
-      return;
-    }
-    // REMOVE BEFORE PRODUCTION — session démo sans Firebase.
-    if (res.idToken === "test-mode") {
-      clearPending();
-      useWgoStore.getState().openDemo();
-      setBusy(false);
       return;
     }
     if (mode === "reset") {
@@ -630,13 +590,11 @@ export function OtpScreen() {
           {Array.from({ length: codeLen }).map((_, i) => (
             <input
               key={i}
-              inputMode={isTest ? "text" : "numeric"}
+               inputMode="numeric"
               maxLength={1}
               value={code[i] ?? ""}
               onChange={(e) => {
-                const v = isTest
-                  ? e.target.value.slice(-1)
-                  : e.target.value.replace(/\D/g, "").slice(-1);
+                 const v = e.target.value.replace(/\D/g, "").slice(-1);
                 const chars = code.split("");
                 chars[i] = v;
                 submit(chars.join("").slice(0, codeLen));
