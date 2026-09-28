@@ -7,6 +7,8 @@ import { Btn, Field, Header, IconBtn, Row, SearchField, Section, Sheet, StatusBa
 import { authHeaders, cardLink, type SavedBusinessCard, uploadBusinessImage } from "@/lib/business-card";
 import { getMyBusinessCard, getPublicBusinessCard, saveMyBusinessCard } from "@/lib/business-card.functions";
 import { providers } from "@/lib/providers";
+import { CountryList } from "@/components/country-list";
+import { COUNTRIES } from "@/lib/countries";
 import { businessQr } from "@/lib/qr-resolver";
 import { useWgoStore } from "@/lib/store";
 
@@ -72,8 +74,10 @@ export function BusinessCardEditorScreen() {
         <Field label="Horaires (facultatifs)" value={draft.hours} placeholder="Lun–Sam · 10 h–19 h" onChange={(e)=>set("hours",e.target.value)}/><Field label="Téléphone professionnel (facultatif)" value={draft.businessPhone} inputMode="tel" onChange={(e)=>set("businessPhone",e.target.value)}/><p className="-mt-2 text-[11px] text-paper/45">Ton numéro personnel WIPP n’est jamais utilisé.</p><Field label="Site web (facultatif)" value={draft.website} placeholder="www.monactivite.ca" onChange={(e)=>set("website",e.target.value)}/>
       </div>
       <div className="mt-5"><p className="mb-2 text-[12px] text-paper/60">Photos de l’activité · {draft.photoUrls.length}/8</p><div className="flex gap-2 overflow-x-auto">{draft.photoUrls.map((url,i)=><SmartImg key={url} src={url} alt="" className="h-20 w-24 shrink-0 rounded-xl object-cover"/>)}{draft.photoUrls.length<8?<ImageInput label="Ajouter" onPick={(f)=>void pick(f,"photo")} compact/>:null}</div></div>
-      {error?<p className="mt-4 text-[12px] text-danger">{error}</p>:null}<Btn className="mt-6 w-full" disabled={busy||!draft.name.trim()||!draft.city.trim()} onClick={()=>void save()}>{busy?"Enregistrement…":"Enregistrer"}</Btn>
-    </div></div>;
+{error?<p className="mt-4 text-[12px] text-danger">{error}</p>:null}<Btn className="mt-6 w-full" disabled={busy||!draft.name.trim()||!draft.city.trim()} onClick={()=>void save()}>{busy?"Enregistrement…":"Enregistrer"}</Btn>
+    </div>
+    <Sheet open={countryPicker} onClose={()=>setCountryPicker(false)} title="Choisir un pays"><CountryList onPick={(c)=>{set("country",c.fr);setCountryPicker(false);}}/></Sheet>
+    </div>;
 }
 
 function ImageInput({label,value,onPick,wide,compact}:{label:string;value?:string|null;onPick:(file:File|undefined)=>void;wide?:boolean;compact?:boolean}){ const ref=useRef<HTMLInputElement>(null); return <><input ref={ref} type="file" accept="image/*" className="hidden" onChange={(e)=>onPick(e.target.files?.[0])}/><button type="button" onClick={()=>ref.current?.click()} className={wide?"relative h-36 w-full overflow-hidden rounded-2xl bg-navy ring-1 ring-paper/10":compact?"flex h-20 w-20 shrink-0 items-center justify-center rounded-xl bg-navy ring-1 ring-paper/10":"relative flex size-20 items-center justify-center overflow-hidden rounded-full bg-navy ring-2 ring-accent"}>{value?<SmartImg src={value} alt="" className="size-full object-cover"/>:<ImagePlus className="size-6 text-accent"/>}<span className="absolute inset-x-0 bottom-0 bg-ink/70 py-1 text-center text-[10px] text-paper">{label}</span></button></> }
