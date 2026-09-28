@@ -53,7 +53,7 @@ export function MessageActionMenu({ anchor, container, reactions, actions, onClo
         <motion.div
           role="group"
           aria-label="Réactions"
-          className="glass-menu absolute flex h-12 max-w-[calc(100%-32px)] items-center justify-around gap-0.5 rounded-full px-1"
+          className="absolute flex h-12 max-w-[calc(100%-32px)] items-center justify-around gap-0.5 rounded-full border border-wipp-glass-border bg-wipp-elevated px-1 shadow-lift"
           style={{ top: reactionTop, left, width: Math.min(width + 32, bounds.width - 32) }}
           initial={{ opacity: 0, scale: 0.94 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -67,7 +67,7 @@ export function MessageActionMenu({ anchor, container, reactions, actions, onClo
       <motion.div
         role="menu"
         aria-label={expanded ? "Plus d’actions" : "Actions du message"}
-        className="glass-menu absolute overflow-hidden rounded-[14px] text-wipp-fg"
+        className="absolute overflow-hidden rounded-[14px] border border-wipp-glass-border bg-wipp-elevated text-wipp-fg shadow-lift"
         style={{ top, left, width }}
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
