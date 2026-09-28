@@ -56,7 +56,7 @@ import { formatClock, formatDuration, formatLastSeen, formatRemain } from "@/lib
 import { haptic } from "@/lib/haptics";
 import { SHOP_CAT_KEYS } from "@/lib/i18n";
 import { isEmojiSticker } from "@/lib/emoji";
-import { isStickerId, stickerById, stickerLabel, stickersInPack, WIPP_STICKERS } from "@/lib/stickers";
+import { isStickerId, stickerById, stickerLabel, stickersInPack, STICKER_PACKS, WIPP_STICKERS, type StickerPackId } from "@/lib/stickers";
 import { createVoiceRecorder, type VoiceRecorder } from "@/lib/voice-recorder";
 import { isChatSealed, useT, useWgoStore } from "@/lib/store";
 import { DISAPPEAR_24H, DISAPPEAR_7D } from "@/lib/types";
@@ -76,7 +76,7 @@ const REACTS = ["moji-06", "moji-02", "moji-24", "moji-08", "moji-07", "moji-13"
 const EMPTY_MSGS: Message[] = [];
 const seenFx = new Set<string>();
 
-type StickerTab = "recent" | "emoji" | "expressions" | "love" | "fun" | "famille" | "scene" | "wipp" | "ani" | "gif";
+type StickerTab = "recent" | "all" | "emoji" | StickerPackId | "gif";
 
 type VoicePhase = "recording" | "paused" | "preview";
 
@@ -335,7 +335,7 @@ export function ConversationScreen({ chatId }: { chatId: string }) {
     setGifs(loadGifs());
   }, []);
   const [pickStickers, setPickStickers] = useState(false);
-  const [stickerTab, setStickerTab] = useState<StickerTab>("scene");
+  const [stickerTab, setStickerTab] = useState<StickerTab>("all");
   const [burst, setBurst] = useState<string | null>(null);
   const [menu, setMenu] = useState(false);
   const [disappearOpen, setDisappearOpen] = useState(false);
@@ -898,34 +898,26 @@ export function ConversationScreen({ chatId }: { chatId: string }) {
   const unreadCount = chat.unread;
   const trayTabs: { id: StickerTab; label: string }[] = [
     { id: "recent", label: t("recents") },
+    { id: "all", label: "Tout" },
     { id: "emoji", label: "Wippmojis" },
-    { id: "expressions", label: t("stickerTabExpressions") },
-    { id: "love", label: t("stickerTabLove") },
+    { id: "mojiClassic", label: "Wippmojis classiques" },
+    { id: "elle", label: "Elle" },
+    { id: "lui", label: "Lui" },
     { id: "fun", label: "Fun" },
-    { id: "famille", label: t("stickerTabFamille") },
-    { id: "scene", label: t("stickerTabScenes") },
-    { id: "wipp", label: "WIPP" },
+    { id: "fun2", label: "Fun 2" },
+    { id: "sig", label: "WIPP" },
+    { id: "scene", label: "Scènes" },
+    { id: "general", label: "Général" },
     { id: "ani", label: "AniWipp" },
     { id: "gif", label: "GIF" },
   ];
-  const stickerPool =
-    stickerTab === "expressions"
-      ? stickersInPack("fun")
-      : stickerTab === "fun"
-        ? stickersInPack("fun2")
-        : stickerTab === "famille"
-          ? stickersInPack("elle")
-          : stickerTab === "wipp"
-            ? stickersInPack("sig")
-            : stickerTab === "scene"
-              ? stickersInPack("scene")
-      : stickerTab === "love"
-              ? WIPP_STICKERS.filter((s) => /bisou|merci|bravo|matin|nuit/.test(s.id))
-              : stickerTab === "ani"
-                ? stickersInPack("ani")
-              : stickerTab === "gif"
-                ? WIPP_STICKERS.filter((s) => s.anim)
-                : [];
+  const stickerPool = stickerTab === "all"
+    ? WIPP_STICKERS
+    : stickerTab === "emoji"
+      ? stickersInPack("moji")
+      : stickerTab in STICKER_PACKS
+        ? stickersInPack(stickerTab as StickerPackId)
+        : [];
   const shownStickers = stickerQuery.trim()
     ? WIPP_STICKERS.filter((s) => {
         const q = stickerQuery.trim().toLowerCase();
@@ -1752,7 +1744,7 @@ export function ConversationScreen({ chatId }: { chatId: string }) {
                           key={tab.id}
                           type="button"
                           className={cn(
-                            "h-8 shrink-0 rounded-full px-3 text-[12px] font-semibold",
+                            "min-h-11 shrink-0 rounded-full px-3 text-[12px] font-semibold",
                             on ? "bg-accent text-accent-fg" : "bg-navy/50 text-muted",
                           )}
                           onClick={() => {
@@ -1810,20 +1802,6 @@ export function ConversationScreen({ chatId }: { chatId: string }) {
                             Tes GIF restent sur ton téléphone. Importe-en un pour commencer.
                           </p>
                         ) : null}
-                      </div>
-                    ) : stickerTab === "emoji" && !stickerQuery ? (
-                      <div className="grid grid-cols-4 gap-1.5">
-                        {stickersInPack("moji").map((s) => (
-                          <button
-                            key={s.id}
-                            type="button"
-                            className="press flex aspect-square items-center justify-center rounded-2xl bg-navy/40"
-                            aria-label={lang === "fr" ? s.labelFr : s.labelEn}
-                            onClick={() => sendSticker(s.id, lang === "fr" ? s.labelFr : s.labelEn)}
-                          >
-                            <WippSticker id={s.id} size={64} />
-                          </button>
-                        ))}
                       </div>
                     ) : (
                       <div className="grid grid-cols-4 gap-1.5">
