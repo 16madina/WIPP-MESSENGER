@@ -2051,6 +2051,7 @@ export function CreateListingScreen() {
           label={photos.length ? `Photos (${photos.length}/8)` : "Ajouter des photos"}
           value={photos}
           multiple
+          max={8}
           onPick={(v) => setPhotos((Array.isArray(v) ? v : [v]).filter(Boolean).slice(0, 8))}
         />
         <p className="mt-5 text-[12px] font-medium uppercase tracking-wide text-muted">Catégorie</p>
