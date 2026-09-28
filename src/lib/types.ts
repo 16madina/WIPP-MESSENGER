@@ -131,6 +131,8 @@ export type ScreenName =
   | "notifications"
   | "appearance"
   | "business-card"
+  | "business-card-editor"
+  | "business-card-view"
   | "admin"
   | "devices"
   | "language"
@@ -199,6 +201,8 @@ export type Screen =
   | { name: "notifications" }
   | { name: "appearance" }
   | { name: "business-card" }
+  | { name: "business-card-editor" }
+  | { name: "business-card-view"; publicId: string }
   | { name: "admin" }
   | { name: "devices" }
   | { name: "language" }

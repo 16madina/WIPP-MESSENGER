@@ -302,6 +302,7 @@ export function ScannerScreen() {
           else if (d.kind === "remote-profile") replace({ name: "qr-profile", key: stashHandoff({ kind: "profile", profile: d.profile, connected: d.connected }) });
           else if (d.kind === "remote-group") replace({ name: "qr-group", key: stashHandoff({ kind: "group", token: d.token, name: d.name, members: d.members, member: d.member }) });
           else if (d.kind === "group") replace({ name: "group-invite", token: d.token });
+          else if (d.shopId.startsWith("business:")) replace({ name: "business-card-view", publicId: d.shopId.slice(9) });
           else replace({ name: "shop", shopId: d.shopId });
         }}
       />

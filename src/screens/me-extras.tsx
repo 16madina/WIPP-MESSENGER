@@ -1,28 +1,96 @@
-import { Check, Monitor, Smartphone, Tag } from "lucide-react";
-import { Header, Row, Section, StatusBar } from "@/components/ui";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Camera, Check, Clock, Copy, Globe, ImagePlus, MapPin, MessageCircle, Monitor, Pencil, QrCode, Share2, Smartphone, Store, Tag } from "lucide-react";
+import { Avatar } from "@/components/avatar";
+import { QrCard } from "@/components/qr-card";
+import { SmartImg } from "@/components/smart-img";
+import { Btn, Field, Header, IconBtn, Row, SearchField, Section, Sheet, StatusBar, Toggle } from "@/components/ui";
+import { authHeaders, cardLink, type SavedBusinessCard, uploadBusinessImage } from "@/lib/business-card";
+import { getMyBusinessCard, getPublicBusinessCard, saveMyBusinessCard } from "@/lib/business-card.functions";
+import { providers } from "@/lib/providers";
+import { businessQr } from "@/lib/qr-resolver";
 import { useWgoStore } from "@/lib/store";
 
-/** Carte de visite WIPP — UI uniquement : aucune donnée backend de carte pro n'existe encore. */
 export function BusinessCardScreen() {
   const pop = useWgoStore((s) => s.pop);
-  const me = useWgoStore((s) => s.me);
+  const push = useWgoStore((s) => s.push);
+  const [card, setCard] = useState<SavedBusinessCard | null | undefined>(undefined);
+  const [error, setError] = useState("");
+  useEffect(() => { void (async () => {
+    try { const result = await getMyBusinessCard({ headers: await authHeaders() } as never); setCard(result.card); }
+    catch { setCard(null); setError("Connecte-toi pour créer ta carte professionnelle."); }
+  })(); }, []);
   return (
-    <div className="flex h-full flex-col">
+    <div className="flex h-full flex-col bg-ink text-paper">
       <StatusBar />
-      <Header title="Ma carte de visite" onBack={pop} />
-      <div className="px-5 pt-4">
-        <div className="rounded-3xl bg-surface p-5 shadow-sm">
-          <Tag className="size-6 text-accent" />
-          <p className="mt-3 text-[17px] font-semibold">{me?.displayName || "Ton nom"}</p>
-          <p className="text-[14px] text-muted">Activité · Ville</p>
-        </div>
-        <p className="mt-4 text-[13px] leading-relaxed text-muted">
-          Aperçu seulement : la carte de visite professionnelle n'est pas encore enregistrée sur ton compte.
-        </p>
-      </div>
+      <Header title="Ma carte de visite" onBack={pop} className="text-paper [&_button]:text-paper" />
+      {card === undefined ? <div className="flex flex-1 items-center justify-center"><span className="size-7 animate-spin rounded-full border-2 border-paper/20 border-t-accent" /></div> : null}
+      {card ? <BusinessCard card={card} owner onEdit={() => push({ name: "business-card-editor" })} /> : null}
+      {card === null ? <BusinessIntro error={error} onCreate={() => push({ name: "business-card-editor" })} /> : null}
     </div>
   );
 }
+
+function BusinessIntro({ error, onCreate }: { error?: string; onCreate: () => void }) {
+  const benefits = [
+    [Camera, "Présente ton activité", "Photos, description, horaires…"],
+    [QrCode, "Partage ton QR professionnel", "À imprimer ou à partager sur WIPP."],
+    [MessageCircle, "Reçois des messages sur WIPP", "Les personnes te contactent directement."],
+  ] as const;
+  return <div className="flex min-h-0 flex-1 flex-col overflow-y-auto px-5 pb-8 pt-7">
+    <div className="mx-auto flex size-20 items-center justify-center rounded-2xl bg-accent/10 text-accent"><Store className="size-10" /></div>
+    <h1 className="mt-7 text-[29px] font-semibold leading-[1.04]">Crée ta carte<br/><span className="text-accent">professionnelle</span></h1>
+    <p className="mt-4 text-[15px] leading-relaxed text-paper/60">Fais découvrir ton activité sur WIPP et permets aux gens de te contacter sans partager ton numéro personnel.</p>
+    <div className="mt-6 overflow-hidden rounded-2xl bg-navy ring-1 ring-paper/8">
+      {benefits.map(([Icon, title, sub]) => <div key={title} className="flex min-h-[68px] items-center gap-3 border-b border-paper/8 px-4 last:border-0"><Icon className="size-5 shrink-0 text-accent"/><div><p className="text-[14px] font-medium">{title}</p><p className="mt-0.5 text-[12px] text-paper/50">{sub}</p></div></div>)}
+    </div>
+    {error ? <p className="mt-3 text-[12px] text-danger">{error}</p> : null}
+    <Btn className="mt-5 w-full" onClick={onCreate}>Créer ma carte de visite <span aria-hidden>→</span></Btn>
+  </div>;
+}
+
+type Draft = { name:string; category:string; description:string; country:string; city:string; address:string; showAddress:boolean; hours:string; businessPhone:string; website:string; coverPath:string|null; logoPath:string|null; photoPaths:string[]; coverUrl:string|null; logoUrl:string|null; photoUrls:string[] };
+const emptyDraft: Draft = { name:"", category:"Mode & accessoires", description:"", country:"Canada", city:"", address:"", showAddress:false, hours:"", businessPhone:"", website:"", coverPath:null, logoPath:null, photoPaths:[], coverUrl:null, logoUrl:null, photoUrls:[] };
+
+export function BusinessCardEditorScreen() {
+  const pop = useWgoStore((s) => s.pop); const replace = useWgoStore((s) => s.replace);
+  const [profileId, setProfileId] = useState(""); const [draft, setDraft] = useState<Draft>(emptyDraft); const [preview, setPreview] = useState(false);
+  const [busy, setBusy] = useState(true); const [error, setError] = useState("");
+  useEffect(() => { void (async () => { try { const r = await getMyBusinessCard({ headers: await authHeaders() } as never); setProfileId(r.profileId); if (r.card) setDraft({ name:r.card.name, category:r.card.category, description:r.card.description, country:r.card.country, city:r.card.city, address:r.card.address ?? "", showAddress:r.card.showAddress, hours:r.card.hours ?? "", businessPhone:r.card.businessPhone ?? "", website:r.card.website ?? "", coverPath:r.card.coverPath, logoPath:r.card.logoPath, photoPaths:r.card.photoPaths, coverUrl:r.card.coverUrl, logoUrl:r.card.logoUrl, photoUrls:r.card.photoUrls }); } catch (e) { setError(e instanceof Error ? e.message : "Erreur"); } finally { setBusy(false); } })(); }, []);
+  const set = <K extends keyof Draft>(key: K, value: Draft[K]) => setDraft((d) => ({ ...d, [key]: value }));
+  async function pick(file: File | undefined, role: "cover"|"logo"|"photo") { if (!file || !profileId) return; setBusy(true); try { const media = await uploadBusinessImage(profileId,file,role); if(role==="cover"){set("coverPath",media.path);set("coverUrl",media.url);} else if(role==="logo"){set("logoPath",media.path);set("logoUrl",media.url);} else {set("photoPaths",[...draft.photoPaths,media.path].slice(0,8));set("photoUrls",[...draft.photoUrls,media.url].slice(0,8));} } catch(e){setError(e instanceof Error?e.message:"Erreur");} finally{setBusy(false);} }
+  async function save(){ setBusy(true); setError(""); try { const card=await saveMyBusinessCard({ data:{ name:draft.name,category:draft.category,description:draft.description,country:draft.country,city:draft.city,address:draft.address||null,showAddress:draft.showAddress,hours:draft.hours||null,businessPhone:draft.businessPhone||null,website:draft.website||null,coverPath:draft.coverPath,logoPath:draft.logoPath,photoPaths:draft.photoPaths }, headers:await authHeaders() } as never); replace({name:"business-card-view",publicId:card.publicId}); } catch(e){setError(e instanceof Error?e.message:"Enregistrement impossible");} finally{setBusy(false);} }
+  if (busy && !profileId) return <div className="flex h-full items-center justify-center bg-ink"><span className="size-7 animate-spin rounded-full border-2 border-paper/20 border-t-accent" /></div>;
+  if (preview) return <div className="flex h-full flex-col bg-ink text-paper"><StatusBar/><Header title="Aperçu" onBack={()=>setPreview(false)} className="text-paper [&_button]:text-paper"/><BusinessCard card={{...draft,id:"preview",publicId:"apercu",ownerProfileId:profileId,isPublished:false}} owner onEdit={()=>setPreview(false)} onSave={save}/></div>;
+  return <div className="flex h-full flex-col bg-ink text-paper"><StatusBar/><Header title="Modifier ma carte" onBack={pop} right={<Btn className="h-9 min-h-9 rounded-full px-4 text-[13px]" disabled={!draft.name.trim()||!draft.city.trim()} onClick={()=>setPreview(true)}>Aperçu</Btn>} className="text-paper [&_button]:text-paper"/>
+    <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-8">
+      <ImageInput label="Photo de couverture" value={draft.coverUrl} onPick={(f)=>void pick(f,"cover")} wide />
+      <div className="mt-4"><ImageInput label="Logo ou photo professionnelle" value={draft.logoUrl} onPick={(f)=>void pick(f,"logo")} /></div>
+      <div className="mt-4 grid gap-3"><Field label="Nom de l’activité *" value={draft.name} onChange={(e)=>set("name",e.target.value)}/>
+        <label className="block"><span className="mb-1.5 block text-[12px] font-medium text-paper/60">Catégorie *</span><select value={draft.category} onChange={(e)=>set("category",e.target.value)} className="h-12 w-full rounded-md bg-navy px-4 text-[15px] outline-none ring-1 ring-paper/10">{["Mode & accessoires","Beauté","Coiffure","Restaurant","Services professionnels","Immobilier","Construction","Santé & bien-être","Créateur / média","Autre"].map(x=><option key={x}>{x}</option>)}</select></label>
+        <Field label="Description" value={draft.description} onChange={(e)=>set("description",e.target.value)}/><Field label="Pays *" value={draft.country} onChange={(e)=>set("country",e.target.value)}/><Field label="Ville *" value={draft.city} onChange={(e)=>set("city",e.target.value)}/><Field label="Adresse (facultative)" value={draft.address} onChange={(e)=>set("address",e.target.value)}/>
+        <div className="flex items-center justify-between rounded-xl bg-navy px-4 py-1 ring-1 ring-paper/8"><span className="text-[13px]">Publier l’adresse précise</span><Toggle checked={draft.showAddress} onChange={(v)=>set("showAddress",v)} /></div>
+        <Field label="Horaires (facultatifs)" value={draft.hours} placeholder="Lun–Sam · 10 h–19 h" onChange={(e)=>set("hours",e.target.value)}/><Field label="Téléphone professionnel (facultatif)" value={draft.businessPhone} inputMode="tel" onChange={(e)=>set("businessPhone",e.target.value)}/><p className="-mt-2 text-[11px] text-paper/45">Ton numéro personnel WIPP n’est jamais utilisé.</p><Field label="Site web (facultatif)" value={draft.website} placeholder="www.monactivite.ca" onChange={(e)=>set("website",e.target.value)}/>
+      </div>
+      <div className="mt-5"><p className="mb-2 text-[12px] text-paper/60">Photos de l’activité · {draft.photoUrls.length}/8</p><div className="flex gap-2 overflow-x-auto">{draft.photoUrls.map((url,i)=><SmartImg key={url} src={url} alt="" className="h-20 w-24 shrink-0 rounded-xl object-cover"/>)}{draft.photoUrls.length<8?<ImageInput label="Ajouter" onPick={(f)=>void pick(f,"photo")} compact/>:null}</div></div>
+      {error?<p className="mt-4 text-[12px] text-danger">{error}</p>:null}<Btn className="mt-6 w-full" disabled={busy||!draft.name.trim()||!draft.city.trim()} onClick={()=>void save()}>{busy?"Enregistrement…":"Enregistrer"}</Btn>
+    </div></div>;
+}
+
+function ImageInput({label,value,onPick,wide,compact}:{label:string;value?:string|null;onPick:(file:File|undefined)=>void;wide?:boolean;compact?:boolean}){ const ref=useRef<HTMLInputElement>(null); return <><input ref={ref} type="file" accept="image/*" className="hidden" onChange={(e)=>onPick(e.target.files?.[0])}/><button type="button" onClick={()=>ref.current?.click()} className={wide?"relative h-36 w-full overflow-hidden rounded-2xl bg-navy ring-1 ring-paper/10":compact?"flex h-20 w-20 shrink-0 items-center justify-center rounded-xl bg-navy ring-1 ring-paper/10":"relative flex size-20 items-center justify-center overflow-hidden rounded-full bg-navy ring-2 ring-accent"}>{value?<SmartImg src={value} alt="" className="size-full object-cover"/>:<ImagePlus className="size-6 text-accent"/>}<span className="absolute inset-x-0 bottom-0 bg-ink/70 py-1 text-center text-[10px] text-paper">{label}</span></button></> }
+
+export function BusinessCardViewScreen({ publicId }: { publicId: string }) { const pop=useWgoStore((s)=>s.pop); const [card,setCard]=useState<SavedBusinessCard|null|undefined>(); useEffect(()=>{void getPublicBusinessCard({data:{publicId}}).then(setCard).catch(()=>setCard(null));},[publicId]); return <div className="flex h-full flex-col bg-ink text-paper"><StatusBar/><Header title="Carte professionnelle" onBack={pop} className="text-paper [&_button]:text-paper"/>{card?<BusinessCard card={card}/>:card===null?<p className="px-6 pt-10 text-center text-paper/60">Cette carte n’est pas disponible.</p>:null}</div> }
+
+function BusinessCard({card,owner,onEdit,onSave}:{card:SavedBusinessCard;owner?:boolean;onEdit?:()=>void;onSave?:()=>void}) { const push=useWgoStore((s)=>s.push); const users=useWgoStore((s)=>s.users); const chats=useWgoStore((s)=>s.chats); const sendMessage=useWgoStore((s)=>s.sendMessage); const [share,setShare]=useState(false); const [q,setQ]=useState(""); const link=cardLink(card.publicId); const qr=businessQr(card.publicId); const contacts=useMemo(()=>chats.filter(c=>c.type==="dm").map(c=>{const id=c.participantIds.find(x=>x!=="me");return id?{chat:c,user:users[id]}:null}).filter((x):x is NonNullable<typeof x>=>Boolean(x?.user)).filter(x=>`${x.user.displayName} ${x.user.username}`.toLowerCase().includes(q.toLowerCase())).slice(0,8),[chats,users,q]);
+  const shareTo=(chatId:string)=>{sendMessage(chatId,{type:"shop",text:card.name,shopId:`business:${card.publicId}`});setShare(false);};
+  return <div className="min-h-0 flex-1 overflow-y-auto pb-8"><div className="relative h-48 bg-navy">{card.coverUrl?<SmartImg src={card.coverUrl} alt="" className="size-full object-cover"/>:<div className="flex size-full items-center justify-center"><Store className="size-12 text-accent/60"/></div>}</div><div className="relative -mt-8 px-4"><div className="rounded-2xl bg-navy p-4 ring-1 ring-paper/10"><div className="flex gap-3">{card.logoUrl?<SmartImg src={card.logoUrl} alt="" className="size-20 rounded-full object-cover ring-2 ring-accent"/>:<div className="flex size-20 items-center justify-center rounded-full bg-ink text-2xl font-semibold text-accent ring-2 ring-accent">{card.name.slice(0,2).toUpperCase()}</div>}<div className="min-w-0 pt-2"><h1 className="truncate text-[20px] font-semibold">{card.name}</h1><p className="text-[12px] text-paper/55">{card.category}</p><p className="mt-2 text-[13px] text-paper/75">{card.description}</p></div></div><div className="mt-4 space-y-2">{card.address?<Info icon={MapPin}>{card.address}<br/>{card.city}, {card.country}</Info>:<Info icon={MapPin}>{card.city}, {card.country}</Info>}{card.hours?<Info icon={Clock}>{card.hours}</Info>:null}{card.website?<Info icon={Globe}>{card.website}</Info>:null}</div></div>
+    {card.photoUrls.length?<div className="mt-3 flex gap-2 overflow-x-auto">{card.photoUrls.map(url=><SmartImg key={url} src={url} alt="" className="h-24 w-28 shrink-0 rounded-xl object-cover"/>)}</div>:null}
+    <div className="mt-4 flex items-center gap-3 rounded-2xl bg-navy p-3 ring-1 ring-paper/8"><QrCard value={qr} size={112} pad={5} markSrc={card.logoUrl??undefined}/><div><p className="text-[14px] font-medium">QR professionnel</p><p className="mt-1 text-[12px] text-paper/50">Scannez pour découvrir cette activité sur WIPP.</p></div></div>
+    <div className="mt-4 grid grid-cols-3 gap-2">{owner?<><Btn variant="secondary" onClick={onEdit}><Pencil className="size-4"/>Modifier</Btn><Btn variant="secondary" onClick={()=>setShare(true)}><Share2 className="size-4"/>Partager</Btn><Btn variant="secondary" onClick={()=>setShare(true)}><QrCode className="size-4"/>Mon QR</Btn></>:<><Btn className="col-span-2" onClick={()=>push({name:"search-user"})}><MessageCircle className="size-4"/>Écrire sur WIPP</Btn><IconBtn label="Partager" className="rounded-lg bg-paper/10 text-paper" onClick={()=>setShare(true)}><Share2 className="size-5"/></IconBtn></>}</div>{onSave?<Btn className="mt-3 w-full" onClick={onSave}>Enregistrer cette carte</Btn>:null}</div>
+    <Sheet open={share} onClose={()=>setShare(false)} title="Partager ma carte"><SearchField value={q} onChange={(e)=>setQ(e.target.value)} placeholder="Rechercher un contact"/><div className="mt-3 flex gap-3 overflow-x-auto">{contacts.slice(0,5).map(({chat,user})=><button key={chat.id} type="button" className="w-14 shrink-0 text-center" onClick={()=>shareTo(chat.id)}><Avatar user={user} size={46}/><span className="mt-1 block truncate text-[10px]">{user.firstName}</span></button>)}</div><div className="mt-4 overflow-hidden rounded-xl bg-surface-2"><ShareRow icon={MessageCircle} label="Partager sur WIPP" onClick={()=>{}}/><ShareRow icon={Copy} label="Copier le lien de ma carte" onClick={()=>void navigator.clipboard.writeText(link)}/><ShareRow icon={QrCode} label="Partager le QR" onClick={()=>void providers.share.share({title:card.name,text:"QR professionnel WIPP",url:qr})}/><ShareRow icon={Share2} label="Partager ailleurs" onClick={()=>void providers.share.share({title:card.name,text:`Découvre ${card.name} sur WIPP`,url:link})}/></div></Sheet>
+  </div>;
+}
+function Info({icon:Icon,children}:{icon:typeof MapPin;children:React.ReactNode}){return <div className="flex gap-2 text-[12px] text-paper/75"><Icon className="mt-0.5 size-4 shrink-0 text-accent"/><span>{children}</span></div>}
+function ShareRow({icon:Icon,label,onClick}:{icon:typeof Share2;label:string;onClick:()=>void}){return <button type="button" onClick={onClick} className="flex min-h-12 w-full items-center gap-3 border-b border-hair px-3 text-left last:border-0"><Icon className="size-5 text-accent"/><span className="text-[14px]">{label}</span></button>}
 
 /** Appareils connectés — architecture prête, révocation non disponible tant que le serveur ne la gère pas. */
 export function DevicesScreen() {

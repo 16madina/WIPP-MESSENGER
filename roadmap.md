@@ -25,3 +25,4 @@
 - [ ] Production : wipp_touch_config calibrationLog = false avant publication
 
 - [x] Compte admin Deena (+1 819 580 3940, code temporaire) + espace Admin dans Moi
+- [x] Carte professionnelle réelle : créer, modifier, afficher, QR business, partager et découvrir dans Explorer.

@@ -50,7 +50,7 @@ import {
 import { LegalScreen } from "./legal";
 import { PhoneEntryScreen, ProfileReferenceScreen, SmsReferenceScreen, WelcomeScreen } from "./auth-reference";
 import { SignupCelebrationScreen } from "./signup-celebration";
-import { BusinessCardScreen, DevicesScreen, LanguageScreen } from "./me-extras";
+import { BusinessCardEditorScreen, BusinessCardScreen, BusinessCardViewScreen, DevicesScreen, LanguageScreen } from "./me-extras";
 import { RealIncomingScreen, RealTouchIncomingScreen, TouchIncomingScreen } from "./touch-incoming";
 
 const loadCalls = () => import("./calls");
@@ -223,6 +223,10 @@ function ScreenSwitch({ screen }: { screen: Screen }) {
       return <AppearanceScreen />;
     case "business-card":
       return <BusinessCardScreen />;
+    case "business-card-editor":
+      return <BusinessCardEditorScreen />;
+    case "business-card-view":
+      return <BusinessCardViewScreen publicId={screen.publicId} />;
     case "admin":
       return <AdminScreen />;
     case "devices":
