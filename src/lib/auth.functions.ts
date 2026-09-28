@@ -101,6 +101,38 @@ export const signinPhone = createServerFn({ method: "POST" })
     return signIn(email, data.password);
   });
 
+/** Connexion sans mot de passe : numéro vérifié par SMS (Firebase) → compte existant. */
+export const signinOtp = createServerFn({ method: "POST" })
+  .inputValidator(parse(z.union([z.object({ idToken: z.string().min(20) }), z.object({ phone: Phone, code: z.string().min(4).max(12) })]), "Code incorrect ou expiré."))
+  .handler(async ({ data }): Promise<Result | { ok: false; error: string; noAccount: true }> => {
+    const { admin, signIn, emailOf } = await ctx();
+    let phone: string;
+    if ("idToken" in data) {
+      const { verifyFirebasePhone } = await import("./firebase-verify.server");
+      try { phone = (await verifyFirebasePhone(data.idToken)).phone; } catch { return { ok: false, error: "Code incorrect ou expiré." }; }
+    } else {
+      // TEMPORAIRE (en attendant les SMS) : code admin fixe stocké en secret serveur.
+      const adminPhone = process.env["WIPP_ADMIN_PHONE"], adminCode = process.env["WIPP_ADMIN_CODE"];
+      if (!adminPhone || !adminCode || data.phone !== adminPhone || data.code !== adminCode) return { ok: false, error: "Code incorrect ou expiré." };
+      phone = data.phone;
+    }
+    const { data: p } = await admin.from("wipp_profiles").select("id, auth_user_id").eq("phone_e164", phone).maybeSingle();
+    if (!p) return { ok: false, error: "Aucun compte WIPP avec ce numéro.", noAccount: true };
+    let email = p.auth_user_id ? await emailOf(p.auth_user_id) : null;
+    const password = Array.from(crypto.getRandomValues(new Uint8Array(32)), (b) => b.toString(16).padStart(2, "0")).join("");
+    if (p.auth_user_id && email) {
+      const { error } = await admin.auth.admin.updateUserById(p.auth_user_id, { password });
+      if (error) return { ok: false, error: "Connexion impossible" };
+    } else {
+      email = `${p.id}@users.wipp.app`;
+      const { data: c, error } = await admin.auth.admin.createUser({ email, password, email_confirm: true });
+      if (error || !c.user) return { ok: false, error: "Connexion impossible" };
+      const { error: uErr } = await admin.from("wipp_profiles").update({ auth_user_id: c.user.id, password_hash: "" }).eq("id", p.id);
+      if (uErr) { await admin.auth.admin.deleteUser(c.user.id); return { ok: false, error: "Connexion impossible" }; }
+    }
+    return signIn(email, password);
+  });
+
 /** Mot de passe oublié : le numéro est re-vérifié par SMS, puis nouveau mot de passe. */
 export const resetPasswordPhone = createServerFn({ method: "POST" })
   .inputValidator(parse(z.object({ idToken: z.string().min(20), password: Password }), "Mot de passe (8 caractères min.) invalide"))
