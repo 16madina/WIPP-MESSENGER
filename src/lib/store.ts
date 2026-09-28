@@ -1268,7 +1268,7 @@ export const useWgoStore = create<WgoState>()(
         }),
 
       deleteAccount: () => {
-        set({ ...fresh(), stack: [{ name: "signup" }] });
+        set({ ...fresh(), stack: [{ name: "welcome" }] });
         void get().ensureCrypto();
       },
 

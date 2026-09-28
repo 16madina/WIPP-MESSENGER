@@ -455,9 +455,9 @@ export function LoginScreen() {
         <button
           type="button"
           className="mx-auto mt-3 block text-[13px] text-muted"
-          onClick={() => replace({ name: "signup" })}
+          onClick={() => push({ name: "phone-entry" })}
         >
-          {t("back")}
+          Je n’ai pas de compte
         </button>
       </div>
     </div>
