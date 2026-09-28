@@ -384,24 +384,52 @@ export type Database = {
       }
       wipp_chats: {
         Row: {
+          business_card_id: string | null
+          business_owner_id: string | null
           created_at: string
           disappear_after_ms: number | null
           id: string
           realtime_key: string | null
         }
         Insert: {
+          business_card_id?: string | null
+          business_owner_id?: string | null
           created_at?: string
           disappear_after_ms?: number | null
           id: string
           realtime_key?: string | null
         }
         Update: {
+          business_card_id?: string | null
+          business_owner_id?: string | null
           created_at?: string
           disappear_after_ms?: number | null
           id?: string
           realtime_key?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "wipp_chats_business_card_id_fkey"
+            columns: ["business_card_id"]
+            isOneToOne: false
+            referencedRelation: "wipp_business_cards"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "wipp_chats_business_owner_id_fkey"
+            columns: ["business_owner_id"]
+            isOneToOne: false
+            referencedRelation: "wipp_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "wipp_chats_business_owner_id_fkey"
+            columns: ["business_owner_id"]
+            isOneToOne: false
+            referencedRelation: "wipp_public_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       wipp_connection_requests: {
         Row: {
