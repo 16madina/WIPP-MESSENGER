@@ -148,7 +148,7 @@ export function SmsReferenceScreen() {
   }
 
   return <main className="relative size-full overflow-hidden bg-wipp-bg text-wipp-fg" aria-label="Vérifie ton numéro">
-    <Artwork src={smsImage.url} />
+    <Artwork src={smsImage} />
     <div id={RECAPTCHA_ID} className="absolute bottom-0 left-0" />
     <Btn aria-label="Retour" onClick={pop} className="absolute! top-[8%] left-[4%] h-[6%]! w-[12%] bg-transparent! opacity-0" />
     <div className="absolute top-[40%] left-[8%] flex h-[5.5%] max-w-[80%] items-center gap-2 rounded-lg bg-wipp-auth-input px-3 text-[14px] font-semibold text-wipp-fg">
