@@ -161,6 +161,7 @@ export type ScreenName =
   | "create-shop"
   | "lifestyle"
   | "create-lifestyle"
+  | "create-listing"
   | "e2e-info"
   | "archives"
   | "chat-info"
@@ -232,6 +233,7 @@ export type Screen =
   | { name: "create-shop" }
   | { name: "lifestyle"; itemId: string }
   | { name: "create-lifestyle" }
+  | { name: "create-listing" }
   | { name: "e2e-info"; chatId: string }
   | { name: "archives" }
   | { name: "chat-info"; chatId: string }
@@ -417,6 +419,9 @@ export type Listing = {
   category: "auto" | "home" | "goods" | "jobs" | "services";
   image: string;
   description: string;
+  condition?: "new" | "like-new" | "good" | "used" | "parts";
+  photos?: string[];
+  createdAt?: number;
 };
 
 export type ConnectRequest = {

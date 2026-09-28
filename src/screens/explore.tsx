@@ -163,7 +163,11 @@ export function ExploreScreen() {
           <h1 className="min-w-0 flex-1 truncate text-[22px] font-semibold tracking-tight">
             {searching ? t("exploreTitle") : destTitle}
           </h1>
-          {hub === "lifestyle" && !searching ? (
+          {hub === "listings" && !searching ? (
+            <IconBtn label="Créer une annonce" onClick={() => push({ name: "create-listing" })}>
+              <Plus className="size-6" />
+            </IconBtn>
+          ) : hub === "lifestyle" && !searching ? (
             <IconBtn label={t("createLifestyle")} onClick={() => push({ name: "create-lifestyle" })}>
               <Plus className="size-6" />
             </IconBtn>
@@ -667,6 +671,9 @@ function ListingsPane({ cat }: { cat: (typeof CATS)[number] }) {
 
   return (
     <div className="px-4">
+      <Btn className="mb-3 w-full gap-2" onClick={() => push({ name: "create-listing" })}>
+        <Plus className="size-5" />Créer une annonce
+      </Btn>
       <p className="mb-3 text-[12px] text-muted">{t("phoneHiddenForever")}</p>
       {list.map((l) => (
         <button
@@ -1985,6 +1992,95 @@ export function CreateLifestyleScreen() {
         <Btn className="mt-6 w-full" disabled={!title.trim()} onClick={publish}>
           {t("publishEvent")}
         </Btn>
+      </div>
+    </div>
+  );
+}
+
+const LISTING_CONDITIONS = [
+  ["new", "Neuf"],
+  ["like-new", "Comme neuf"],
+  ["good", "Bon état"],
+  ["used", "Utilisé"],
+  ["parts", "Pour pièces"],
+] as const;
+const LISTING_CATS = [
+  ["goods", "Objets"],
+  ["auto", "Véhicules"],
+  ["home", "Immobilier"],
+  ["jobs", "Emplois"],
+  ["services", "Services"],
+] as const;
+
+export function CreateListingScreen() {
+  const pop = useWgoStore((s) => s.pop);
+  const createListing = useWgoStore((s) => s.createListing);
+  const myCity = useWgoStore((s) => s.me.city);
+  const [category, setCategory] = useState<Listing["category"]>("goods");
+  const [condition, setCondition] = useState<NonNullable<Listing["condition"]>>("used");
+  const [title, setTitle] = useState("");
+  const [price, setPrice] = useState("");
+  const [free, setFree] = useState(false);
+  const [city, setCity] = useState(myCity || "");
+  const [description, setDescription] = useState("");
+  const [photos, setPhotos] = useState<string[]>([]);
+  const needsCondition = category === "goods" || category === "auto";
+  const ok = title.trim().length >= 3 && (free || price.trim()) && city.trim() && photos.length > 0;
+
+  function publish() {
+    if (!ok) return;
+    const p = price.trim();
+    createListing({
+      title: title.trim(),
+      price: free ? "Gratuit" : /\$|€|£|fcfa/i.test(p) ? p : `${p} $`,
+      city: city.trim(),
+      category,
+      condition: needsCondition ? condition : undefined,
+      image: photos[0],
+      photos,
+      description: description.trim(),
+    });
+  }
+
+  return (
+    <div className="flex h-full flex-col">
+      <StatusBar />
+      <Header title="Créer une annonce" onBack={pop} />
+      <div className="flex-1 overflow-y-auto no-scrollbar px-4 pb-8">
+        <MediaPicker
+          label={photos.length ? `Photos (${photos.length}/8)` : "Ajouter des photos"}
+          value={photos}
+          multiple
+          onPick={(v) => setPhotos((Array.isArray(v) ? v : [v]).filter(Boolean).slice(0, 8))}
+        />
+        <p className="mt-5 text-[12px] font-medium uppercase tracking-wide text-muted">Catégorie</p>
+        <div className="mt-2 flex flex-wrap gap-2">
+          {LISTING_CATS.map(([id, label]) => (
+            <Chip key={id} active={category === id} onClick={() => setCategory(id)}>{label}</Chip>
+          ))}
+        </div>
+        {needsCondition ? (
+          <>
+            <p className="mt-5 text-[12px] font-medium uppercase tracking-wide text-muted">État</p>
+            <div className="mt-2 flex flex-wrap gap-2">
+              {LISTING_CONDITIONS.map(([id, label]) => (
+                <Chip key={id} active={condition === id} onClick={() => setCondition(id)}>{label}</Chip>
+              ))}
+            </div>
+          </>
+        ) : null}
+        <div className="mt-4 grid gap-3">
+          <Field label="Titre" maxLength={80} value={title} onChange={(e) => setTitle(e.target.value)} />
+          <div className="flex gap-2">
+            <Chip active={!free} onClick={() => setFree(false)}>Prix</Chip>
+            <Chip active={free} onClick={() => setFree(true)}>Gratuit</Chip>
+          </div>
+          {!free ? <Field label="Prix" inputMode="decimal" value={price} onChange={(e) => setPrice(e.target.value)} /> : null}
+          <Field label="Ville" value={city} onChange={(e) => setCity(e.target.value)} />
+          <Field label="Description" maxLength={1000} value={description} onChange={(e) => setDescription(e.target.value)} />
+        </div>
+        <p className="mt-3 text-[12px] text-muted">Ton numéro n’est jamais affiché : les acheteurs t’écrivent sur WIPP.</p>
+        <Btn className="mt-6 w-full" disabled={!ok} onClick={publish}>Publier l’annonce</Btn>
       </div>
     </div>
   );

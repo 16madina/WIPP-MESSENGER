@@ -302,6 +302,7 @@ type WgoState = ReturnType<typeof fresh> & {
     photos: string[];
   }) => string;
   openShopChat: (shopId: string) => string;
+  createListing: (data: Omit<Listing, "id" | "sellerId" | "distance" | "createdAt">) => string;
   createLifestyle: (data: {
     kind: LifestyleKind;
     title: string;
@@ -2261,6 +2262,13 @@ export const useWgoStore = create<WgoState>()(
           stack: [{ name: "chats" }, { name: "conversation", chatId: chat.id }],
         }));
         return chat.id;
+      },
+
+      createListing: (data) => {
+        const item: Listing = { ...data, id: uid("l"), sellerId: "me", distance: "0 km", createdAt: Date.now() };
+        set((st) => ({ listings: [item, ...st.listings] }));
+        get().replace({ name: "listing", listingId: item.id });
+        return item.id;
       },
 
       createLifestyle: (data) => {
