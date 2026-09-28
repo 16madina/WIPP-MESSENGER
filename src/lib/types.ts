@@ -20,7 +20,8 @@ export const defaultA11y: A11yPrefs = {
   reduceMotion: false,
   stickerSound: true,
 };
-export type NearbyMode = 0 | 5 | 15;
+/** 0 = invisible ; -1 = jusqu'à désactivation ; sinon durée en minutes. */
+export type NearbyMode = 0 | 15 | 60 | -1;
 export type Discoverability = "everyone" | "contacts" | "nobody";
 export type PrivacyAudience = "everyone" | "contacts" | "nobody";
 export type PrivacyAudienceKey =

@@ -27,6 +27,22 @@ export const webProximity: ProximityProvider = {
   },
 };
 
+/* ---------- Découverte « Personnes à proximité » ----------
+ * Distinct de WIPP Touch : liste de profils ayant choisi d'être visibles.
+ * Jamais de distance ni de numéro : seulement des fiches publiques.
+ * Web = simulation assumée ; Cursor remplace par BLE natif. */
+export interface NearbyDiscoveryProvider {
+  readonly kind: "native" | "simulated";
+  scan(onFound: (profileIds: string[]) => void): () => void;
+}
+export const webNearbyDiscovery: NearbyDiscoveryProvider = {
+  kind: "simulated",
+  scan(onFound) {
+    const id = window.setTimeout(() => onFound(["ines", "maya", "julien"]), 1800);
+    return () => window.clearTimeout(id);
+  },
+};
+
 /* ---------- Scanner QR ---------- */
 export interface QRScannerProvider {
   isSupported(): boolean;
@@ -156,6 +172,7 @@ export const webNotifications: NotificationProvider = {
 
 export const providers = {
   proximity: webProximity,
+  nearbyDiscovery: webNearbyDiscovery,
   qrScanner: webQrScanner,
   screenProtection: webScreenProtection,
   biometric: webBiometric,

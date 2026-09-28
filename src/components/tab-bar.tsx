@@ -67,8 +67,6 @@ export function TabBar({ active }: { active: Screen["name"] }) {
   const goTab = useWgoStore((s) => s.goTab);
   const push = useWgoStore((s) => s.push);
   const locateMe = useWgoStore((s) => s.locateMe);
-  const setNearby = useWgoStore((s) => s.setNearby);
-  const nearby = useWgoStore((s) => s.nearby);
   const unread = useWgoStore((s) =>
     s.chats.reduce(
       (n, c) => n + (c.archived || c.isRequest || isPrivateChat(c.id) ? 0 : c.unread),
@@ -131,7 +129,6 @@ export function TabBar({ active }: { active: Screen["name"] }) {
     closeSheet();
     if (name === "nearby") {
       locateMe();
-      if (nearby === 0) setNearby(5);
     }
     window.setTimeout(() => push({ name }), 160);
   }

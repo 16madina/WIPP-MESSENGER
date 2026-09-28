@@ -521,7 +521,7 @@ export const useWgoStore = create<WgoState>()(
       setNearby: (mode) =>
         set({
           nearby: mode,
-          nearbyUntil: mode === 0 ? 0 : Date.now() + mode * 60_000,
+          nearbyUntil: mode > 0 ? Date.now() + mode * 60_000 : 0,
         }),
 
       setShowCiphertext: (value) => set({ showCiphertext: value }),

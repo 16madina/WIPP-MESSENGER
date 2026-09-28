@@ -10,7 +10,8 @@ import { WippMark, WippWordmark } from "@/components/logo";
 import { QrCard } from "@/components/qr-card";
 import { BlockSheet, ReportSheet } from "@/components/safety";
 import { Btn, Chip, Empty, Header, SearchField, StatusBar } from "@/components/ui";
-import { NEARBY } from "@/lib/seed";
+import { providers } from "@/lib/providers";
+import { NearbyVisibilityCard } from "@/components/nearby-visibility";
 import { useT, useWgoStore } from "@/lib/store";
 import type { FoundVia } from "@/lib/types";
 import { cn, APP_HOST } from "@/lib/utils";
@@ -421,55 +422,68 @@ export function SearchUserScreen() {
 }
 
 export function NearbyScreen() {
-  const t = useT();
   const pop = useWgoStore((s) => s.pop);
   const push = useWgoStore((s) => s.push);
-  const nearby = useWgoStore((s) => s.nearby);
-  const setNearby = useWgoStore((s) => s.setNearby);
   const users = useWgoStore((s) => s.users);
   const blocked = useWgoStore((s) => s.blockedIds);
+  const [found, setFound] = useState<string[] | null>(null);
+  const [round, setRound] = useState(0);
+
+  useEffect(() => {
+    setFound(null);
+    return providers.nearbyDiscovery.scan((ids) => setFound(ids));
+  }, [round]);
+
+  const list = (found ?? []).filter((id) => users[id] && !blocked.includes(id));
 
   return (
     <div className="flex h-full flex-col">
       <StatusBar />
-      <Header title={t("nearby")} onBack={pop} />
-      <div className="flex gap-2 px-4">
-        <Chip active={nearby === 0} onClick={() => setNearby(0)}>
-          {t("invisible")}
-        </Chip>
-        <Chip active={nearby === 5} onClick={() => setNearby(5)}>
-          {t("visible5")}
-        </Chip>
-        <Chip active={nearby === 15} onClick={() => setNearby(15)}>
-          {t("visible15")}
-        </Chip>
-      </div>
-      <p className="px-5 pt-3 text-[13px] text-muted">{t("nearbyHint")}</p>
-      <div className="mt-3 flex-1 overflow-y-auto no-scrollbar px-4">
-        {nearby === 0 ? (
-          <Empty title={t("nearbyOff")} body={t("nearbyHint")} />
+      <Header title="Personnes à proximité" onBack={pop} />
+      <p className="px-5 pb-3 text-[13px] text-muted">Les personnes visibles autour de toi</p>
+      <NearbyVisibilityCard />
+      <div className="mt-3 flex-1 overflow-y-auto no-scrollbar px-4 pb-8">
+        {found === null ? (
+          <div className="flex flex-col items-center pt-12 text-center">
+            <span className="relative flex size-20 items-center justify-center">
+              <span className="absolute inset-0 animate-ping rounded-full bg-accent/25 motion-reduce:animate-none" />
+              <span className="absolute inset-3 rounded-full bg-accent/30" />
+              <MapPin className="relative size-7 text-accent" />
+            </span>
+            <p className="mt-5 text-[15px] font-medium">Recherche autour de toi…</p>
+          </div>
+        ) : list.length === 0 ? (
+          <Empty title="Personne de visible pour l'instant" body="Réessaie dans un moment ou utilise Rechercher par @WIPP." />
         ) : (
-          NEARBY.filter((n) => !blocked.includes(n.id)).map((n) => {
-            const u = users[n.id];
+          list.map((id) => {
+            const u = users[id];
             return (
               <button
-                key={n.id}
+                key={id}
                 type="button"
-                className="flex w-full items-center gap-3 py-3 text-left"
-                onClick={() => push({ name: "found-profile", userId: n.id, via: "nearby" })}
+                className="flex min-h-14 w-full items-center gap-3 py-3 text-left"
+                onClick={() => push({ name: "found-profile", userId: id, via: "nearby" })}
               >
                 <Avatar user={u} size={48} />
-                <span className="flex-1">
-                  <span className="block text-[16px] font-medium">{u?.displayName}</span>
-                  <span className="text-[13px] text-muted">@{u?.username}</span>
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate text-[16px] font-medium">{u.displayName} — @{u.username}</span>
+                  <span className="text-[13px] text-muted">À proximité</span>
                 </span>
-                <span className="text-[12px] text-muted tabular-nums">
-                  {n.meters} {t("meters")}
+                <span className="rounded-full bg-accent px-3 py-1.5 text-[12px] font-semibold text-accent-fg">
+                  {u.connected ? "Voir" : "Se connecter"}
                 </span>
               </button>
             );
           })
         )}
+        {found !== null ? (
+          <button type="button" className="mt-4 min-h-11 w-full text-[14px] font-medium text-muted" onClick={() => setRound((r) => r + 1)}>
+            Relancer la recherche
+          </button>
+        ) : null}
+        {providers.nearbyDiscovery.kind === "simulated" ? (
+          <p className="pt-2 text-center text-[11px] text-muted">Démo : détection réelle dans l'app mobile.</p>
+        ) : null}
       </div>
     </div>
   );
